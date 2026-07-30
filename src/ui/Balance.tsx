@@ -9,7 +9,13 @@ import { Dialog } from 'ui/Dialog';
 // The one figure in the game the player writes rather than plays for. It is
 // handed to the game rather than to the store, so the machine settles around
 // what was typed (see `game.controller.ts`).
-export function Balance({ onClose }: { onClose: () => void }) {
+export function Balance({
+    width,
+    onClose,
+}: {
+    width: number;
+    onClose: () => void;
+}) {
     const balance = useStore(gameStore, (state) => state.balance);
     // Opens on what the player has, so a balance is corrected rather than
     // remembered and retyped.
@@ -24,7 +30,7 @@ export function Balance({ onClose }: { onClose: () => void }) {
     };
 
     return (
-        <Dialog title="Balance" onClose={onClose}>
+        <Dialog title="Balance" width={width} onClose={onClose}>
             <form className="balance" onSubmit={submit}>
                 {/* Whole coins and never in debt, which the field turns away
                     itself: the form will not submit on anything else. */}

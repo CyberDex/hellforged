@@ -155,12 +155,20 @@
 }
 
 /* Dressed as one of the game's pannels: the same half-lit interior behind the
-   same gold frame. */
+   same gold frame. It is cut to the reels — whoever opens it measures them and
+   hands the figure down (see `TopBar.tsx`) — so a pop up covers the machine
+   squarely and reads as the same block of it, at the width the bar along the
+   top is already drawn at. The 300 below is only what a sheet falls back to
+   when it is opened by something that has not measured anything. */
 .dialog {
     box-sizing: border-box;
     width: 300px;
     max-width: calc(100vw - 32px);
     display: grid;
+    /* The head, then everything else: a sheet given a height to fill hands all
+       of it to its body rather than spreading it down the head as well, which
+       would walk the title away from the rule under it. */
+    grid-template-rows: auto 1fr;
     gap: 14px;
     padding: 12px 16px 18px;
     background: linear-gradient(
@@ -194,6 +202,15 @@
 .dialog-close {
     font-size: 24px;
     line-height: 1;
+}
+
+/* The menu is as tall as the reels as well as as wide, so what it stands down
+   is spread over the whole of the machine rather than gathered at the top of a
+   sheet the size of it. */
+.menu {
+    display: grid;
+    gap: 20px;
+    align-content: space-between;
 }
 
 .menu-row,

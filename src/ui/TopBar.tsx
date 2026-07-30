@@ -16,8 +16,14 @@ type Popup = 'menu' | 'balance';
 const SESSION_START = Date.now();
 
 // The machine is placed by its grid, so its bounds are the reels alone, at
-// whatever size the game has been laid out at.
-const reelWidth = (layout: RootLayout) => layout.slotMachine.getBounds().width;
+// whatever size the game has been laid out at. Taken as a plain pair, since what
+// comes back is Pixi's own bounds and is written over the next time anything is
+// measured.
+const reelSize = (layout: RootLayout) => {
+    const { width, height } = layout.slotMachine.getBounds();
+
+    return { width, height };
+};
 
 const clock = (date: Date) =>
     date.toLocaleTimeString([], {
@@ -41,9 +47,11 @@ export function TopBar({ layout }: { layout: RootLayout }) {
     // reels are played with and there is no second copy of it to keep in step.
     const balance = useStore(gameStore, (state) => state.balance);
     const [now, setNow] = useState(() => new Date());
-    // As wide as the reels are on screen, so the bar reads as the top of the
-    // same machine rather than as something laid over it.
-    const [width, setWidth] = useState(() => reelWidth(layout));
+    // What the reels measure on screen. The bar is hung off the top of that, so
+    // it reads as the top of the same machine rather than as something laid
+    // over it, and the pop ups are cut to the same block, so opening one is the
+    // machine turned round rather than a sheet of its own put over the game.
+    const [reels, setReels] = useState(() => reelSize(layout));
     const [popup, setPopup] = useState<Popup>();
     // Held still, since every dialog listens for the Escape that calls it.
     const close = useCallback(() => setPopup(undefined), []);
@@ -58,7 +66,7 @@ export function TopBar({ layout }: { layout: RootLayout }) {
     }, []);
 
     useEffect(() => {
-        const measure = () => setWidth(reelWidth(layout));
+        const measure = () => setReels(reelSize(layout));
 
         // The game lays itself out on the same event and listens for it first,
         // so the reels have already moved by the time they are measured here.
@@ -69,7 +77,7 @@ export function TopBar({ layout }: { layout: RootLayout }) {
 
     return (
         <>
-            <div className="topbar" style={{ width }}>
+            <div className="topbar" style={{ width: reels.width }}>
                 <div className="topbar-left">
                     {/* The three bars are drawn in CSS, so the button carries
                         no glyph the game font would have to have. */}
@@ -98,6 +106,8 @@ export function TopBar({ layout }: { layout: RootLayout }) {
             </div>
             {popup === 'menu' && (
                 <Menu
+                    width={reels.width}
+                    height={reels.height}
                     onClose={close}
                     // The menu is a way in to the balance and not a place to
                     // come back to, so it is left behind rather than under.
@@ -106,7 +116,9 @@ export function TopBar({ layout }: { layout: RootLayout }) {
             )}
             {/* The one sheet handed no measurement of the machine: the rules
                 take the screen rather than the reels. */}
-            {popup === 'balance' && <Balance onClose={close} />}
+            {popup === 'balance' && (
+                <Balance width={reels.width} onClose={close} />
+            )}
         </>
     );
 }
