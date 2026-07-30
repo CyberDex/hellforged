@@ -61,6 +61,19 @@ export class BetSlider extends Slider {
         });
     }
 
+    // Moved by a key rather than by a finger (see `keyboard.controller.ts`):
+    // the handle goes the given number of steps along the track, the setter
+    // holding it to the ends of it as a drag is held. A coin is counted out for
+    // the move the way one is under the finger, and a handle already at the end
+    // it was sent to has passed no figure and is not heard.
+    nudge(steps: number) {
+        const bet = this.value;
+
+        this.value += steps * this.step;
+
+        if (this.value !== bet) sound.play('coin');
+    }
+
     // A bet there is no setting of is taken off the machine rather than left
     // sitting there unanswering: the stake for a running spin has already been
     // taken, and a balance that is out has nothing to stake either way. The
