@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useStore } from 'zustand';
 import { gameTitle } from 'config/game.name';
+import { settings } from 'config/game.settings';
 import { gameStore } from 'store/game.store';
 import type { RootLayout } from 'layout/Root.layout';
 import { Balance } from 'ui/Balance';
@@ -47,6 +48,13 @@ export function TopBar({ layout }: { layout: RootLayout }) {
     // Straight off the game's own store, so the bar reads the same balance the
     // reels are played with and there is no second copy of it to keep in step.
     const balance = useStore(gameStore, (state) => state.balance);
+    // Whether the game has nothing left to stake: a balance short of the
+    // smallest bet it deals in, read only between spins, since a running one has
+    // had its stake taken and its win still to pay (see `game.controller.ts`).
+    const outOfFunds = useStore(
+        gameStore,
+        ({ state, balance }) => state === 'idle' && balance < settings.minBet,
+    );
     const [now, setNow] = useState(() => new Date());
     // What the reels measure on screen. The bar is hung off the top of that, so
     // it reads as the top of the same machine rather than as something laid
@@ -75,6 +83,15 @@ export function TopBar({ layout }: { layout: RootLayout }) {
 
         return () => window.removeEventListener('resize', measure);
     }, [layout]);
+
+    // A game that will not spin again is put on the one figure that can change
+    // that, rather than left saying so over the reels and waiting to be found:
+    // the sheet comes up of its own accord as the balance runs out. Closed on a
+    // balance still out, it stays closed — the news is over the reels behind it,
+    // and the bar opens it again.
+    useEffect(() => {
+        if (outOfFunds) setPopup('balance');
+    }, [outOfFunds]);
 
     return (
         <>
