@@ -1,13 +1,26 @@
+// What three of a kind pays, in bets, on the symbol the payline filled up with.
+// This is also the set of symbols the game plays with, so every symbol on a reel
+// is a symbol with a payout.
+const three: Record<string, number> = {
+    H1: 30,
+    H2: 18,
+    H3: 12,
+    H4: 10,
+    H5: 9,
+};
+
 export const settings = {
     reels: 3,
     rows: 3,
-    symbols: ['H1', 'H2', 'H3', 'H4', 'H5'],
+    symbols: Object.keys(three),
     // What the player starts with, and what every spin costs.
     defaultBalance: 1000,
     defaultBet: 1,
-    // Bet multipliers for the payline: a single symbol pays nothing, two of a
-    // kind pay x10 and three pay x100.
-    payouts: { two: 10, three: 100 },
+    // Bet multipliers for the payline: a single symbol pays nothing, a pair pays
+    // flat whatever symbol it is, and three of a kind pays on its symbol.
+    // Symbols land uniformly, so 1 spin in 25 fills the payline and 4 in 25
+    // leave a pair, which pays back ~95% of what is staked over time.
+    payouts: { two: 2, three },
     // How fast the reel strip travels, in symbols per second.
     spinSpeed: 20,
     // How far a landing reel dips past the row grid, in symbols, and how long

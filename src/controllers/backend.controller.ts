@@ -26,12 +26,14 @@ class BackendController {
     }
 
     // A win has to start on the first reel, so a pair only counts on the first
-    // two. Only one win is paid per spin: three of a kind pays the big
-    // multiplier instead of the pair it contains, not on top of it.
+    // two. Only one win is paid per spin: three of a kind pays on its symbol
+    // instead of the pair it contains, not on top of it.
     private multiplier([first, second, third]: string[]) {
         if (first !== second) return 0;
 
-        return second === third ? settings.payouts.three : settings.payouts.two;
+        return second === third
+            ? settings.payouts.three[second]
+            : settings.payouts.two;
     }
 }
 

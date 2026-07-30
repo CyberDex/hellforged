@@ -10,9 +10,11 @@ A 3x3 slot with a single payline.
 
 ## Symbols
 
-Five symbols, all equal in kind, no wilds or scatters:
+Five symbols, no wilds or scatters:
 
 `H1`, `H2`, `H3`, `H4`, `H5` (`settings.symbols`)
+
+They differ only in what three of them pay, `H1` the most and `H5` the least (`settings.payouts.three`, which is where the symbol list itself comes from — a symbol on a reel is a symbol with a payout).
 
 Each spin picks symbols independently and uniformly at random (see `src/utils/getRandomSymbol.ts`), so every symbol has the same 1-in-5 chance in every slot.
 
@@ -49,17 +51,29 @@ The spin is decided in full before a reel has moved, by `src/controllers/backend
 
 Evaluated on the middle row only:
 
-| Middle row                              | Pays                                 |
-| --------------------------------------- | ------------------------------------ |
-| 3 matching symbols                      | bet x 100 (`settings.payouts.three`) |
-| First two matching, third different     | bet x 10 (`settings.payouts.two`)    |
-| First two different                     | nothing                              |
+| Middle row                          | Pays                                              |
+| ----------------------------------- | ------------------------------------------------- |
+| 3 matching symbols                  | bet x the symbol's own (`settings.payouts.three`) |
+| First two matching, third different | bet x 2 (`settings.payouts.two`)                  |
+| First two different                 | nothing                                           |
+
+Three of a kind pays on the symbol it filled up with:
+
+| Symbol | Pays     |
+| ------ | -------- |
+| `H1`   | bet x 30 |
+| `H2`   | bet x 18 |
+| `H3`   | bet x 12 |
+| `H4`   | bet x 10 |
+| `H5`   | bet x 9  |
 
 - One matching symbol on its own pays nothing.
 - A win has to start on the first reel, so a pair only counts on reels 1 and 2. A pair on reels 2 and 3 pays nothing, and neither does a first-and-third match.
-- Only one win is paid per spin: three of a kind pays the big amount instead of, not in addition to, the small amount.
+- Only one win is paid per spin: three of a kind pays on its symbol instead of, not in addition to, the pair it contains.
 - The win amount scales with the bet.
-- The multipliers are flat, the same for every symbol, and live in `src/config/game.settings.ts` alongside the rest of the game config.
+- A pair pays the same whatever symbol it is; only three of a kind reads the symbol.
+- The payouts live in `src/config/game.settings.ts` alongside the rest of the game config.
+- Every symbol is as likely as every other, so the payline fills up on 1 spin in 25 and leaves a pair on 4 in 25. Between them the table pays back about 95% of what is staked over time (`(30+18+12+10+9)/125 + 0.16 x 2`), so a balance drifts down rather than either way.
 
 ## Showing a win
 
