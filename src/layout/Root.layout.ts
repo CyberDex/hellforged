@@ -5,14 +5,17 @@ import { SpinButton } from './components/SpinButton';
 import { Pannel } from './components/Pannel';
 import { Reels } from './components/Reels';
 import { settings } from '../config/game.settings';
+import { BG } from './components/BG';
 
 export class RootLayout extends Layout {
+    bg: BG;
     spinButton: SpinButton;
     betPannel: Pannel;
     winPannel: Pannel;
     reels: Reels;
 
     constructor() {
+        const bg = new BG();
         const spinButton = new SpinButton();
         const betPannel = new Pannel('Bet');
         const winPannel = new Pannel('Win');
@@ -24,7 +27,11 @@ export class RootLayout extends Layout {
                 id: 'content',
                 content: {
                     bg: {
-                        content: Sprite.from('bg'),
+                        content: bg,
+                        styles: { position: 'center' },
+                    },
+                    slotMachine: {
+                        content: Sprite.from('reels'),
                         styles: { position: 'center' },
                     },
                     buttonSpin: {
@@ -97,6 +104,7 @@ export class RootLayout extends Layout {
             },
         });
 
+        this.bg = bg;
         this.spinButton = spinButton;
         this.betPannel = betPannel;
         this.winPannel = winPannel;
