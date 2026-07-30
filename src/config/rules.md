@@ -24,7 +24,9 @@ The spin is decided in full before a reel has moved, by `src/controllers/backend
 
 ## Balance
 
-- The player starts with `settings.balance` and every spin stakes `settings.bet`.
+- The player starts with `settings.defaultBalance` and every spin stakes the bet.
+- The bet is set on the slider under the `Bet` pannel, which runs from `settings.minBet` to `settings.maxBet` (currently 1 to 1000) a unit at a time and opens at `settings.defaultBet`. The pannel reads out whatever it is dragged to.
+- The slider is locked from the moment the reels start until the game is back to idle: the stake has already been taken, and the win still to come was worked out from it.
 - The stake is taken the moment the reels start; a win is credited once the last reel has stopped.
 - A spin is refused while the balance is below the bet.
 

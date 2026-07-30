@@ -16,6 +16,10 @@ export const settings = {
     // What the player starts with, and what every spin costs.
     defaultBalance: 1000,
     defaultBet: 1,
+    // The two ends of the bet slider: what a spin can be staked at, at least
+    // and at most.
+    minBet: 1,
+    maxBet: 1000,
     // Bet multipliers for the payline: a single symbol pays nothing, a pair pays
     // flat whatever symbol it is, and three of a kind pays on its symbol.
     // Symbols land uniformly, so 1 spin in 25 fills the payline and 4 in 25

@@ -2,6 +2,7 @@ import '@pixi/layout';
 import { Layout } from '@pixi/layout';
 import { Sprite, Ticker } from 'pixi.js';
 import { SpinButton } from 'layout/components/SpinButton';
+import { BetSlider } from 'layout/components/BetSlider';
 import { Pannel } from 'layout/components/Pannel';
 import { Reels } from 'layout/components/Reels';
 import { SlotMachine } from 'layout/components/SlotMachine';
@@ -13,6 +14,7 @@ import { setDefaultTextStyle } from 'config/font.settings';
 export class RootLayout extends Layout {
     bg: BG;
     spinButton: SpinButton;
+    betSlider: BetSlider;
     betPannel: Pannel;
     winPannel: Pannel;
     reels: Reels;
@@ -32,6 +34,7 @@ export class RootLayout extends Layout {
 
         const bg = new BG();
         const spinButton = new SpinButton();
+        const betSlider = new BetSlider();
         const betPannel = new Pannel('Bet');
         const winPannel = new Pannel('Win');
         const reels = new Reels(settings.reels, settings.rows);
@@ -93,7 +96,23 @@ export class RootLayout extends Layout {
                                 },
                             },
                             betPannel: {
-                                content: betPannel,
+                                content: [
+                                    {
+                                        content: betPannel,
+                                        styles: { position: 'center' },
+                                    },
+                                    // Under the pannel that reads the bet out,
+                                    // so the amount and what sets it are the
+                                    // one thing and move together.
+                                    {
+                                        content: betSlider,
+                                        styles: {
+                                            position: 'center',
+                                            marginTop: 35,
+                                            marginLeft: 10,
+                                        },
+                                    },
+                                ],
                                 styles: {
                                     position: 'center',
                                     marginTop: 210,
@@ -142,6 +161,7 @@ export class RootLayout extends Layout {
 
         this.bg = bg;
         this.spinButton = spinButton;
+        this.betSlider = betSlider;
         this.betPannel = betPannel;
         this.winPannel = winPannel;
         this.reels = reels;

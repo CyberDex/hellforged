@@ -10,6 +10,7 @@ interface GameStore {
     win: number;
     setState: (state: GameState) => void;
     setBalance: (balance: number) => void;
+    setBet: (bet: number) => void;
     setWin: (win: number) => void;
 }
 
@@ -21,5 +22,6 @@ export const gameStore = createStore<GameStore>((set) => ({
 
     setState: (state) => set({ state }),
     setBalance: (balance) => set({ balance }),
+    setBet: (bet) => set({ bet }),
     setWin: (win) => set({ win }),
 }));
