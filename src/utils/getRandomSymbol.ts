@@ -1,4 +1,4 @@
-import { settings } from '../config/game.settings';
+import { settings } from 'config/game.settings';
 
 export function getRandomSymbol(): string {
     return settings.symbols[

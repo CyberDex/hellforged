@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin, type UserConfig } from 'vite';
 import {
     AssetPack,
@@ -11,6 +12,17 @@ import { pixiPipes } from '@assetpack/core/pixi';
 import checker from 'vite-plugin-checker';
 
 const assetsOutput = './dist/assets';
+
+// Bare-specifier imports for the top-level `src` folders, so nothing has to
+// count `../` hops. Keep in sync with `paths` in tsconfig.json.
+const srcAliases = Object.fromEntries(
+    ['config', 'controllers', 'filters', 'layout', 'store', 'utils'].map(
+        (folder) => [
+            folder,
+            fileURLToPath(new URL(`./src/${folder}`, import.meta.url)),
+        ],
+    ),
+);
 
 const preserveTransformedFolder: AssetPipe = {
     name: 'preserve-transformed-folder',
@@ -128,6 +140,9 @@ function assetpackPlugin(): Plugin {
 export default defineConfig((): UserConfig => ({
     base: './',
     publicDir: false,
+    resolve: {
+        alias: srcAliases,
+    },
     server: {
         port: 8080,
         open: true,

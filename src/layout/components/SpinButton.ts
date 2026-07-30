@@ -1,7 +1,7 @@
 import '@pixi/layout';
 import { FancyButton } from '@pixi/ui';
 import { Ticker } from 'pixi.js';
-import { sound } from '../../controllers/sound.controller';
+import { sound } from 'controllers/sound.controller';
 
 export class SpinButton extends FancyButton {
     constructor() {

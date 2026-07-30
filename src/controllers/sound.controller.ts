@@ -1,6 +1,6 @@
 import { Howl } from 'howler';
 import { Assets } from 'pixi.js';
-import { sounds, type SoundName } from '../config/sound.settings';
+import { sounds, type SoundName } from 'config/sound.settings';
 
 class SoundController {
     private howls: Map<SoundName, Howl> = new Map();

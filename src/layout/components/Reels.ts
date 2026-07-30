@@ -1,4 +1,4 @@
-import { Container } from 'pixi.js';
+import { Container, Rectangle } from 'pixi.js';
 import { Reel } from './Reel';
 
 const GAP = 30;
@@ -21,6 +21,18 @@ export class Reels extends Container {
             this.#reels.push(reel);
             this.addChild(reel);
         }
+
+        const [{ width, height }] = this.#reels;
+
+        // Fixed bounds, so the grid still measures its rows once the window is
+        // masking it — otherwise the machine around it is sized by whatever the
+        // mask happens to leave showing.
+        this.boundsArea = new Rectangle(
+            0,
+            0,
+            reels * width + (reels - 1) * GAP,
+            height,
+        );
     }
 
     // The reels always start together; the controller stops them one by one.
@@ -28,7 +40,8 @@ export class Reels extends Container {
         for (const reel of this.#reels) reel.spin();
     }
 
-    stop(index: number) {
-        this.#reels[index]?.stop();
+    // Each reel is handed the column of the outcome it has to land on.
+    stop(index: number, symbols: string[]) {
+        this.#reels[index]?.stop(symbols);
     }
 }

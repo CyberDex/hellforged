@@ -1,6 +1,25 @@
 import { Container, Rectangle, Ticker } from 'pixi.js';
-import { settings } from '../../config/game.settings';
+import { settings } from 'config/game.settings';
+import { getRandomSymbol } from 'utils/getRandomSymbol';
 import { Symbol } from './Symbol';
+
+// Share of the bounce spent travelling down; the rest eases back up, so the
+// return is the slower half.
+const BOUNCE_DOWN = 0.4;
+
+// 0 -> 1 -> 0. Down with the momentum the reel landed with, decelerating into
+// the dip, then eased off the dip and onto the grid.
+function dip(progress: number): number {
+    if (progress < BOUNCE_DOWN) {
+        const down = progress / BOUNCE_DOWN;
+
+        return down * (2 - down);
+    }
+
+    const back = (progress - BOUNCE_DOWN) / (1 - BOUNCE_DOWN);
+
+    return (1 + Math.cos(back * Math.PI)) / 2;
+}
 
 export class Reel extends Container {
     #slots: Symbol[] = [];
@@ -9,6 +28,12 @@ export class Reel extends Container {
     #speed: number;
     #spinning = false;
     #stopping = false;
+    #bouncing = false;
+    #elapsed = 0;
+    // The symbols still to be fed in on top before the reel can land.
+    #queue: string[] = [];
+    // How far the strip currently sits below the row grid, mid-bounce.
+    #offset = 0;
 
     constructor(slots: number) {
         super();
@@ -43,8 +68,15 @@ export class Reel extends Container {
     }
 
     spin() {
-        // Resumes the reel if the previous spin is still landing.
+        // Resumes the reel if the previous spin is still landing or bouncing.
         this.#stopping = false;
+
+        if (this.#bouncing) {
+            this.move(-this.#offset);
+
+            this.#bouncing = false;
+            this.#offset = 0;
+        }
 
         if (this.#spinning) return;
 
@@ -53,23 +85,42 @@ export class Reel extends Container {
         Ticker.shared.add(this.tick, this);
     }
 
-    stop() {
+    // The reel lands on the symbols it is given, bottom row last: they enter
+    // on top and slide down onto the rows as the reel comes to rest.
+    stop(symbols: string[]) {
+        this.#queue = [...symbols].reverse();
         this.#stopping = true;
     }
 
     private tick({ deltaMS }: Ticker) {
-        const distance = this.#speed * deltaMS;
-        // The top symbol rests at -#symbolHeight, so this is what is left to
-        // travel for the symbols to land back on the row grid.
-        const align = -this.#slots[0].y % this.#symbolHeight;
+        if (this.#bouncing) {
+            this.bounce(deltaMS);
 
-        if (this.#stopping && align <= distance) {
+            return;
+        }
+
+        // The top symbol rests at -#symbolHeight, so this is what is left to
+        // travel for the symbols to land back on the row grid — a whole symbol
+        // when they are on it already.
+        const align =
+            -this.#slots[0].y % this.#symbolHeight || this.#symbolHeight;
+        // A stopping reel never travels past the grid in one step, however long
+        // the frame was, so the queue is fed in a row at a time.
+        const distance = this.#stopping
+            ? Math.min(this.#speed * deltaMS, align)
+            : this.#speed * deltaMS;
+
+        // Landing waits for the queue to be fed in: by the time it is empty the
+        // outcome sits one row above the grid, and this last move slides it
+        // down onto the rows.
+        if (this.#stopping && !this.#queue.length && align <= distance) {
             this.move(align);
 
-            this.#spinning = false;
             this.#stopping = false;
-
-            Ticker.shared.remove(this.tick, this);
+            // The reel has landed as far as the game is concerned; the dip
+            // that follows is momentum, not travel.
+            this.#bouncing = true;
+            this.#elapsed = 0;
 
             this.emit('stopped');
 
@@ -79,21 +130,46 @@ export class Reel extends Container {
         this.move(distance);
     }
 
+    private bounce(deltaMS: number) {
+        this.#elapsed += deltaMS;
+
+        const progress = Math.min(this.#elapsed / settings.bounceDuration, 1);
+        // Driven from an absolute offset rather than per-tick deltas, so the
+        // strip comes back to the grid exactly where it landed.
+        const offset =
+            progress < 1
+                ? dip(progress) * settings.bounceDistance * this.#symbolHeight
+                : 0;
+
+        this.move(offset - this.#offset);
+
+        this.#offset = offset;
+
+        if (progress < 1) return;
+
+        this.#bouncing = false;
+        this.#spinning = false;
+
+        Ticker.shared.remove(this.tick, this);
+    }
+
     private move(distance: number) {
         for (const symbol of this.#slots) symbol.y += distance;
 
-        let bottom = this.#slots[this.#slots.length - 1];
+        // Once the spare symbol has come down onto the top row, the bottom one
+        // has slid out under the reel and comes back in on top with a new face,
+        // which keeps #slots ordered from top to bottom. Going by the spare is
+        // what keeps this in step with a landing, which is aimed at it too.
+        while (this.#slots[0].y >= 0) {
+            const bottom = this.#slots[this.#slots.length - 1];
 
-        // A symbol that slid out under the reel comes back in on top with a
-        // new face, which keeps #slots ordered from top to bottom.
-        while (bottom.y >= this.#reelHeight) {
             bottom.y = this.#slots[0].y - this.#symbolHeight;
-            bottom.randomize();
+            // Off the queue while the reel is landing, random for as long as
+            // it is still spinning.
+            bottom.symbol = this.#queue.shift() ?? getRandomSymbol();
 
             this.#slots.pop();
             this.#slots.unshift(bottom);
-
-            bottom = this.#slots[this.#slots.length - 1];
         }
     }
 }

@@ -30,12 +30,20 @@ The spin is decided in full before a reel has moved, by `src/controllers/backend
 
 - All reels start spinning at the same moment.
 - They stop one at a time, **left to right**, with a configurable delay between each stop (`settings.reelStopDelay`).
-- The first reel stops after `settings.spinDuration`; each following reel stops one delay later. Total spin length is therefore `spinDuration + (reels - 1) * reelStopDelay`.
+- The first reel stops after `settings.spinDuration`; each following reel stops one delay later. Total spin length is therefore `spinDuration + (reels - 1) * reelStopDelay` — unless the last reel is held back (see [Anticipation](#anticipation)).
 - Setting `reelStopDelay` to `0` makes all reels stop together.
 - The strip travels at `settings.spinSpeed` symbols per second (currently 20).
 - A reel does not halt on the spot: it keeps sliding until it has fed its three outcome symbols in on top and lined them back up with the row grid, which takes up to four symbols of travel. Keep `reelStopDelay` above that worst case (`(rows + 1) * 1000 / spinSpeed`, currently 200ms) or the stop order can blur.
 - Landing ends with a pushback: the strip dips `settings.bounceDistance` of a symbol below the row grid and eases back up over `settings.bounceDuration`. It is cosmetic — the reel counts as stopped the moment it reaches the grid, before the dip.
 - The spin is considered over once the last reel stops; only then is the win evaluated.
+
+## Anticipation
+
+- When every reel but the last has landed on the same payline symbol, three of a kind is still in play and the last reel is drawn out: it spins `settings.anticipationSpins` times as long as it otherwise would (currently 3, so 4800ms instead of 1600ms).
+- Everything but the background is zoomed in over the wait: the machine, the pannels and the spin button all grow together to `settings.anticipationZoom` of their size, evenly, about the middle of the screen, so the game fills more of it the longer the last reel holds out. The rows show the same amount of themselves throughout — the reel window grows with them — and the background is left where it is, still behind the zoom.
+- The zoom runs from the moment the reel before the held-back one lands until the held-back one lands, and then the game jumps straight back to size — there is no animation on the way back.
+- `anticipation` plays once as the zoom starts, over the spin loop.
+- A pair on the first two reels always draws the third reel out, whether it lands on the match or not. The outcome is decided before the reels move, so the anticipation is only ever a build-up and never says how the spin ends.
 
 ## Winning
 

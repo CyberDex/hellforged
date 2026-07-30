@@ -8,6 +8,15 @@
 
         /* Bundler mode */
         "moduleResolution": "bundler",
+        /* Keep in sync with `resolve.alias` in vite.config.ts */
+        "paths": {
+            "config/*": ["./src/config/*"],
+            "controllers/*": ["./src/controllers/*"],
+            "filters/*": ["./src/filters/*"],
+            "layout/*": ["./src/layout/*"],
+            "store/*": ["./src/store/*"],
+            "utils/*": ["./src/utils/*"]
+        },
         "allowImportingTsExtensions": true,
         "resolveJsonModule": true,
         "isolatedModules": true,
