@@ -194,12 +194,18 @@ export class RootLayout extends Layout {
         Ticker.shared.add(this.grow, this);
     }
 
-    // Straight back to size, with none of the travel the zoom had.
+    // Straight back to size, with none of the travel the zoom had. Says whether
+    // there was a zoom to come down from, since dropping back to size is a move
+    // the game makes and is heard, while a spin that never leaned in is not.
     unzoom() {
         Ticker.shared.remove(this.grow, this);
 
+        const zoomed = this.#zoom !== 1;
+
         this.#zoom = 1;
         this.#ui.scale.set(this.#zoom);
+
+        return zoomed;
     }
 
     private grow({ deltaMS }: Ticker) {

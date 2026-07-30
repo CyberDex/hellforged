@@ -89,7 +89,11 @@ class GameController {
             // win holds the zoom for all of it, so both come down together.
             if (state === 'idle') {
                 winLayout.hide();
-                layout.unzoom();
+
+                // The top win is read out from inside the zoom, so the game
+                // still has to come down out of it once the reveal is over. It
+                // lands back at size the way a reel lands, and is heard as one.
+                if (layout.unzoom()) sound.play('reelStop');
                 // The stake came off the balance and the win went back on it
                 // over the spin, so what the next one can be staked at is only
                 // settled now that it is over.
@@ -253,7 +257,9 @@ class GameController {
             } else if (this.#landed === settings.reels && !this.#bigWin) {
                 // The last symbol missed the pair: the reels jump back out to
                 // size and the pair is paid at it. A payline that did fill up
-                // keeps the zoom, and the reveal comes up inside it.
+                // keeps the zoom, and the reveal comes up inside it. The drop
+                // back is on the same beat as the reel landing, so the thud
+                // above is already the sound of it and none is added here.
                 this.#layout?.unzoom();
             }
         }
