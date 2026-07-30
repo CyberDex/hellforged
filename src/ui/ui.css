@@ -169,15 +169,15 @@
        of it to its body rather than spreading it down the head as well, which
        would walk the title away from the rule under it. */
     grid-template-rows: auto 1fr;
-    gap: 14px;
-    padding: 12px 16px 18px;
+    gap: 18px;
+    padding: 16px 22px 22px;
     background: linear-gradient(
         180deg,
         var(--pannel-top),
         var(--pannel-bottom)
     );
     border: 1px solid var(--frame);
-    border-radius: 12px;
+    border-radius: 14px;
     box-shadow:
         0 8px 28px var(--shadow),
         inset 0 1px 0 var(--frame-glow);
@@ -188,19 +188,19 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding-bottom: 10px;
+    gap: 14px;
+    padding-bottom: 12px;
     border-bottom: 1px solid var(--frame);
 }
 
 .dialog-title {
-    font-size: 18px;
+    font-size: 24px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
 }
 
 .dialog-close {
-    font-size: 24px;
+    font-size: 32px;
     line-height: 1;
 }
 
@@ -218,12 +218,17 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 16px;
     width: 100%;
 }
 
+/* The size the chevron is read at; the label sets its own. */
+.menu-entry {
+    font-size: 26px;
+}
+
 .menu-label {
-    font-size: 11px;
+    font-size: 15px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--gold-dim);
@@ -232,9 +237,9 @@
 /* Reads out where the sound stands rather than what pressing does, the way a
    switch on the cabinet would be lettered. */
 .menu-switch {
-    min-width: 44px;
-    padding: 2px 10px;
-    font-size: 15px;
+    min-width: 64px;
+    padding: 5px 16px;
+    font-size: 20px;
     text-transform: uppercase;
     border: 1px solid var(--frame);
     border-radius: 999px;
@@ -249,7 +254,7 @@
 
 .menu-volumes {
     display: grid;
-    gap: 10px;
+    gap: 16px;
     transition: opacity 150ms ease-out;
 }
 
@@ -259,13 +264,13 @@
 
 .volume {
     display: grid;
-    grid-template-columns: 62px 1fr 40px;
+    grid-template-columns: 86px 1fr 54px;
     align-items: center;
-    gap: 10px;
+    gap: 14px;
 }
 
 .volume-value {
-    font-size: 13px;
+    font-size: 17px;
     text-align: right;
 }
 
@@ -327,7 +332,8 @@
 
 .balance {
     display: grid;
-    gap: 12px;
+    gap: 16px;
+    align-content: center;
 }
 
 /* Typed into rather than dragged, so it is the one thing on the overlay dressed
@@ -340,9 +346,9 @@
     /* The overlay is not for selecting, but a figure being retyped is. */
     user-select: text;
     width: 100%;
-    padding: 8px 10px;
+    padding: 12px 14px;
     font: inherit;
-    font-size: 22px;
+    font-size: 28px;
     text-align: center;
     color: var(--gold);
     caret-color: var(--gold);
@@ -366,8 +372,8 @@
 /* The one control on the overlay that does something rather than set something,
    so it is the one dressed as a pannel of its own. */
 .balance-apply {
-    padding: 8px 12px;
-    font-size: 17px;
+    padding: 12px 16px;
+    font-size: 22px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     background: linear-gradient(
