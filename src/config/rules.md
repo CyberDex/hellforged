@@ -26,6 +26,7 @@ The spin is decided in full before a reel has moved, by `src/controllers/backend
 
 - The player starts with `settings.defaultBalance` and every spin stakes the bet.
 - The balance is read out on the top bar (`src/ui/TopBar.tsx`), which is hung off the top of the page at the width the reels measure, alongside the game name, the time of day and how long the session has been open. It is DOM rather than canvas, and follows the same store the reels are played from, so it never has a balance of its own to keep in step. Its colours are filed with the art (`assets/theme{copy}/theme.json`) and come in with the same bundle, so a new set of sprites brings the palette the bar is dressed in along with it.
+- The balance can also be set by hand, on the pop up the balance on the bar opens (`src/ui/Balance.tsx`), which the menu is a second way in to. What is typed there is whole and never below zero, and the game settles around it the way it settles after a spin: the top of the slider comes down to it, and a balance that had run out is playable again. A figure set while the reels are still turning goes onto the balance at once but only settles the machine as that spin ends, since its stake was taken and its win worked out before the change.
 - The bet is set on the slider under the `Bet` pannel, which runs from `settings.minBet` to `settings.maxBet` (currently 1 to 1000) a unit at a time and opens at `settings.defaultBet`. The pannel reads out whatever it is dragged to.
 - `settings.maxBet` is only the widest the slider ever opens. A bet can never be staked higher than the balance covers, so the top of the slider is whichever is lower of `settings.maxBet` and the balance, and it comes down as the balance does. A bet already above the new top comes down to it, pannel and all.
 - The slider always keeps `settings.minBet` at the bottom, whatever the balance is: the last of a balance is still staked at the minimum, and a balance too small to cover even that is out of funds (see [Running out](#running-out)) rather than a smaller bet.
@@ -44,6 +45,7 @@ The spin is decided in full before a reel has moved, by `src/controllers/backend
 - The `Bet` pannel empties to the same dash the `Win` pannel sits at between spins. The bet itself is kept — the slider has to open somewhere if a balance ever comes back — but nothing can be staked at it, so it is not read out as though it could. This is the one time the bet is not on the pannel: a running spin keeps reading out what it was paid for.
 - The game says why over the middle of the reels, in the place a win is announced (`src/layout/Win.layout.ts`): `OUT OF` over `FUNDS`, in the two lines a win would have used for `WIN` over its amount. It goes up as the spin that emptied the balance returns to idle, and stays up — there is no next spin to take it down.
 - It is worked out between spins, alongside the top of the slider, and again before the first press of a session, so a stored balance that has already run out opens the game locked with the message up.
+- Setting a balance on the balance pop up is the way back: the message comes down, the `Bet` pannel reads its bet out again, and the button and the slider come back, all settled exactly as they are between spins.
 
 ## Spin
 
@@ -102,3 +104,11 @@ Three of a kind pays on the symbol it filled up with:
 - Three of a kind is held for `settings.bigWinReveals` times as long (currently 2, so 5000ms) and counts up over that whole time, so the number is still climbing to the top win for as long as it is up. It is read out from inside the anticipation zoom, which is only dropped once the reveal is over.
 - The announcement comes down when the game returns to idle and the spin button unlocks — unless that spin was the last the balance could pay for, in which case the out-of-funds message goes up in its place (see [Running out](#running-out)).
 - A losing spin has no reveal at all: the game returns to idle the moment the last reel lands, so the spin button is ready again with no wait.
+
+## Menu
+
+- The bar opens a menu on its left (`src/ui/Menu.tsx`): what is set about the game rather than played of it. Everything on it is the player's own and is kept in the browser (`localStorage`, under `<game name>.sound`), the way the balance and the bet are.
+- `Sound` switches the whole game silent and back. Muting silences without stopping: the music keeps its place and a running spin keeps its loop, so unmuting picks the game up where it got to rather than starting anything again.
+- `Music` and `Effects` are set apart from one another, from nothing up to full. Every sound is filed under one of the two channels with its own level in the mix (`src/config/sound.settings.ts`), and the slider for its channel brings that level down — so the mix is balanced once, in the config, and the player only ever turns it down from there.
+- A volume is heard on what is already playing rather than on the next spin: the music follows its slider as it moves, and the effects slider clicks at the level it is let go on, since nothing else on screen says how loud they have been set.
+- The menu is also the second way in to the balance pop up (see [Balance](#balance)).

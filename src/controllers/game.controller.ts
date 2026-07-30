@@ -114,6 +114,19 @@ class GameController {
         return gameStore.getState().state;
     }
 
+    // The balance is also the player's to set, from the UI's own pop up. That
+    // is a change to what the game can do rather than to a figure on a pannel,
+    // so it settles: the bet comes down to what is there, and a balance that
+    // was out is playable again.
+    updateBalance(balance: number) {
+        gameStore.getState().setBalance(balance);
+
+        // Nothing is moved under a running spin: its stake has been taken and
+        // its win worked out from the bet it was taken at. That spin settles on
+        // its own way back to idle.
+        if (this.state === 'idle') this.settle();
+    }
+
     // Whether the game will take another spin, which is what the button and the
     // slider both answer to: only between spins, and only while the balance
     // still covers the smallest bet the game deals in.
@@ -151,9 +164,20 @@ class GameController {
         spinButton.enabled = canSpin;
         betSlider.enabled = canSpin;
 
+        // A balance that can be staked again puts back what being out took off
+        // the machine: the bet is read out once more, and the news over the
+        // reels comes down. Only ever reached between spins, since a game that
+        // can spin is a game that is not spinning.
+        if (canSpin) {
+            betPannel.value = gameStore.getState().bet;
+            winLayout.hide();
+
+            return;
+        }
+
         // A running spin still reads out what it was staked at; only a balance
         // that is out has nothing left to say on either pannel.
-        if (canSpin || this.state !== 'idle') return;
+        if (this.state !== 'idle') return;
 
         // The store keeps its bet, since the slider has to open somewhere for a
         // balance that comes back, but there is nothing to stake at it: the
