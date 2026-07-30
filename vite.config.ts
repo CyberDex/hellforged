@@ -11,6 +11,7 @@ import {
 } from '@assetpack/core';
 import { pixiPipes } from '@assetpack/core/pixi';
 import checker from 'vite-plugin-checker';
+import react from '@vitejs/plugin-react';
 import sharp from 'sharp';
 
 const assetsEntry = './assets';
@@ -107,7 +108,7 @@ function faviconPlugin(): Plugin {
 // Bare-specifier imports for the top-level `src` folders, so nothing has to
 // count `../` hops. Keep in sync with `paths` in tsconfig.json.
 const srcAliases = Object.fromEntries(
-    ['config', 'controllers', 'filters', 'layout', 'store', 'utils'].map(
+    ['config', 'controllers', 'filters', 'layout', 'store', 'ui', 'utils'].map(
         (folder) => [
             folder,
             fileURLToPath(new URL(`./src/${folder}`, import.meta.url)),
@@ -268,6 +269,10 @@ export default defineConfig((): UserConfig => ({
         gameNamePlugin(),
         faviconPlugin(),
         assetpackPlugin(),
+        // Vite builds the overlay's JSX without this, but every edit to a
+        // component reloads the page — which drops the game back to a fresh
+        // load. This keeps the reels where they are and swaps the UI in place.
+        react(),
         checker({
             typescript: true,
             eslint: {
