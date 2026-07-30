@@ -25,6 +25,7 @@ The spin is decided in full before a reel has moved, by `src/controllers/backend
 ## Balance
 
 - The player starts with `settings.defaultBalance` and every spin stakes the bet.
+- The balance is read out on the top bar (`src/ui/TopBar.tsx`), which is hung off the top of the page at the width the reels measure, alongside the game name, the time of day and how long the session has been open. It is DOM rather than canvas, and follows the same store the reels are played from, so it never has a balance of its own to keep in step. Its colours are filed with the art (`assets/theme{copy}/theme.json`) and come in with the same bundle, so a new set of sprites brings the palette the bar is dressed in along with it.
 - The bet is set on the slider under the `Bet` pannel, which runs from `settings.minBet` to `settings.maxBet` (currently 1 to 1000) a unit at a time and opens at `settings.defaultBet`. The pannel reads out whatever it is dragged to.
 - `settings.maxBet` is only the widest the slider ever opens. A bet can never be staked higher than the balance covers, so the top of the slider is whichever is lower of `settings.maxBet` and the balance, and it comes down as the balance does. A bet already above the new top comes down to it, pannel and all.
 - The slider always keeps `settings.minBet` at the bottom, whatever the balance is: the last of a balance is still staked at the minimum, and a balance too small to cover even that is out of funds (see [Running out](#running-out)) rather than a smaller bet.

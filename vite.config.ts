@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,7 +11,9 @@ import {
 } from '@assetpack/core';
 import { pixiPipes } from '@assetpack/core/pixi';
 import checker from 'vite-plugin-checker';
+import sharp from 'sharp';
 
+const assetsEntry = './assets';
 const assetsOutput = './dist/assets';
 
 // The game is named once, by `name` in package.json, and reaches the rest of
@@ -39,6 +41,65 @@ function gameNamePlugin(): Plugin {
                 html
                     .replaceAll('%GAME_TITLE%', gameTitle)
                     .replaceAll('%GAME_NAME%', gameName),
+        },
+    };
+}
+
+// The tab icon is cut from the logo the game already ships in `assets`, rather
+// than from a `favicon.png` kept in step by hand — so a reskin that drops its
+// own logo in there is wearing its own favicon by the next build.
+const faviconSize = 64;
+
+function faviconPlugin(): Plugin {
+    let png: Promise<Buffer> | undefined;
+
+    // The logo wherever it is filed under `assets`: the folder it sits in
+    // carries an AssetPack tag that a reskin is free to move it out of, and the
+    // extension is as likely to come off a camera roll shouting `.PNG`.
+    function render(): Promise<Buffer> {
+        const entry = fileURLToPath(new URL(assetsEntry, import.meta.url));
+        const logo = readdirSync(entry, { recursive: true })
+            .map(String)
+            .find((file) => /(^|\/)logo\.(png|jpe?g|webp)$/i.test(file));
+
+        if (!logo) {
+            return Promise.reject(
+                new Error(`no logo.png found under ${assetsEntry}`),
+            );
+        }
+
+        return sharp(join(entry, logo))
+            .resize(faviconSize, faviconSize, {
+                fit: 'contain',
+                // Whatever the logo does not cover stays see-through, so the
+                // icon reads on a light tab strip as well as a dark one.
+                background: { r: 0, g: 0, b: 0, alpha: 0 },
+            })
+            .png()
+            .toBuffer();
+    }
+
+    // Rendered once per Vite run, and only if something asks for the file.
+    const favicon = () => (png ??= render());
+
+    return {
+        name: 'vite-plugin-favicon',
+        configureServer: (server) => {
+            // Nothing is served from a `public` folder (see `publicDir`), so
+            // dev hands the browser the same bytes a build would write out.
+            server.middlewares.use('/favicon.png', (_req, res, next) => {
+                favicon().then((buffer) => {
+                    res.setHeader('Content-Type', 'image/png');
+                    res.end(buffer);
+                }, next);
+            });
+        },
+        generateBundle: async function () {
+            this.emitFile({
+                type: 'asset',
+                fileName: 'favicon.png',
+                source: await favicon(),
+            });
         },
     };
 }
@@ -76,7 +137,7 @@ const preserveTransformedFolder: AssetPipe = {
 };
 
 const assetpackConfig: AssetPackConfig = {
-    entry: './assets',
+    entry: assetsEntry,
     output: assetsOutput,
     cache: false,
     ignore: ['**/.DS_Store', '**/.gitkeep', '**/*.md'],
@@ -205,6 +266,7 @@ export default defineConfig((): UserConfig => ({
     },
     plugins: [
         gameNamePlugin(),
+        faviconPlugin(),
         assetpackPlugin(),
         checker({
             typescript: true,
