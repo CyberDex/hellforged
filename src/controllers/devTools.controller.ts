@@ -26,6 +26,10 @@ const maxDrawCalls = 20;
 // cheat button to read its payout out on one line.
 const paneWidth = '260px';
 
+// What the panel is called, and what the count is hung off while it is shut —
+// see `retitle`.
+const title = 'Dev tools';
+
 // Where the panel keeps what it was left with open, under the game's name the
 // way everything else kept in the browser is — see `game.name.ts`. Its own keys
 // rather than a store in `src/store`: those are the player's and are built, and
@@ -48,7 +52,7 @@ class DevToolsController {
         const container = this.container();
         const pane = new Pane({
             container,
-            title: 'Dev tools',
+            title,
             expanded: this.expanded('pane'),
         });
 
@@ -126,7 +130,24 @@ class DevToolsController {
             this.#calls = 0;
 
             pane.refresh();
+            this.retitle(pane);
         });
+    }
+
+    // Shut, the readouts fold away with the rest of the panel, and the one
+    // figure worth having an eye on the whole time goes with them. So it moves
+    // onto the title bar, ahead of the name where the eye lands first, and the
+    // panel keeps counting out loud with nothing else showing. Labelled, since
+    // a bare figure on a title bar says nothing about what it is counting.
+    // Open, the pane's own readout has it and the bar goes back to the name.
+    //
+    // Every frame, but only ever as dear as it looks: Tweakpane drops a title
+    // it is already showing, so the DOM is touched on the frames the count
+    // actually moves and no others.
+    private retitle(pane: Pane) {
+        const { drawCalls } = this.#stats;
+
+        pane.title = pane.expanded ? title : `DC: ${drawCalls} · ${title}`;
     }
 
     // A spin per paying combination the game has, so none of them has to be
