@@ -1,7 +1,7 @@
 /* The sheet the React overlay is styled from. It lays the UI out but names no
-   colour of its own: every `--` below is loaded with the art, out of
-   `assets/theme{copy}/theme.json`, and written onto `#ui` as the overlay is
-   mounted (see `ui.controller.tsx`). They are the pannel sprite's own colours —
+   colour of its own: every `--` below is filed with the art, in
+   `assets/theme{copy}{mIgnore}/theme.json`, and written onto `#ui` as the
+   overlay is mounted (see `ui.controller.tsx`). They are the pannel's own colours —
    the dark interior it is filled with, the gold of its frame, and the gold of
    the texture every piece of text in the game is filled with — so a new set of
    sprites brings its own palette along with it. */
@@ -460,6 +460,15 @@
 .rules-body strong {
     font-weight: normal;
     color: var(--gold);
+}
+
+/* A symbol wherever the document names one: the sheet cuts its face out of the
+   art the reels are drawn from and stands it in the name's place (see
+   `Rules.tsx`). Sized off the text it is set in rather than in pixels, so it
+   holds its place in the line whatever the document is read at. */
+.rules-body .symbol {
+    height: 3.6em;
+    vertical-align: middle;
 }
 
 /* The paytable and the payline, dressed as the pannels the same figures are

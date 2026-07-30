@@ -13,4 +13,4 @@ app.stage.addChild(layout);
 
 game.init(layout);
 
-mountUI(layout);
+await mountUI(layout);

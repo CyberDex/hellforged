@@ -141,7 +141,25 @@ const assetpackConfig: AssetPackConfig = {
     entry: assetsEntry,
     output: assetsOutput,
     cache: false,
-    ignore: ['**/.DS_Store', '**/.gitkeep', '**/*.md'],
+    // Not everything the game is dressed in goes on the reels. The manifest is
+    // Pixi's list of what to load into the renderer, so a file the DOM reads for
+    // itself is tagged `{mIgnore}`: it is still copied out with the art, so a
+    // reskin brings its own along with its sprites, but it is left off that list
+    // and fetched at the path it lands at instead. Two folders are that way —
+    // the rules document (`src/ui/Rules.tsx`) and the palette the overlay is
+    // dressed from (`src/ui/ui.controller.tsx`).
+    //
+    // And what the running game never reads at all is kept out of the build
+    // altogether: a README beside a folder of sprites is a note about the art
+    // rather than part of it, and `static` holds the screenshot that README
+    // shows and the logo the favicon is cut from — both of them read here at
+    // build time, off the source folder, rather than served to anybody.
+    ignore: [
+        '**/.DS_Store',
+        '**/.gitkeep',
+        '**/README.md',
+        '**/static{copy}{mIgnore}/**',
+    ],
     pipes: [
         ...pixiPipes({
             cacheBust: true,
