@@ -10,6 +10,12 @@ const betSteps: Record<string, number> = {
     ArrowLeft: -10,
 };
 
+// What holding command is worth: a hundred of whatever the arrow already moves,
+// so the same four keys also set the bet a hundred and a thousand at a time.
+// A bet that runs to a million is a long way up in ones, and this is the way up
+// it without the pointer.
+const COMMAND = 100;
+
 // The machine played from the keyboard: the space bar takes a spin, and the
 // arrows set what it is staked at. None of this is a control of its own — the
 // keys work the button and the slider the pointer works, so a spin taken from
@@ -23,7 +29,8 @@ class KeyboardController {
         window.addEventListener('keydown', (event) => this.press(event));
     }
 
-    private press({ key, repeat }: KeyboardEvent) {
+    private press(event: KeyboardEvent) {
+        const { key, repeat, metaKey } = event;
         const layout = this.#layout;
 
         // A key reaches only as far as a press or a drag would: both controls
@@ -42,7 +49,14 @@ class KeyboardController {
         // way dragging it does.
         const steps = betSteps[key];
 
-        if (steps) layout.betSlider.nudge(steps);
+        if (!steps) return;
+
+        // Command and a left or right arrow is the browser's own way back out
+        // of the page, so an arrow the bet answers to is taken here rather than
+        // left to work the history as well.
+        event.preventDefault();
+
+        layout.betSlider.nudge(metaKey ? steps * COMMAND : steps);
     }
 
     // Whether the keys are the game's to answer. Anything on the overlay that
