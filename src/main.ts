@@ -14,3 +14,12 @@ app.stage.addChild(layout);
 game.init(layout);
 
 await mountUI(layout);
+
+// The dev panel is only there while the game is being worked on, and is loaded
+// that way too: the branch is compiled out of a build, so Tweakpane is never
+// bundled for, or shipped to, the player.
+if (import.meta.env.DEV) {
+    const { devTools } = await import('controllers/devTools.controller');
+
+    devTools.init();
+}
