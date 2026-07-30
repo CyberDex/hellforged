@@ -51,9 +51,14 @@ export class BetSlider extends Slider {
         bounds.eventMode = 'none';
         this.addChildAt(bounds, 0);
 
-        // Only once the handle is let go, so a sweep across the range is one
-        // click rather than hundreds.
-        this.onChange.connect(() => sound.play('click'));
+        // A coin for every figure the bet passes through, so a sweep is heard
+        // being counted out the way the win is, rather than landing as one
+        // click when the handle is let go. Only under the player's finger:
+        // `onUpdate` also fires when the game itself moves the handle, and
+        // placing it or capping it to the balance is not money being staked.
+        this.onUpdate.connect(() => {
+            if (this.dragging) sound.play('coin');
+        });
     }
 
     // A bet there is no setting of is taken off the machine rather than left

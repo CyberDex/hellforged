@@ -2,6 +2,7 @@ import '@pixi/layout';
 import { Layout } from '@pixi/layout';
 import { Text, Ticker } from 'pixi.js';
 import { settings } from 'config/game.settings';
+import { sound } from 'controllers/sound.controller';
 
 // Whatever the game has to say over the reels is said in two lines: what has
 // happened, over the figure it happened for.
@@ -83,6 +84,10 @@ export class WinLayout extends Layout {
     // the time it is left up for.
     show(win: number, countDuration = settings.winCountDuration) {
         let elapsed = 0;
+        // What the amount currently reads, kept so the count is only heard and
+        // rewritten on the frames the figure actually moves on. It starts at
+        // the zero the announcement below puts up, so no coin lands on it.
+        let counted = 0;
 
         this.announce('WIN', '0');
 
@@ -90,8 +95,15 @@ export class WinLayout extends Layout {
             elapsed += deltaMS;
 
             const progress = Math.min(elapsed / countDuration, 1);
+            const amount = Math.round(win * progress);
 
-            this.#amount.text = Math.round(win * progress).toString();
+            // Every figure the count climbs through drops a coin, so the money
+            // is heard being added up as well as read.
+            if (amount !== counted) {
+                counted = amount;
+                this.#amount.text = amount.toString();
+                sound.play('coin');
+            }
 
             if (progress === 1) this.stopCount();
         };
