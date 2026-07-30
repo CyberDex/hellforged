@@ -34,7 +34,7 @@ float noise(vec2 p) {
 // Three octaves of noise, stretched vertically and scrolling up, so the
 // pattern reads as heat rising rather than as static grain.
 float flame(vec2 uv, float scale, float speed) {
-    vec2 p = vec2(uv.x * scale, uv.y * scale * 0.5 - uTime * speed);
+    vec2 p = vec2(uv.x * scale, uv.y * scale * 0.5 + uTime * speed);
 
     return noise(p) * 0.6 + noise(p * 2.3) * 0.3 + noise(p * 4.7) * 0.1;
 }
