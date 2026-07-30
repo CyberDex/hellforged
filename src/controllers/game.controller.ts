@@ -93,14 +93,47 @@ class GameController {
             if (state === 'idle') {
                 winLayout.hide();
                 layout.unzoom();
+                // The stake came off the balance and the win went back on it
+                // over the spin, so what the next one can be staked at is only
+                // settled now that it is over.
+                this.capBet();
             }
         });
+
+        // A balance that came back from storage may no longer cover the bet
+        // that came with it, so the slider is capped before the first press.
+        // After the store is listened to, so the pannel follows a bet that has
+        // to come down with it.
+        this.capBet();
 
         sound.play('music');
     }
 
     get state() {
         return gameStore.getState().state;
+    }
+
+    // A bet can only be staked as far as there is balance to cover it, so the
+    // top of the slider is whichever is lower of the settings maximum and what
+    // the player has left, and a bet already above it comes down with it. The
+    // bottom end is kept whatever happens, so the last of a balance is still
+    // staked at the minimum and a spin there is nothing left to pay for is
+    // turned away at the press rather than at the slider.
+    private capBet() {
+        const betSlider = this.#layout?.betSlider;
+
+        if (!betSlider) return;
+
+        const { balance, bet } = gameStore.getState();
+
+        betSlider.max = Math.max(
+            Math.min(settings.maxBet, balance),
+            settings.minBet,
+        );
+
+        // The store follows the slider here as it does on any other move of
+        // the handle, so the pannel comes down with the bet.
+        if (bet > betSlider.max) betSlider.value = betSlider.max;
     }
 
     private spin() {

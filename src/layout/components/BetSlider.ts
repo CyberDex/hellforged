@@ -50,6 +50,9 @@ export class BetSlider extends Slider {
             bg: track,
             fill,
             slider: handle,
+            // The top end is only the widest the slider ever opens: the game
+            // brings it down to the balance whenever that no longer covers a
+            // bet staked this high.
             min: settings.minBet,
             max: settings.maxBet,
             value: settings.defaultBet,

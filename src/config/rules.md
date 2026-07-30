@@ -26,10 +26,14 @@ The spin is decided in full before a reel has moved, by `src/controllers/backend
 
 - The player starts with `settings.defaultBalance` and every spin stakes the bet.
 - The bet is set on the slider under the `Bet` pannel, which runs from `settings.minBet` to `settings.maxBet` (currently 1 to 1000) a unit at a time and opens at `settings.defaultBet`. The pannel reads out whatever it is dragged to.
+- `settings.maxBet` is only the widest the slider ever opens. A bet can never be staked higher than the balance covers, so the top of the slider is whichever is lower of `settings.maxBet` and the balance, and it comes down as the balance does. A bet already above the new top comes down to it, pannel and all.
+- The slider always keeps `settings.minBet` at the bottom, whatever the balance is: the last of a balance is still staked at the minimum, and a balance too small to cover even that is turned away at the spin button rather than at the slider.
+- The top is only moved between spins. The stake comes off the balance the moment the reels start, and the bet that spin was paid for stays on the pannel until it is over, so the new top is worked out as the game returns to idle.
 - The slider is locked from the moment the reels start until the game is back to idle: the stake has already been taken, and the win still to come was worked out from it.
 - The stake is taken the moment the reels start; a win is credited once the last reel has stopped.
 - A spin is refused while the balance is below the bet.
 - The balance and the bet are kept in the browser (`localStorage`, under `hellforged.player`), so a reload picks the player up where they left off rather than handing them a fresh `settings.defaultBalance`. Nothing else is kept: the game state and the win belong to the spin that was running, so a reload always opens idle with an empty `Win` pannel. Clearing site data starts a new player.
+- A stored bet the stored balance no longer covers is brought down to it before the first press, the same as it would be after a spin.
 - The stake is taken as the reels start and the win is credited as they finish, so a reload in between keeps the balance as the stake left it: the spin is paid for and its win is gone with it.
 
 ## Spin
