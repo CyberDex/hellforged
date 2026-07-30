@@ -1,0 +1,110 @@
+import { Container, Sprite, Texture, Ticker, type PointData } from 'pixi.js';
+
+// How a coin leaves the figure it came off: thrown up, off to one side or the
+// other of straight up by up to this much in radians, at this many pixels a
+// second at the least and twice that at the most.
+const SPREAD = 0.8;
+const SPEED = 420;
+// What pulls it back down, in pixels a second, a second.
+const GRAVITY = 2000;
+// How big a coin is drawn, at the least, and twice it at the most, so the
+// shower has coins nearer the player than others.
+const SIZE = 0.9;
+// Turns a coin flips through in a second, at the least and half again at most.
+const SPIN = 1.5;
+// How long a coin is in the air, and how much of the end of that it spends
+// fading out, in seconds. Kept short enough that the shower stays about the
+// figure it came off rather than reaching the corners of the screen.
+const LIFE = 1.1;
+const FADE = 0.4;
+
+// A coin in the air: what is drawn, where it is going, how big it is drawn and
+// how far through its flip and its flight it is.
+type Coin = {
+    sprite: Sprite;
+    vx: number;
+    vy: number;
+    size: number;
+    flip: number;
+    spin: number;
+    life: number;
+};
+
+// The coins a big win throws off the figure it is counting up to. Nothing is
+// pooled or capped: a coin is only ever in the air for LIFE, so the shower can
+// only be as thick as the count that drops them is fast.
+export class CoinShower extends Container {
+    #coins: Coin[] = [];
+
+    // One coin thrown up out of the given point, which is the caller's to
+    // choose: the win drops one for every figure it climbs through, so the
+    // shower comes out of the number wherever it is being read.
+    drop({ x, y }: PointData) {
+        const size = SIZE * (1 + Math.random());
+        const sprite = new Sprite({
+            texture: Texture.from('coin'),
+            anchor: 0.5,
+            x,
+            y,
+        });
+        const angle = -Math.PI / 2 + (Math.random() * 2 - 1) * SPREAD;
+        const speed = SPEED * (1 + Math.random());
+
+        sprite.scale.set(size);
+
+        this.addChild(sprite);
+        this.#coins.push({
+            sprite,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            size,
+            // Somewhere into the flip already, so no two coins turn together.
+            flip: Math.random(),
+            spin: SPIN * (1 + Math.random() / 2),
+            life: LIFE,
+        });
+
+        // The fall runs for as long as there is anything falling.
+        if (this.#coins.length === 1) Ticker.shared.add(this.fall, this);
+    }
+
+    // Whatever is still in the air when the win it belongs to comes down goes
+    // with it, rather than falling on over whatever is announced next.
+    clear() {
+        Ticker.shared.remove(this.fall, this);
+
+        for (const { sprite } of this.#coins) sprite.destroy();
+
+        this.#coins = [];
+    }
+
+    private fall({ deltaMS }: Ticker) {
+        const seconds = deltaMS / 1000;
+
+        this.#coins = this.#coins.filter((coin) => {
+            const { sprite } = coin;
+
+            coin.life -= seconds;
+
+            if (coin.life <= 0) {
+                sprite.destroy();
+
+                return false;
+            }
+
+            coin.vy += GRAVITY * seconds;
+            coin.flip += coin.spin * seconds;
+
+            sprite.x += coin.vx * seconds;
+            sprite.y += coin.vy * seconds;
+            // A coin spins about its own upright rather than rolling over, so
+            // its face turns away to an edge and comes back.
+            sprite.scale.x = coin.size * Math.cos(coin.flip * Math.PI * 2);
+            sprite.alpha = Math.min(coin.life / FADE, 1);
+
+            return true;
+        });
+
+        if (!this.#coins.length) Ticker.shared.remove(this.fall, this);
+    }
+}
