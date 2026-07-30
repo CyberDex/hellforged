@@ -6,7 +6,7 @@ import prettier from 'eslint-config-prettier/flat';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-    { ignores: ['dist', 'public/assets'] },
+    { ignores: ['dist'] },
     {
         extends: [
             js.configs.recommended,
