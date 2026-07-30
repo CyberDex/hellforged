@@ -4,6 +4,7 @@ import { Text, Ticker } from 'pixi.js';
 import { settings } from 'config/game.settings';
 import { sound } from 'controllers/sound.controller';
 import { CoinShower } from 'layout/components/CoinShower';
+import { formatAmount } from 'utils/formatAmount';
 
 // Whatever the game has to say over the reels is said in two lines: what has
 // happened, over the figure it happened for.
@@ -112,7 +113,7 @@ export class WinLayout extends Layout {
             // is heard being added up as well as read.
             if (amount !== counted) {
                 counted = amount;
-                this.#amount.text = amount.toString();
+                this.#amount.text = formatAmount(amount);
                 sound.play('coin');
 
                 // The figures a win becomes a bigger one at are passed

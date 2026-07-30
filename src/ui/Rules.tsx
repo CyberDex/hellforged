@@ -4,6 +4,7 @@ import { Sprite, Texture } from 'pixi.js';
 import { settings } from 'config/game.settings';
 import { app } from 'controllers/app.controller';
 import { Dialog } from 'ui/Dialog';
+import { formatAmount } from 'utils/formatAmount';
 
 // The rules as the player is told them: their own document, filed with the art
 // the game is dressed in, at `assets/rules{copy}{mIgnore}/rules.md` — so a
@@ -37,8 +38,8 @@ const figures: Record<string, string> = {
         ),
     ].join('\n'),
     '%PAIR%': settings.payouts.two.toString(),
-    '%MINBET%': settings.minBet.toLocaleString(),
-    '%MAXBET%': settings.maxBet.toLocaleString(),
+    '%MINBET%': formatAmount(settings.minBet),
+    '%MAXBET%': formatAmount(settings.maxBet),
 };
 
 // A symbol is a picture on the reels and only a name in the document: `H1` says

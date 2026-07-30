@@ -1,6 +1,7 @@
 import '@pixi/layout';
 import { Layout } from '@pixi/layout';
 import { Sprite, Text } from 'pixi.js';
+import { formatAmount } from 'utils/formatAmount';
 
 // Nothing to show reads better as a dash than as a zero, so a pannel with
 // nothing to read out sits empty and only carries a figure when there is one:
@@ -69,7 +70,7 @@ export class Pannel extends Layout {
     }
 
     set value(value: number) {
-        this.#value.text = value > 0 ? value.toString() : EMPTY;
+        this.#value.text = value > 0 ? formatAmount(value) : EMPTY;
     }
 
     // There is a figure and there is nothing to read out, and a pannel that has

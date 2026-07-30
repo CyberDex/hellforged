@@ -9,6 +9,7 @@ import { Balance } from 'ui/Balance';
 import { Button } from 'ui/Button';
 import { Menu } from 'ui/Menu';
 import { Rules } from 'ui/Rules';
+import { formatAmount } from 'utils/formatAmount';
 
 // The pop ups the bar opens, only ever one at a time: each covers the game, and
 // two of them would be read through one another.
@@ -112,10 +113,7 @@ export function TopBar({ layout }: { layout: RootLayout }) {
                     {/* The balance is the way in to setting it, so the figure
                         the player wants to change is itself the control. */}
                     <Button onClick={() => setPopup('balance')}>
-                        <Stat
-                            label="Balance"
-                            value={counted.toLocaleString()}
-                        />
+                        <Stat label="Balance" value={formatAmount(counted)} />
                     </Button>
                 </div>
                 <span className="topbar-title gold">{gameTitle}</span>
