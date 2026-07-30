@@ -10,10 +10,13 @@ export class Pannel extends Layout {
     #value: Text;
 
     constructor(title: string) {
-        const val = new Text(EMPTY, {
-            fontSize: 32,
-            align: 'center',
-            stroke: { color: '#000000', width: 4 },
+        const val = new Text({
+            text: EMPTY,
+            style: {
+                fontSize: 32,
+                align: 'center',
+                stroke: { color: '#000000', width: 4 },
+            },
         });
 
         super({
