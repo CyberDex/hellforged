@@ -1,4 +1,4 @@
-# slot 3 by 1
+# Hellforged
 
 <p align="center">
   <a href="https://cyberdex.github.io/slot-3by1/">
