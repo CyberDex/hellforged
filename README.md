@@ -1,1 +1,1 @@
-# slot-3by1
+# slot 3 by 1

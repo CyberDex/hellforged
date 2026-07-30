@@ -1,0 +1,4 @@
+dist
+public/assets
+.assetpack
+pnpm-lock.yaml
