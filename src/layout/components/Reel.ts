@@ -67,6 +67,20 @@ export class Reel extends Container {
         return this.#slots;
     }
 
+    // Puts the reel straight onto a set of symbols, with none of the travel a
+    // spin arrives on, so a spin that has already been played can be put back
+    // on the rows it landed on.
+    set symbols(symbols: string[]) {
+        for (let row = 0; row < symbols.length; row++) {
+            // #slots runs top to bottom from the spare symbol above the grid,
+            // so the rows start one past it. The spare is left as it is, since
+            // it is never on the grid to be seen.
+            const slot = this.#slots[row + 1];
+
+            if (slot) slot.symbol = symbols[row];
+        }
+    }
+
     spin() {
         // Resumes the reel if the previous spin is still landing or bouncing.
         this.#stopping = false;

@@ -10,9 +10,11 @@ class GameController {
     #layout?: RootLayout;
     #reels?: Reels;
     #landed = 0;
-    // The win the backend already worked out, held back until the reels have
-    // finished showing where it came from.
+    // What the backend already worked out, held back until the reels have
+    // finished showing where it came from: the win then goes onto the balance,
+    // and the symbols into storage as what the reels are left showing.
     #win = 0;
+    #symbols: string[][] = [];
     // Whether this spin holds its last reel back, decided with the outcome,
     // before a reel has moved.
     #anticipating = false;
@@ -40,10 +42,18 @@ class GameController {
         // The bet is carried over from the last session, so the pannel and the
         // handle are both put where the player left it. Before the slider is
         // listened to, so placing the handle is not read back as a new bet.
-        const { bet } = gameStore.getState();
+        const { bet, win, symbols } = gameStore.getState();
 
         betPannel.value = bet;
         betSlider.value = bet;
+
+        // The last spin is carried over the same way: the reels are put back on
+        // the symbols they landed on, without a spin to arrive on them, and the
+        // win they were paid is read out beside them. So the game opens where
+        // the player left it rather than on symbols it never landed on.
+        if (symbols) reels.symbols = symbols;
+
+        winPannel.value = win;
 
         spinButton.onPress.connect(() => this.spin());
         // The slider only says what the bet is; the pannel is written from the
@@ -214,20 +224,23 @@ class GameController {
         // Only idle takes a new spin; spin and reveal run to completion.
         if (this.state !== 'idle') return;
 
-        const { balance, bet, setBalance, setWin } = gameStore.getState();
+        const { balance, bet, setBalance, setResult } = gameStore.getState();
 
         // Nothing to stake, nothing to spin for.
         if (balance < bet) return;
 
-        // The stake goes first and last spin's win goes off the pannel.
+        // The stake goes first, and last spin's result goes off the pannel and
+        // out of storage with it: the reels are about to move off the symbols it
+        // left them on, so there is no longer a spin for them to come back to.
         setBalance(balance - bet);
-        setWin(0);
+        setResult(null, 0);
 
         // The spin is decided in full before a reel has moved; the reels are
         // only asked to play the outcome back.
         const outcome = backend.spin(bet);
 
         this.#win = outcome.win;
+        this.#symbols = outcome.reels;
         this.#landed = 0;
         // Every reel but the last landing on the same symbol leaves the top win
         // in play, which is what the last reel is drawn out for. Whether it
@@ -291,10 +304,12 @@ class GameController {
         // The spin is over once the last reel has landed.
         if (this.#landed < settings.reels) return;
 
-        const { balance, setBalance, setWin } = gameStore.getState();
+        const { balance, setBalance, setResult } = gameStore.getState();
 
         setBalance(balance + this.#win);
-        setWin(this.#win);
+        // The reels are now standing on the outcome, so it is put away with the
+        // win it paid, for the next session to open on.
+        setResult(this.#symbols, this.#win);
 
         // A losing spin has nothing to reveal, so it goes straight back to
         // idle and the button unlocks as the last reel lands.

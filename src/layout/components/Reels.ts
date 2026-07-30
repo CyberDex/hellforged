@@ -44,4 +44,15 @@ export class Reels extends Container {
     stop(index: number, symbols: string[]) {
         this.#reels[index]?.stop(symbols);
     }
+
+    // The grid put straight onto an outcome, with no spin: each reel is handed
+    // the column it is to show. Columns the grid no longer has are left out of
+    // it, so an outcome saved by a game with other reels is not half applied.
+    set symbols(symbols: string[][]) {
+        this.#reels.forEach((reel, index) => {
+            const column = symbols[index];
+
+            if (column) reel.symbols = column;
+        });
+    }
 }
