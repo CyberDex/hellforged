@@ -7,12 +7,13 @@ export class RootLayout extends Layout {
     constructor() {
         super({
             content: {
+                id: 'content',
                 content: {
                     bg: {
                         content: Sprite.from('bg'),
                         styles: { position: 'center' },
                     },
-                    spinButton: {
+                    buttonSpin: {
                         content: new SpinButton(),
                         styles: {
                             position: 'center',
@@ -36,11 +37,11 @@ export class RootLayout extends Layout {
             },
         });
 
-        window.addEventListener('resize', () => this.resize());
-        this.resize();
+        window.addEventListener('resize', () => this.onResize());
+        this.onResize();
     }
 
-    resize() {
-        this.layout?.resize(window.innerWidth, window.innerHeight);
+    onResize() {
+        this.resize(window.innerWidth, window.innerHeight);
     }
 }

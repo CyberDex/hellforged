@@ -1,6 +1,7 @@
-import { Application, type ApplicationOptions, ArrayOr, Assets } from 'pixi.js';
+import type { ApplicationOptions, ArrayOr } from 'pixi.js';
+import { Application, Assets } from 'pixi.js';
 
-export class App extends Application {
+class App extends Application {
     async init(options?: Partial<ApplicationOptions>) {
         await super.init({
             resizeTo: window,
@@ -23,3 +24,5 @@ export class App extends Application {
         document.body.appendChild(this.canvas);
     }
 }
+
+export const app = new App();

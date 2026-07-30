@@ -1,12 +1,13 @@
 import '@pixi/layout';
-import { App } from './components/App';
+import { app } from './controllers/app.controller';
+import { sound } from './controllers/sound.controller';
 import { RootLayout } from './layout/Root.layout';
 
-const app = new App();
-
 await app.init();
-await app.loadAssets();
+await app.loadAssets(['default']);
 
-const rootLayout = new RootLayout();
+export const layout = new RootLayout();
 
-app.stage.addChild(rootLayout);
+app.stage.addChild(layout);
+
+sound.play('music', true);

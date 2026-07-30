@@ -1,5 +1,6 @@
 import '@pixi/layout';
 import { FancyButton } from '@pixi/ui';
+import { sound } from '../../controllers/sound.controller';
 
 export class SpinButton extends FancyButton {
     constructor() {
@@ -36,5 +37,7 @@ export class SpinButton extends FancyButton {
                 },
             },
         });
+
+        this.onDown.connect(() => sound.play('click'));
     }
 }
