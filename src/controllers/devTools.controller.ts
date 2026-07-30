@@ -1,5 +1,6 @@
 import type { GlRenderingContext, WebGLRenderer } from 'pixi.js';
 import { Pane } from 'tweakpane';
+import { gameName } from 'config/game.name';
 import { settings } from 'config/game.settings';
 import { gameStore } from 'store/game.store';
 import { app } from './app.controller';
@@ -25,6 +26,15 @@ const maxDrawCalls = 20;
 // cheat button to read its payout out on one line.
 const paneWidth = '260px';
 
+// Where the panel keeps what it was left with open, under the game's name the
+// way everything else kept in the browser is — see `game.name.ts`. Its own keys
+// rather than a store in `src/store`: those are the player's and are built, and
+// this is neither.
+const foldKey = `${gameName}.devTools`;
+
+// The parts that open and shut, each remembered on its own.
+type Fold = 'pane' | 'cheats';
+
 // The panel the game is watched from while it is being worked on. Mounted only
 // in dev, and loaded that way too, so none of this reaches the player — see
 // `main.ts`. Tweakpane's own docs: https://tweakpane.github.io/docs/
@@ -36,7 +46,11 @@ class DevToolsController {
 
     init() {
         const container = this.container();
-        const pane = new Pane({ container, title: 'Dev tools' });
+        const pane = new Pane({
+            container,
+            title: 'Dev tools',
+            expanded: this.expanded('pane'),
+        });
 
         this.fold(pane, container);
         this.drawCalls(pane);
@@ -46,11 +60,30 @@ class DevToolsController {
     // Shut, the panel is its title bar and nothing else, so the box it hangs in
     // is let off the width the readouts need and left to shrink onto that bar.
     // The rest of the corner goes back to the game rather than staying under a
-    // strip of panel that has nothing on it.
+    // strip of panel that has nothing on it. Set on the way in as well as on the
+    // fold, since a panel that opens shut is never folded to get there.
     private fold(pane: Pane, container: HTMLElement) {
-        pane.on('fold', ({ expanded }) => {
+        const fit = (expanded: boolean) => {
             container.style.width = expanded ? paneWidth : 'fit-content';
+        };
+
+        fit(pane.expanded);
+
+        pane.on('fold', ({ expanded }) => {
+            this.remember('pane', expanded);
+
+            fit(expanded);
         });
+    }
+
+    // Open unless it was last left shut, so a panel nobody has touched is up and
+    // reading rather than waiting to be found.
+    private expanded(fold: Fold) {
+        return localStorage.getItem(`${foldKey}.${fold}`) !== 'false';
+    }
+
+    private remember(fold: Fold, expanded: boolean) {
+        localStorage.setItem(`${foldKey}.${fold}`, String(expanded));
     }
 
     private drawCalls(pane: Pane) {
@@ -101,7 +134,12 @@ class DevToolsController {
     // the three of a kind it pays on its own. Each button spins the machine for
     // real — it only says what the reels have to land on.
     private cheats(pane: Pane) {
-        const folder = pane.addFolder({ title: 'Cheats' });
+        const folder = pane.addFolder({
+            title: 'Cheats',
+            expanded: this.expanded('cheats'),
+        });
+
+        folder.on('fold', ({ expanded }) => this.remember('cheats', expanded));
 
         for (const symbol of settings.symbols) {
             const { two, three } = settings.payouts;
@@ -153,7 +191,8 @@ class DevToolsController {
     private container() {
         const container = document.createElement('div');
 
-        container.style.cssText = `position:fixed;top:8px;right:8px;width:${paneWidth};z-index:2`;
+        // Width is left to the fold: it is what the panel is open or shut.
+        container.style.cssText = 'position:fixed;top:8px;right:8px;z-index:2';
 
         document.body.appendChild(container);
 
