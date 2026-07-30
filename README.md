@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://cyberdex.github.io/slot-3by1/">
+  <a target="_blank" href="https://cyberdex.github.io/slot-3by1/">
     <img src="assets/static%7Bcopy%7D/git.png" alt="Hellforged — click to play" width="640">
   </a>
 </p>
