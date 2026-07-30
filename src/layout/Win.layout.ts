@@ -135,7 +135,13 @@ export class WinLayout extends Layout {
                 if (stages > 0) this.#coins.drop(this.dropPoint);
             }
 
-            if (progress === 1) this.stopCount();
+            // The count has arrived at what the spin paid, so the win is now
+            // revealed: it has been read out in full over the reels, and
+            // whatever else carries the figure can take it from here.
+            if (progress === 1) {
+                this.stopCount();
+                this.emit('revealed', win);
+            }
         };
 
         Ticker.shared.add(this.#count);

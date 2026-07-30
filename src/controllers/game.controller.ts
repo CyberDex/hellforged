@@ -61,19 +61,28 @@ class GameController {
         // grid, which is a little after it was asked to stop.
         reels.on('stopped', () => this.reelStopped());
 
+        // The announcement reports in once its count has climbed all the way to
+        // the win. The pannel is written from there rather than from the store,
+        // so the figure is revealed over the reels first and is only read out
+        // beside them once it has been.
+        winLayout.on('revealed', (win: number) => (winPannel.value = win));
+
         gameStore.subscribe((current, previous) => {
             const { state, bet, win } = current;
 
             if (bet !== previous.bet) betPannel.value = bet;
 
             if (win !== previous.win) {
-                winPannel.value = win;
-
-                // Only a win is announced over the reels; a losing spin just
-                // clears the pannel.
+                // Only a win is announced over the reels, and the pannel then
+                // waits on that announcement above rather than being written
+                // here. A losing spin, and a spin clearing the last result as
+                // it starts, have nothing to reveal, so the pannel empties at
+                // once.
                 if (win > 0) {
                     winLayout.show(win, this.countDuration);
                     sound.play('win');
+                } else {
+                    winPannel.value = win;
                 }
             }
 
@@ -96,6 +105,13 @@ class GameController {
             // holds the zoom for all of it, so both come down together.
             if (state === 'idle') {
                 winLayout.hide();
+
+                // The announcement is what reveals the figure, but the pannel
+                // is what keeps it: a reveal that never got to finish counting
+                // — a tab left in the background, where the count is not
+                // ticking but the reveal still times out — still leaves the win
+                // read out beside the reels.
+                winPannel.value = win;
 
                 // A big win is read out from inside the zoom, so the game
                 // still has to come down out of it once the reveal is over. It
