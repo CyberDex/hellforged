@@ -15,9 +15,27 @@ const PAYLINE = Math.floor(settings.rows / 2);
 // Stands in for the server. The whole spin is decided here, before a reel has
 // stopped, so the reels only ever play back an outcome they were handed.
 class BackendController {
+    // What the next spin has to land on the paying row, instead of rolling for
+    // it. Only ever set from the dev panel's cheats.
+    #forced: string[] | null = null;
+
+    // The forced payline is spent by the spin that follows, so one press of a
+    // cheat is one spin and the game rolls for itself again after it.
+    force(payline: string[]) {
+        this.#forced = payline;
+    }
+
     spin(bet: number): SpinOutcome {
-        const reels = Array.from({ length: settings.reels }, () =>
-            Array.from({ length: settings.rows }, () => getRandomSymbol()),
+        const forced = this.#forced;
+
+        this.#forced = null;
+
+        // Only the row that pays is dictated; the rest of every reel is rolled
+        // as usual, so a forced spin still lands looking like any other.
+        const reels = Array.from({ length: settings.reels }, (_, reel) =>
+            Array.from({ length: settings.rows }, (_, row) =>
+                forced && row === PAYLINE ? forced[reel] : getRandomSymbol(),
+            ),
         );
 
         const payline = reels.map((reel) => reel[PAYLINE]);

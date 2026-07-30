@@ -124,6 +124,27 @@ class GameController {
         return gameStore.getState().state;
     }
 
+    // Whether the game will take another spin, which is what the button, the
+    // slider and the dev panel's cheats all answer to: only between spins, and
+    // only while the balance still covers the smallest bet the game deals in.
+    get canSpin() {
+        const { state, balance } = gameStore.getState();
+
+        return state === 'idle' && balance >= settings.minBet;
+    }
+
+    // Dev only: the next spin is handed the payline it has to land on rather
+    // than rolling one, and the button is pressed for the player, so a
+    // combination can be watched without waiting for it to come up. Turned away
+    // wherever a press would be, so a forced payline is never left queued for a
+    // spin the player takes later.
+    cheat(payline: string[]) {
+        if (!this.canSpin) return;
+
+        backend.force(payline);
+        this.spin();
+    }
+
     // The balance is also the player's to set, from the UI's own pop up. That
     // is a change to what the game can do rather than to a figure on a pannel,
     // so it settles: the bet comes down to what is there, and a balance that
@@ -135,15 +156,6 @@ class GameController {
         // its win worked out from the bet it was taken at. That spin settles on
         // its own way back to idle.
         if (this.state === 'idle') this.settle();
-    }
-
-    // Whether the game will take another spin, which is what the button and the
-    // slider both answer to: only between spins, and only while the balance
-    // still covers the smallest bet the game deals in.
-    private get canSpin() {
-        const { state, balance } = gameStore.getState();
-
-        return state === 'idle' && balance >= settings.minBet;
     }
 
     // What the balance leaves the game able to do, worked out between spins: a

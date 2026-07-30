@@ -1,6 +1,9 @@
 import type { GlRenderingContext, WebGLRenderer } from 'pixi.js';
 import { Pane } from 'tweakpane';
+import { settings } from 'config/game.settings';
+import { gameStore } from 'store/game.store';
 import { app } from './app.controller';
+import { game } from './game.controller';
 
 // Every draw Pixi makes leaves through one of these four calls on the context —
 // the batcher, the masks and the filters all end up here — so wrapping them
@@ -14,9 +17,9 @@ const draws = [
 
 // What the graph is scaled to. Fixed rather than grown to fit the worst frame
 // so far, so the same spike is the same height every time it happens. The game
-// sits around ten a frame and peaks around twenty over a spin, so this leaves
-// room above the worst of it without flattening the rest against the floor.
-const maxDrawCalls = 32;
+// runs between six and ten a frame as it stands, which this leaves sitting
+// around the middle with room above it for whatever a new scene costs.
+const maxDrawCalls = 20;
 
 // The panel the game is watched from while it is being worked on. Mounted only
 // in dev, and loaded that way too, so none of this reaches the player — see
@@ -28,17 +31,23 @@ class DevToolsController {
     #calls = 0;
 
     init() {
-        const { gl } = app.renderer as WebGLRenderer;
-
-        // Nothing to count on WebGPU, which draws through no GL context.
-        if (!gl) return;
-
-        this.tally(gl);
-
         const pane = new Pane({
             container: this.container(),
             title: 'Dev tools',
         });
+
+        this.drawCalls(pane);
+        this.cheats(pane);
+    }
+
+    private drawCalls(pane: Pane) {
+        const { gl } = app.renderer as WebGLRenderer;
+
+        // Nothing to count on WebGPU, which draws through no GL context. The
+        // rest of the pane is no business of the renderer's and still goes up.
+        if (!gl) return;
+
+        this.tally(gl);
 
         // The pane samples on a timer of its own by default, which would read
         // the same frame twice or miss one; zero hands the timing over to the
@@ -72,6 +81,45 @@ class DevToolsController {
 
             pane.refresh();
         });
+    }
+
+    // A spin per paying combination the game has, so none of them has to be
+    // waited on to be looked at: for every symbol, the pair it pays flat and
+    // the three of a kind it pays on its own. Each button spins the machine for
+    // real — it only says what the reels have to land on.
+    private cheats(pane: Pane) {
+        const folder = pane.addFolder({ title: 'Cheats' });
+
+        for (const symbol of settings.symbols) {
+            const { two, three } = settings.payouts;
+
+            folder
+                .addButton({ label: symbol, title: `two ×${two}` })
+                .on('click', () => game.cheat(this.payline(symbol, 2)));
+
+            folder
+                .addButton({ label: symbol, title: `three ×${three[symbol]}` })
+                .on('click', () => game.cheat(this.payline(symbol, 3)));
+        }
+
+        // The buttons press the machine's own, so they go dead wherever it
+        // does: over a spin and its reveal, and on a balance that is out.
+        const follow = () => (folder.disabled = !game.canSpin);
+
+        follow();
+        gameStore.subscribe(follow);
+    }
+
+    // The payline a cheat lands: the first `count` reels on the symbol, and any
+    // reel left over deliberately off it, since a pair only pays as a pair
+    // while the reel after it misses.
+    private payline(symbol: string, count: number) {
+        const { symbols } = settings;
+        const miss = symbols[(symbols.indexOf(symbol) + 1) % symbols.length];
+
+        return Array.from({ length: settings.reels }, (_, reel) =>
+            reel < count ? symbol : miss,
+        );
     }
 
     private tally(gl: GlRenderingContext) {
