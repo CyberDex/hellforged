@@ -2,8 +2,9 @@ import '@pixi/layout';
 import { Layout } from '@pixi/layout';
 import { Sprite, Text } from 'pixi.js';
 
-// Nothing to show reads better as a dash than as a zero, so the win pannel
-// sits empty between spins and only carries a figure when there is one.
+// Nothing to show reads better as a dash than as a zero, so a pannel with
+// nothing to read out sits empty and only carries a figure when there is one:
+// the win pannel between spins, and the bet pannel once the balance is out.
 const EMPTY = '-';
 
 export class Pannel extends Layout {
@@ -69,5 +70,12 @@ export class Pannel extends Layout {
 
     set value(value: number) {
         this.#value.text = value > 0 ? value.toString() : EMPTY;
+    }
+
+    // There is a figure and there is nothing to read out, and a pannel that has
+    // been emptied is in the second state whatever the game still holds behind
+    // it.
+    clear() {
+        this.#value.text = EMPTY;
     }
 }

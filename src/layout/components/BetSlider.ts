@@ -10,46 +10,28 @@ const HEIGHT = 3;
 const RADIUS = HEIGHT / 2;
 const HANDLE = 9;
 
-// Locking the bet cools the metal down rather than fading it out, so the track
-// still reads solidly against the pannel for as long as it cannot be moved.
-const LIT = { pit: '#7a2f10', ember: '#7a2f10', metal: '#ffca50' };
-const COLD = { pit: '#2b2521', ember: '#463b33', metal: '#8b8279' };
-
-type Forge = typeof LIT;
-
-const drawTrack = (g: Graphics, { pit, ember }: Forge) =>
-    g
-        .clear()
-        .roundRect(0, 0, WIDTH, HEIGHT, RADIUS)
-        .fill(pit)
-        .stroke({ color: ember, width: 2 });
-
-const drawFill = (g: Graphics, { metal }: Forge) =>
-    g.clear().roundRect(0, 0, WIDTH, HEIGHT, RADIUS).fill(metal);
-
-const drawHandle = (g: Graphics, { metal }: Forge) =>
-    g
-        .clear()
-        .circle(0, 0, HANDLE)
-        .fill(metal)
-        .stroke({ color: '#000000', width: 2 });
+// The pit the bet is dragged along, and the hot metal marking how far it is up.
+const PIT = '#7a2f10';
+const METAL = '#ffca50';
 
 // The bet is dragged rather than typed: the handle runs the whole range in one
 // sweep, and the amount it lands on is read off the pannel above it.
 export class BetSlider extends Slider {
-    #track: Graphics;
-    #fill: Graphics;
-    #handle: Graphics;
-
     constructor() {
-        const track = drawTrack(new Graphics(), LIT);
-        const fill = drawFill(new Graphics(), LIT);
-        const handle = drawHandle(new Graphics(), LIT);
-
         super({
-            bg: track,
-            fill,
-            slider: handle,
+            // Stroked in its own colour, which reads as a slightly thicker
+            // track rather than as an edge around it.
+            bg: new Graphics()
+                .roundRect(0, 0, WIDTH, HEIGHT, RADIUS)
+                .fill(PIT)
+                .stroke({ color: PIT, width: 2 }),
+            fill: new Graphics()
+                .roundRect(0, 0, WIDTH, HEIGHT, RADIUS)
+                .fill(METAL),
+            slider: new Graphics()
+                .circle(0, 0, HANDLE)
+                .fill(METAL)
+                .stroke({ color: '#000000', width: 2 }),
             // The top end is only the widest the slider ever opens: the game
             // brings it down to the balance whenever that no longer covers a
             // bet staked this high.
@@ -57,10 +39,6 @@ export class BetSlider extends Slider {
             max: settings.maxBet,
             value: settings.defaultBet,
         });
-
-        this.#track = track;
-        this.#fill = fill;
-        this.#handle = handle;
 
         // The handle hangs off both ends of the track, so how wide the slider
         // measures depends on where it happens to be sitting. This pins the
@@ -78,16 +56,14 @@ export class BetSlider extends Slider {
         this.onChange.connect(() => sound.play('click'));
     }
 
-    // The stake is taken as the reels start, so the bet is held where it was
-    // for as long as the spin it paid for is running. Each part is redrawn to
-    // the same geometry, which keeps the handle on its mark and the fill inside
-    // the mask that cuts it back to the bet.
+    // A bet there is no setting of is taken off the machine rather than left
+    // sitting there unanswering: the stake for a running spin has already been
+    // taken, and a balance that is out has nothing to stake either way. The
+    // pannel above stays up and keeps reading the bet out, so what the spin
+    // was paid for is still there while the handle that set it is away. Hidden
+    // also takes the slider out of hit testing, so there is nothing left to
+    // drag rather than something that quietly refuses.
     set enabled(enabled: boolean) {
-        const forge = enabled ? LIT : COLD;
-
-        this.interactiveChildren = enabled;
-        drawTrack(this.#track, forge);
-        drawFill(this.#fill, forge);
-        drawHandle(this.#handle, forge);
+        this.visible = enabled;
     }
 }

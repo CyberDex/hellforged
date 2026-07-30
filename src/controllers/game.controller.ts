@@ -72,12 +72,9 @@ class GameController {
 
             if (state === previous.state) return;
 
-            // Idle is the only state that takes a press, so the button stays
-            // blocked from the first tap until the reveal is over. The bet is
-            // locked with it: the stake has already been taken, and the win
-            // still to come was worked out from it.
-            spinButton.enabled = state === 'idle';
-            betSlider.enabled = state === 'idle';
+            // A spin locks the controls as it starts; unlocking them again is
+            // the balance's to decide, so it waits for the settling below.
+            if (state !== 'idle') this.lockControls();
 
             if (state === 'spin') {
                 spinButton.rotate();
@@ -96,21 +93,70 @@ class GameController {
                 // The stake came off the balance and the win went back on it
                 // over the spin, so what the next one can be staked at is only
                 // settled now that it is over.
-                this.capBet();
+                this.settle();
             }
         });
 
         // A balance that came back from storage may no longer cover the bet
-        // that came with it, so the slider is capped before the first press.
-        // After the store is listened to, so the pannel follows a bet that has
-        // to come down with it.
-        this.capBet();
+        // that came with it, or may no longer cover a spin at all, so it is
+        // settled before the first press. After the store is listened to, so
+        // the pannel follows a bet that has to come down with it.
+        this.settle();
 
         sound.play('music');
     }
 
     get state() {
         return gameStore.getState().state;
+    }
+
+    // Whether the game will take another spin, which is what the button and the
+    // slider both answer to: only between spins, and only while the balance
+    // still covers the smallest bet the game deals in.
+    private get canSpin() {
+        const { state, balance } = gameStore.getState();
+
+        return state === 'idle' && balance >= settings.minBet;
+    }
+
+    // What the balance leaves the game able to do, worked out between spins: a
+    // balance too small to stake even the minimum can never be played, so it is
+    // not left sitting there as money the player has; the slider comes down to
+    // whatever is left; and the controls follow.
+    private settle() {
+        const { balance, setBalance } = gameStore.getState();
+
+        if (balance > 0 && balance < settings.minBet) setBalance(0);
+
+        this.capBet();
+        this.lockControls();
+    }
+
+    // The bet goes with the button: the stake for a running spin has already
+    // been taken and the win still to come was worked out from it, and a
+    // balance that is out has nothing to stake either way, so the slider is
+    // taken off the machine rather than shown unusable. Being out is also
+    // said over the reels, in the place a win is announced, since a game that
+    // will not spin again should say why rather than just stop answering.
+    private lockControls() {
+        if (!this.#layout) return;
+
+        const { spinButton, betSlider, betPannel, winLayout } = this.#layout;
+        const { canSpin } = this;
+
+        spinButton.enabled = canSpin;
+        betSlider.enabled = canSpin;
+
+        // A running spin still reads out what it was staked at; only a balance
+        // that is out has nothing left to say on either pannel.
+        if (canSpin || this.state !== 'idle') return;
+
+        // The store keeps its bet, since the slider has to open somewhere for a
+        // balance that comes back, but there is nothing to stake at it: the
+        // pannel empties to the dash the win pannel sits at between spins
+        // rather than reading out a bet that cannot be played.
+        betPannel.clear();
+        winLayout.outOfFunds();
     }
 
     // A bet can only be staked as far as there is balance to cover it, so the

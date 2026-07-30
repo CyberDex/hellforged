@@ -3,10 +3,24 @@ import { Layout } from '@pixi/layout';
 import { Text, Ticker } from 'pixi.js';
 import { settings } from 'config/game.settings';
 
+// Whatever the game has to say over the reels is said in two lines: what has
+// happened, over the figure it happened for.
 export class WinLayout extends Layout {
+    #title: Text;
     #amount: Text;
+    // A count outlives the call that started it, so the ticker it runs on is
+    // kept to be taken off again by whatever comes up over it next.
+    #count?: (ticker: Ticker) => void;
 
     constructor() {
+        const title = new Text({
+            text: 'WIN',
+            style: {
+                fontSize: 50,
+                align: 'center',
+                stroke: { color: '#000000', width: 4 },
+            },
+        });
         const amount = new Text({
             text: '0',
             style: {
@@ -21,12 +35,13 @@ export class WinLayout extends Layout {
             content: {
                 content: {
                     title: {
-                        content: 'WIN',
+                        content: title,
                         styles: {
                             position: 'center',
-                            fontSize: 50,
+                            width: '100%',
+                            height: '100%',
+                            textAlign: 'center',
                             marginTop: -40,
-                            stroke: { color: '#000000', width: 4 },
                         },
                     },
                     amount: {
@@ -57,6 +72,7 @@ export class WinLayout extends Layout {
             },
         });
 
+        this.#title = title;
         this.#amount = amount;
         this.visible = false;
     }
@@ -68,23 +84,47 @@ export class WinLayout extends Layout {
     show(win: number, countDuration = settings.winCountDuration) {
         let elapsed = 0;
 
-        this.#amount.text = '0';
-        this.visible = true;
+        this.announce('WIN', '0');
 
-        const tick = ({ deltaMS }: Ticker) => {
+        this.#count = ({ deltaMS }: Ticker) => {
             elapsed += deltaMS;
 
             const progress = Math.min(elapsed / countDuration, 1);
 
             this.#amount.text = Math.round(win * progress).toString();
 
-            if (progress === 1) Ticker.shared.remove(tick);
+            if (progress === 1) this.stopCount();
         };
 
-        Ticker.shared.add(tick);
+        Ticker.shared.add(this.#count);
+    }
+
+    // A balance that can no longer be staked is said where the money would have
+    // been read out, since it is the same news about the same reels: there is
+    // nothing more coming off them.
+    outOfFunds() {
+        this.announce('OUT OF', 'FUNDS');
     }
 
     hide() {
+        this.stopCount();
         this.visible = false;
+    }
+
+    private announce(title: string, amount: string) {
+        // Anything already climbing to a figure belongs to what is being
+        // written over, so it is taken off before the lines are replaced.
+        this.stopCount();
+
+        this.#title.text = title;
+        this.#amount.text = amount;
+        this.visible = true;
+    }
+
+    private stopCount() {
+        if (!this.#count) return;
+
+        Ticker.shared.remove(this.#count);
+        this.#count = undefined;
     }
 }

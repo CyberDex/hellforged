@@ -27,14 +27,22 @@ The spin is decided in full before a reel has moved, by `src/controllers/backend
 - The player starts with `settings.defaultBalance` and every spin stakes the bet.
 - The bet is set on the slider under the `Bet` pannel, which runs from `settings.minBet` to `settings.maxBet` (currently 1 to 1000) a unit at a time and opens at `settings.defaultBet`. The pannel reads out whatever it is dragged to.
 - `settings.maxBet` is only the widest the slider ever opens. A bet can never be staked higher than the balance covers, so the top of the slider is whichever is lower of `settings.maxBet` and the balance, and it comes down as the balance does. A bet already above the new top comes down to it, pannel and all.
-- The slider always keeps `settings.minBet` at the bottom, whatever the balance is: the last of a balance is still staked at the minimum, and a balance too small to cover even that is turned away at the spin button rather than at the slider.
+- The slider always keeps `settings.minBet` at the bottom, whatever the balance is: the last of a balance is still staked at the minimum, and a balance too small to cover even that is out of funds (see [Running out](#running-out)) rather than a smaller bet.
 - The top is only moved between spins. The stake comes off the balance the moment the reels start, and the bet that spin was paid for stays on the pannel until it is over, so the new top is worked out as the game returns to idle.
-- The slider is locked from the moment the reels start until the game is back to idle: the stake has already been taken, and the win still to come was worked out from it.
+- The slider is hidden from the moment the reels start until the game is back to idle: the stake has already been taken, and the win still to come was worked out from it, so there is no bet to set and nothing is left on the machine to drag. The `Bet` pannel above it stays up throughout and keeps reading out what the spin was staked at.
 - The stake is taken the moment the reels start; a win is credited once the last reel has stopped.
 - A spin is refused while the balance is below the bet.
 - The balance and the bet are kept in the browser (`localStorage`, under `hellforged.player`), so a reload picks the player up where they left off rather than handing them a fresh `settings.defaultBalance`. Nothing else is kept: the game state and the win belong to the spin that was running, so a reload always opens idle with an empty `Win` pannel. Clearing site data starts a new player.
 - A stored bet the stored balance no longer covers is brought down to it before the first press, the same as it would be after a spin.
 - The stake is taken as the reels start and the win is credited as they finish, so a reload in between keeps the balance as the stake left it: the spin is paid for and its win is gone with it.
+
+## Running out
+
+- A balance that no longer covers `settings.minBet` can never be staked again, so it is not left sitting there as money the player has: it is emptied to zero. With whole bets and whole payouts a losing balance lands on zero of its own accord; the emptying is what settles anything a fractional setting leaves behind.
+- The spin button is disabled and the bet slider hidden with it, the same as during a spin. Nothing on the machine answers again until there is a balance to stake.
+- The `Bet` pannel empties to the same dash the `Win` pannel sits at between spins. The bet itself is kept — the slider has to open somewhere if a balance ever comes back — but nothing can be staked at it, so it is not read out as though it could. This is the one time the bet is not on the pannel: a running spin keeps reading out what it was paid for.
+- The game says why over the middle of the reels, in the place a win is announced (`src/layout/Win.layout.ts`): `OUT OF` over `FUNDS`, in the two lines a win would have used for `WIN` over its amount. It goes up as the spin that emptied the balance returns to idle, and stays up — there is no next spin to take it down.
+- It is worked out between spins, alongside the top of the slider, and again before the first press of a session, so a stored balance that has already run out opens the game locked with the message up.
 
 ## Spin
 
@@ -91,5 +99,5 @@ Three of a kind pays on the symbol it filled up with:
 - A winning spin is also announced over the middle of the reels (`src/layout/Win.layout.ts`), with the amount counting up from zero rather than printed.
 - A pair is held for `settings.winDuration` and counts up over `settings.winCountDuration` of it, so the amount settles well before the announcement comes down.
 - Three of a kind is held for `settings.bigWinReveals` times as long (currently 2, so 5000ms) and counts up over that whole time, so the number is still climbing to the top win for as long as it is up. It is read out from inside the anticipation zoom, which is only dropped once the reveal is over.
-- The announcement comes down when the game returns to idle and the spin button unlocks.
+- The announcement comes down when the game returns to idle and the spin button unlocks — unless that spin was the last the balance could pay for, in which case the out-of-funds message goes up in its place (see [Running out](#running-out)).
 - A losing spin has no reveal at all: the game returns to idle the moment the last reel lands, so the spin button is ready again with no wait.
