@@ -62,8 +62,10 @@ export class WinLayout extends Layout {
     }
 
     // The amount is counted up from zero rather than printed, so the win reads
-    // as it is being added up.
-    show(win: number) {
+    // as it is being added up. How long it takes is the caller's, since the top
+    // win counts up over its whole reveal and a smaller one is quicker than
+    // the time it is left up for.
+    show(win: number, countDuration = settings.winCountDuration) {
         let elapsed = 0;
 
         this.#amount.text = '0';
@@ -72,7 +74,7 @@ export class WinLayout extends Layout {
         const tick = ({ deltaMS }: Ticker) => {
             elapsed += deltaMS;
 
-            const progress = Math.min(elapsed / settings.winCountDuration, 1);
+            const progress = Math.min(elapsed / countDuration, 1);
 
             this.#amount.text = Math.round(win * progress).toString();
 

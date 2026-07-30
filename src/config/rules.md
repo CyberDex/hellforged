@@ -41,9 +41,11 @@ The spin is decided in full before a reel has moved, by `src/controllers/backend
 
 ## Anticipation
 
-- When every reel but the last has landed on the same payline symbol, three of a kind is still in play and the last reel is drawn out: it spins `settings.anticipationSpins` times as long as it otherwise would (currently 3, so 4800ms instead of 1600ms).
+- When every reel but the last has landed on the same payline symbol, three of a kind is still in play and the last reel is drawn out: it spins `settings.anticipationSpins` times as long as it otherwise would (currently 2, so 3200ms instead of 1600ms).
 - Everything but the background is zoomed in over the wait: the machine, the pannels and the spin button all grow together to `settings.anticipationZoom` of their size, evenly, about the middle of the screen, so the game fills more of it the longer the last reel holds out. The rows show the same amount of themselves throughout — the reel window grows with them — and the background is left where it is, still behind the zoom.
-- The zoom runs from the moment the reel before the held-back one lands until the held-back one lands, and then the game jumps straight back to size — there is no animation on the way back.
+- The zoom runs from the moment the reel before the held-back one lands until the held-back one lands, and is fully in by the time it does. What happens next is the only thing about the anticipation that depends on the outcome:
+    - **The last symbol misses** — the reels jump straight back out to size, with none of the travel the zoom had, and the pair is paid at normal size.
+    - **The last symbol matches** — the zoom is held. The reveal comes up inside it and the game only drops back to size when it returns to idle (see [Showing a win](#showing-a-win)).
 - `anticipation` plays once as the zoom starts, over the spin loop.
 - A pair on the first two reels always draws the third reel out, whether it lands on the match or not. The outcome is decided before the reels move, so the anticipation is only ever a build-up and never says how the spin ends.
 
@@ -78,6 +80,8 @@ Three of a kind pays on the symbol it filled up with:
 ## Showing a win
 
 - The `Win` pannel takes the amount as soon as the last reel has stopped, and keeps it until the next spin starts.
-- A winning spin is also announced over the middle of the reels (`src/layout/Win.layout.ts`), with the amount counting up from zero over `settings.winCountDuration`.
-- The reveal is held for `settings.winDuration` on a win. The announcement comes down with it, when the game returns to idle and the spin button unlocks.
+- A winning spin is also announced over the middle of the reels (`src/layout/Win.layout.ts`), with the amount counting up from zero rather than printed.
+- A pair is held for `settings.winDuration` and counts up over `settings.winCountDuration` of it, so the amount settles well before the announcement comes down.
+- Three of a kind is held for `settings.bigWinReveals` times as long (currently 2, so 5000ms) and counts up over that whole time, so the number is still climbing to the top win for as long as it is up. It is read out from inside the anticipation zoom, which is only dropped once the reveal is over.
+- The announcement comes down when the game returns to idle and the spin button unlocks.
 - A losing spin has no reveal at all: the game returns to idle the moment the last reel lands, so the spin button is ready again with no wait.

@@ -38,4 +38,7 @@ export const settings = {
     // is held for this long, and its amount counts up over the first part.
     winDuration: 2500,
     winCountDuration: 800,
+    // Three of a kind keeps the zoom it was built up to and is held for this
+    // many times the usual reveal, its amount counting up over all of it.
+    bigWinReveals: 2,
 };
