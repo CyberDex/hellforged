@@ -87,18 +87,18 @@ export class WinLayout extends Layout {
     }
 
     // The amount is counted up from zero rather than printed, so the win reads
-    // as it is being added up. How long it takes is the caller's, since the top
-    // win counts up over its whole reveal and a smaller one is quicker than
-    // the time it is left up for.
+    // as it is being added up. How long it takes is the caller's, since a big
+    // win counts up over nearly all of the longer reveal it is given and a
+    // smaller one is quicker than the time it is left up for.
     show(win: number, countDuration = settings.winCountDuration) {
         let elapsed = 0;
         // What the amount currently reads, kept so the count is only heard and
         // rewritten on the frames the figure actually moves on. It starts at
         // the zero the announcement below puts up, so no coin lands on it.
         let counted = 0;
-        // Whether the count has passed what a big win takes, which it only ever
-        // does the once on its way up.
-        let big = false;
+        // How many of the big win stages the count has climbed past, each of
+        // which it only ever passes the once on its way up.
+        let stages = 0;
 
         this.announce('WIN', '0');
 
@@ -115,18 +115,24 @@ export class WinLayout extends Layout {
                 this.#amount.text = amount.toString();
                 sound.play('coin');
 
-                // The figure a win becomes a big one at is passed mid-count, so
-                // it is the climbing number that changes what is announced over
-                // it rather than the win it is climbing to.
-                if (!big && amount >= settings.bigWinAmount) {
-                    big = true;
-                    this.#title.text = 'BIG WIN';
+                // The figures a win becomes a bigger one at are passed
+                // mid-count, so it is the climbing number that changes what is
+                // announced over it rather than the win it is climbing to. A
+                // frame can carry the count past more than one of them at once,
+                // in which case only the last it reached is left up.
+                while (stages < settings.bigWinStages.length) {
+                    const stage = settings.bigWinStages[stages];
+
+                    if (amount < stage.from) break;
+
+                    this.#title.text = stage.title;
+                    stages++;
                 }
 
-                // From there on the coin is seen as well as heard: one comes off
-                // the number for every figure it counts through, so the shower
-                // pours out of the amount as it is being read.
-                if (big) this.#coins.drop(this.dropPoint);
+                // From the first of them on the coin is seen as well as heard:
+                // one comes off the number for every figure it counts through,
+                // so the shower pours out of the amount as it is being read.
+                if (stages > 0) this.#coins.drop(this.dropPoint);
             }
 
             if (progress === 1) this.stopCount();

@@ -18,9 +18,6 @@ class GameController {
     // Whether this spin holds its last reel back, decided with the outcome,
     // before a reel has moved.
     #anticipating = false;
-    // Whether the held-back reel completes the payline, which is what decides
-    // between jumping back out of the zoom and staying in it for the reveal.
-    #bigWin = false;
 
     // Wired once the layout exists: the controller listens to the view and
     // drives it back, so no component has to know about the store.
@@ -95,12 +92,12 @@ class GameController {
                 sound.stop('reelSpin');
             }
 
-            // The announcement lasts as long as the reveal does, and the top
-            // win holds the zoom for all of it, so both come down together.
+            // The announcement lasts as long as the reveal does, and a big win
+            // holds the zoom for all of it, so both come down together.
             if (state === 'idle') {
                 winLayout.hide();
 
-                // The top win is read out from inside the zoom, so the game
+                // A big win is read out from inside the zoom, so the game
                 // still has to come down out of it once the reveal is over. It
                 // lands back at size the way a reel lands, and is heard as one.
                 if (layout.unzoom()) sound.play('reelStop');
@@ -255,14 +252,11 @@ class GameController {
         this.#symbols = outcome.reels;
         this.#landed = 0;
         // Every reel but the last landing on the same symbol leaves the top win
-        // in play, which is what the last reel is drawn out for. Whether it
-        // actually fills the payline is what the zoom is dropped or held on.
+        // in play, which is what the last reel is drawn out for. What it ends up
+        // paying is what the zoom is then dropped or held on.
         this.#anticipating = outcome.payline
             .slice(0, -1)
             .every((symbol) => symbol === outcome.payline[0]);
-        this.#bigWin = outcome.payline.every(
-            (symbol) => symbol === outcome.payline[0],
-        );
         this.setState('spin');
         this.#reels?.spin();
 
@@ -303,12 +297,13 @@ class GameController {
                     this.stopDelay(settings.reels - 1) -
                         this.stopDelay(settings.reels - 2),
                 );
-            } else if (this.#landed === settings.reels && !this.#bigWin) {
-                // The last symbol missed the pair: the reels jump back out to
-                // size and the pair is paid at it. A payline that did fill up
-                // keeps the zoom, and the reveal comes up inside it. The drop
-                // back is on the same beat as the reel landing, so the thud
-                // above is already the sound of it and none is added here.
+            } else if (this.#landed === settings.reels && !this.bigWin) {
+                // The last reel landed on nothing worth leaning in for: the
+                // reels jump back out to size and whatever it did pay is paid at
+                // it. A big win keeps the zoom, and the reveal comes up inside
+                // it. The drop back is on the same beat as the reel landing, so
+                // the thud above is already the sound of it and none is added
+                // here.
                 this.#layout?.unzoom();
             }
         }
@@ -333,19 +328,31 @@ class GameController {
         setTimeout(() => this.setState('idle'), this.revealDuration);
     }
 
-    // How long the win is left up. The top win is given several times the usual
-    // reveal, since it is read out from the zoom it was built up to rather than
-    // flashed and dropped.
-    private get revealDuration() {
-        return this.#bigWin
-            ? settings.winDuration * settings.bigWinReveals
-            : settings.winDuration;
+    // Which stage of big win the spin paid, if any: the last one the amount
+    // reaches, since the stages climb. Known as soon as the outcome is, before a
+    // reel has moved, and it is the win that says this rather than the symbols —
+    // a pair staked high enough is a big win, and three of a kind at the minimum
+    // is not.
+    private get bigWin() {
+        return settings.bigWinStages
+            .filter(({ from }) => this.#win >= from)
+            .pop();
     }
 
-    // How long the amount takes to count up. The top win runs for its whole
-    // reveal, so the number is still climbing to it the entire time it is up.
+    // How long the win is left up. A big win is given the several reveals its
+    // stage asks for, since it is read out from the zoom it was built up to
+    // rather than flashed and dropped.
+    private get revealDuration() {
+        return settings.winDuration * (this.bigWin?.reveals ?? 1);
+    }
+
+    // How long the amount takes to count up. A big win climbs for all of its
+    // reveal bar the hold at the end of it, so the number is still going up
+    // almost the whole time it is there and then stands on what it reached.
     private get countDuration() {
-        return this.#bigWin ? this.revealDuration : settings.winCountDuration;
+        return this.bigWin
+            ? this.revealDuration - settings.bigWinHold
+            : settings.winCountDuration;
     }
 
     private setState(state: GameState) {
