@@ -15,7 +15,11 @@
     inset: 0;
     z-index: 1;
     pointer-events: none;
-    font-family: var(--game-font), serif;
+    /* The overlay is read rather than looked at — figures, labels and rules —
+       so it is set in the plainest face there is and legibility wins over the
+       dressing. The game's own face is kept for the one piece of text that is
+       the game rather than about it: its name (see `.topbar-title`). */
+    font-family: Arial, Helvetica, sans-serif;
     user-select: none;
 }
 
@@ -108,17 +112,21 @@
 }
 
 .topbar-label {
-    font-size: 11px;
+    font-size: 10px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--gold-dim);
 }
 
 .topbar-value {
-    font-size: 19px;
+    font-size: 15px;
 }
 
+/* The one place the overlay wears the game's own face, which is loaded with the
+   art and named on `#ui` as the overlay is mounted (see `ui.controller.tsx`):
+   the name is the machine's lettering rather than a reading off it. */
 .topbar-title {
+    font-family: var(--game-font), serif;
     font-size: 24px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -196,13 +204,13 @@
 }
 
 .dialog-title {
-    font-size: 24px;
+    font-size: 19px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
 }
 
 .dialog-close {
-    font-size: 32px;
+    font-size: 26px;
     line-height: 1;
 }
 
@@ -226,11 +234,11 @@
 
 /* The size the chevron is read at; the label sets its own. */
 .menu-entry {
-    font-size: 26px;
+    font-size: 21px;
 }
 
 .menu-label {
-    font-size: 15px;
+    font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--gold-dim);
@@ -239,9 +247,9 @@
 /* Reads out where the sound stands rather than what pressing does, the way a
    switch on the cabinet would be lettered. */
 .menu-switch {
-    min-width: 64px;
-    padding: 5px 16px;
-    font-size: 20px;
+    min-width: 56px;
+    padding: 5px 14px;
+    font-size: 15px;
     text-transform: uppercase;
     border: 1px solid var(--frame);
     border-radius: 999px;
@@ -266,13 +274,15 @@
 
 .volume {
     display: grid;
-    grid-template-columns: 86px 1fr 54px;
+    /* The label column holds the longest of them (`Effects`) at the size and
+       tracking below, and the figure column `100%`; the groove takes the rest. */
+    grid-template-columns: 66px 1fr 42px;
     align-items: center;
     gap: 14px;
 }
 
 .volume-value {
-    font-size: 17px;
+    font-size: 14px;
     text-align: right;
 }
 
@@ -368,7 +378,7 @@
     width: 100%;
     padding: 12px 14px;
     font: inherit;
-    font-size: 28px;
+    font-size: 22px;
     text-align: center;
     color: var(--gold);
     caret-color: var(--gold);
@@ -393,7 +403,7 @@
    so it is the one dressed as a pannel of its own. */
 .balance-apply {
     padding: 12px 16px;
-    font-size: 22px;
+    font-size: 17px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     background: linear-gradient(
@@ -423,11 +433,9 @@
     overflow-y: auto;
     /* Off the scrollbar, which is laid over the text rather than beside it. */
     padding-right: 12px;
-    /* The one place the overlay steps out of the game's own face and palette.
-       Everywhere else a figure is glanced at in gold; this is paragraphs read
-       through, so it is set in the plainest face and the plainest white there
-       is, and legibility is allowed to win over the dressing. */
-    font-family: Arial, Helvetica, sans-serif;
+    /* The one place the overlay steps out of the game's palette. Everywhere else
+       a figure is glanced at in gold; this is paragraphs read through, so it is
+       set in the plainest white there is. */
     font-size: 15px;
     line-height: 1.6;
     color: #fff;

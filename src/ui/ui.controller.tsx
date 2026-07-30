@@ -27,7 +27,9 @@ export async function mountUI(layout: RootLayout) {
 
     root.id = 'ui';
     // The game font is loaded with the assets, which registers it with the
-    // document, so the DOM asks for it by the one name the game knows it by.
+    // document, so the DOM asks for it by the one name the game knows it by. The
+    // overlay itself is read in a plain face and only the game's name is set in
+    // this one (see `ui.css`).
     root.style.setProperty('--game-font', FONT_FAMILY);
 
     // Every entry in the palette is written out as the custom property of that
