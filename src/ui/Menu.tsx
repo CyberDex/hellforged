@@ -1,12 +1,13 @@
 import { useStore } from 'zustand';
 import type { CSSProperties } from 'react';
 import { sound } from 'controllers/sound.controller';
+import { graphicsStore } from 'store/graphics.store';
 import { soundStore } from 'store/sound.store';
 import { Button } from 'ui/Button';
 import { Dialog } from 'ui/Dialog';
 
-// What the player can set about the game rather than play of it: the sound, and
-// the way in to the rules and to the balance.
+// What the player can set about the game rather than play of it: the sound, how
+// it is drawn, and the way in to the rules and to the balance.
 export function Menu({
     width,
     height,
@@ -21,6 +22,7 @@ export function Menu({
     onBalance: () => void;
 }) {
     const { muted, volumes, setMuted, setVolume } = useStore(soundStore);
+    const { shader, setShader } = useStore(graphicsStore);
 
     return (
         // The whole of the reels, and not the width of them alone: what the
@@ -59,6 +61,21 @@ export function Menu({
                         // chosen.
                         onRelease={() => sound.play('click')}
                     />
+                </div>
+
+                {/* The burn over the background costs the machine a pass of
+                    every frame, so it is the player's to switch off on one the
+                    game runs poorly on (see `BG.ts`). */}
+                <div className="menu-row">
+                    <span className="menu-label">Shader</span>
+                    <Button
+                        className="menu-switch gold"
+                        role="switch"
+                        aria-checked={shader}
+                        onClick={() => setShader(!shader)}
+                    >
+                        {shader ? 'On' : 'Off'}
+                    </Button>
                 </div>
 
                 <Button className="menu-entry" onClick={onRules}>
