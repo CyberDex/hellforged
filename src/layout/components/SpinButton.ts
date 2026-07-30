@@ -4,11 +4,10 @@ import { Ticker } from 'pixi.js';
 import { sound } from '../../controllers/sound.controller';
 
 export class SpinButton extends FancyButton {
-    private spinning = false;
-
     constructor() {
         super({
             defaultView: 'spinButton',
+            disabledView: 'spinButtonDisabled',
             anchor: 0.5,
             animations: {
                 hover: {
@@ -42,13 +41,9 @@ export class SpinButton extends FancyButton {
         });
 
         this.onDown.connect(() => sound.play('click'));
-        this.onPress.connect(() => this.spin());
     }
 
-    private spin() {
-        if (this.spinning) return;
-        this.spinning = true;
-
+    rotate() {
         const fullTurn = Math.PI * 2;
         const duration = 200;
 
@@ -57,7 +52,6 @@ export class SpinButton extends FancyButton {
             if (this.rotation < fullTurn) return;
 
             this.rotation = 0;
-            this.spinning = false;
             Ticker.shared.remove(tick);
         };
 

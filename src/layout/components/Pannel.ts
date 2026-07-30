@@ -1,9 +1,18 @@
 import '@pixi/layout';
 import { Layout } from '@pixi/layout';
-import { Sprite } from 'pixi.js';
+import { Sprite, Text } from 'pixi.js';
 
 export class Pannel extends Layout {
+    #value: Text;
+
     constructor(title: string) {
+        const val = new Text('0', {
+            fontFamily: 'Arial',
+            fill: '#ffca50',
+            fontSize: 24,
+            align: 'center',
+        });
+
         super({
             content: {
                 content: {
@@ -22,11 +31,9 @@ export class Pannel extends Layout {
                         },
                     },
                     value: {
-                        content: '555',
+                        content: val,
                         styles: {
                             position: 'center',
-                            color: '#ffca50',
-                            fontSize: 24,
                         },
                     },
                 },
@@ -44,5 +51,11 @@ export class Pannel extends Layout {
                 height: '100%',
             },
         });
+
+        this.#value = val;
+    }
+
+    set value(value: number) {
+        this.#value.text = value.toString();
     }
 }

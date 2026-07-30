@@ -3,9 +3,22 @@ import { Layout } from '@pixi/layout';
 import { Sprite } from 'pixi.js';
 import { SpinButton } from './components/SpinButton';
 import { Pannel } from './components/Pannel';
+import { Reels } from './components/Reels';
+import { settings } from '../config/game.settings';
 
 export class RootLayout extends Layout {
+    spinButton: SpinButton;
+    betPannel: Pannel;
+    winPannel: Pannel;
+    reels: Reels;
+
     constructor() {
+        const spinButton = new SpinButton();
+        const betPannel = new Pannel('Bet');
+        const winPannel = new Pannel('Win');
+        const mask = Sprite.from('mask');
+        const reels = new Reels(settings.reels, settings.rows);
+
         super({
             content: {
                 id: 'content',
@@ -23,7 +36,7 @@ export class RootLayout extends Layout {
                                 },
                             },
                             {
-                                content: new SpinButton(),
+                                content: spinButton,
                                 styles: {
                                     position: 'center',
                                     marginTop: 36,
@@ -38,7 +51,7 @@ export class RootLayout extends Layout {
                         },
                     },
                     betPannel: {
-                        content: new Pannel('Bet'),
+                        content: betPannel,
                         styles: {
                             position: 'center',
                             marginTop: 210,
@@ -46,11 +59,26 @@ export class RootLayout extends Layout {
                         },
                     },
                     winPannel: {
-                        content: new Pannel('Win'),
+                        content: winPannel,
                         styles: {
                             position: 'center',
                             marginTop: 210,
                             marginLeft: 155,
+                        },
+                    },
+                    reels: {
+                        content: reels,
+                        styles: {
+                            position: 'center',
+                            marginTop: -15,
+                            marginLeft: 0,
+                        },
+                    },
+                    mask: {
+                        content: mask,
+                        styles: {
+                            position: 'center',
+                            marginTop: 32,
                         },
                     },
                 },
@@ -68,6 +96,13 @@ export class RootLayout extends Layout {
                 height: '100%',
             },
         });
+
+        this.spinButton = spinButton;
+        this.betPannel = betPannel;
+        this.winPannel = winPannel;
+        this.reels = reels;
+
+        this.reels.mask = mask;
 
         window.addEventListener('resize', () => this.onResize());
         this.onResize();

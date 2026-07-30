@@ -1,22 +1,20 @@
 import { Howl } from 'howler';
 import { Assets } from 'pixi.js';
+import { sounds, type SoundName } from '../config/sound.settings';
 
 class SoundController {
-    private sounds: Map<string, Howl> = new Map();
+    private howls: Map<SoundName, Howl> = new Map();
 
-    play(sound: string, loop: boolean = false) {
-        const howl = this.load(sound);
-
-        howl?.loop(loop);
-        howl?.play();
+    play(sound: SoundName) {
+        this.load(sound)?.play();
     }
 
-    stop(sound: string) {
-        this.sounds.get(sound)?.stop();
+    stop(sound: SoundName) {
+        this.howls.get(sound)?.stop();
     }
 
-    private load(sound: string) {
-        let howl = this.sounds.get(sound);
+    private load(sound: SoundName) {
+        let howl = this.howls.get(sound);
 
         if (!howl) {
             const { src } = Assets.resolver.resolve(sound);
@@ -27,9 +25,11 @@ class SoundController {
                 return undefined;
             }
 
-            howl = new Howl({ src: [src], volume: 0.5 });
+            const { loop, volume } = sounds[sound];
 
-            this.sounds.set(sound, howl);
+            howl = new Howl({ src: [src], loop, volume });
+
+            this.howls.set(sound, howl);
         }
 
         return howl;
