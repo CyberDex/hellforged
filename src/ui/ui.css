@@ -19,6 +19,32 @@
     user-select: none;
 }
 
+/* Every control the overlay lays over the game: they are the pointers it asks
+   back, and none of them carry the browser's own dressing — the game's UI is
+   the game's, down to the buttons. */
+.press {
+    pointer-events: auto;
+    padding: 0;
+    font: inherit;
+    color: var(--gold);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.press:active {
+    /* Pressed in, which is all the travel the game's own buttons have. */
+    transform: translateY(1px);
+}
+
+/* What the keyboard is on, in the game's gold rather than in the browser's own
+   blue, which is the one colour on the page from nowhere in the art. */
+.press:focus-visible,
+.balance-field:focus-visible {
+    outline: 1px solid var(--gold);
+    outline-offset: 2px;
+}
+
 /* Hung off the top edge, in the middle, at the width the reels measure. */
 .topbar {
     position: absolute;
@@ -45,6 +71,27 @@
         inset 0 -1px 0 var(--frame-glow);
     backdrop-filter: blur(2px);
     animation: topbar-drop 400ms ease-out both;
+}
+
+/* What the bar is pressed at, on the end the reading of it starts from: the way
+   into the menu, then the balance. */
+.topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Three bars: 2px of gold every 6px down a button the height of the text it
+   stands beside. */
+.topbar-menu {
+    width: 20px;
+    height: 14px;
+    background: repeating-linear-gradient(
+        180deg,
+        var(--gold) 0 2px,
+        transparent 2px 6px
+    );
+    filter: drop-shadow(0 1px 1px var(--outline));
 }
 
 .topbar-stat {
@@ -80,7 +127,7 @@
    texture itself: a flat fill would be the one thing on screen that is not
    metal. The shadow is a filter rather than a text shadow, which would show
    through the glyphs the gradient is clipped to. */
-.topbar-gold {
+.gold {
     background: linear-gradient(
         180deg,
         var(--gold-light),
@@ -90,6 +137,229 @@
     background-clip: text;
     color: transparent;
     filter: drop-shadow(0 1px 1px var(--outline));
+}
+
+/* What a pop up is shown over: the game is dimmed and blurred behind it, and
+   the veil takes the pointers the overlay otherwise passes through, so the
+   reels cannot be played from behind a dialog and a click off it closes it.
+   Everything on the sheet inherits that click back along with it. */
+.backdrop {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    pointer-events: auto;
+    background: var(--shadow);
+    backdrop-filter: blur(3px);
+    animation: backdrop-fade 150ms ease-out both;
+}
+
+/* Dressed as one of the game's pannels: the same half-lit interior behind the
+   same gold frame. */
+.dialog {
+    box-sizing: border-box;
+    width: 300px;
+    max-width: calc(100vw - 32px);
+    display: grid;
+    gap: 14px;
+    padding: 12px 16px 18px;
+    background: linear-gradient(
+        180deg,
+        var(--pannel-top),
+        var(--pannel-bottom)
+    );
+    border: 1px solid var(--frame);
+    border-radius: 12px;
+    box-shadow:
+        0 8px 28px var(--shadow),
+        inset 0 1px 0 var(--frame-glow);
+    animation: dialog-rise 200ms ease-out both;
+}
+
+.dialog-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--frame);
+}
+
+.dialog-title {
+    font-size: 18px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.dialog-close {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.menu-row,
+.menu-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+}
+
+.menu-label {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+}
+
+/* Reads out where the sound stands rather than what pressing does, the way a
+   switch on the cabinet would be lettered. */
+.menu-switch {
+    min-width: 44px;
+    padding: 2px 10px;
+    font-size: 15px;
+    text-transform: uppercase;
+    border: 1px solid var(--frame);
+    border-radius: 999px;
+}
+
+/* Off reads as off: the metal goes out of the word. */
+.menu-switch[aria-checked='false'] {
+    background: none;
+    color: var(--gold-dim);
+    filter: none;
+}
+
+.menu-volumes {
+    display: grid;
+    gap: 10px;
+    transition: opacity 150ms ease-out;
+}
+
+.menu-muted {
+    opacity: 0.45;
+}
+
+.volume {
+    display: grid;
+    grid-template-columns: 62px 1fr 40px;
+    align-items: center;
+    gap: 10px;
+}
+
+.volume-value {
+    font-size: 13px;
+    text-align: right;
+}
+
+/* The bet slider, in the DOM: hot metal run along a groove as far as the
+   handle, and the handle itself a coin on its edge. `--filled` is written on by
+   the component, since a track has no way of reading the value it belongs to. */
+.volume-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 14px;
+    background: none;
+    cursor: pointer;
+}
+
+/* One rule each, and never the two in a selector list: a browser drops the
+   whole list over the prefix it does not know, so grouping them would leave
+   both of them with a plain track. */
+.volume-range::-webkit-slider-runnable-track {
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(
+        90deg,
+        var(--gold) var(--filled),
+        var(--outline) var(--filled)
+    );
+}
+
+.volume-range::-moz-range-track {
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(
+        90deg,
+        var(--gold) var(--filled),
+        var(--outline) var(--filled)
+    );
+}
+
+.volume-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    /* Half the handle above the track and half below it, which Firefox does of
+       its own accord and WebKit has to be told. */
+    margin-top: -7px;
+    width: 13px;
+    height: 13px;
+    border: 2px solid var(--outline);
+    border-radius: 50%;
+    background: var(--gold);
+}
+
+.volume-range::-moz-range-thumb {
+    width: 13px;
+    height: 13px;
+    border: 2px solid var(--outline);
+    border-radius: 50%;
+    background: var(--gold);
+}
+
+.balance {
+    display: grid;
+    gap: 12px;
+}
+
+/* Typed into rather than dragged, so it is the one thing on the overlay dressed
+   as a field: the pit the slider runs in, opened out to hold a figure. The
+   arrows a number field comes with are the browser's own and are taken off. */
+.balance-field {
+    -webkit-appearance: textfield;
+    appearance: textfield;
+    box-sizing: border-box;
+    /* The overlay is not for selecting, but a figure being retyped is. */
+    user-select: text;
+    width: 100%;
+    padding: 8px 10px;
+    font: inherit;
+    font-size: 22px;
+    text-align: center;
+    color: var(--gold);
+    caret-color: var(--gold);
+    background: var(--pannel-bottom);
+    border: 1px solid var(--frame);
+    border-radius: 8px;
+}
+
+/* The field opens with its figure taken, ready to be typed over, so this is the
+   first thing the pop up shows: the last of the browser's blue, out. */
+.balance-field::selection {
+    color: var(--gold-light);
+    background: var(--gold-dark);
+}
+
+.balance-field::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* The one control on the overlay that does something rather than set something,
+   so it is the one dressed as a pannel of its own. */
+.balance-apply {
+    padding: 8px 12px;
+    font-size: 17px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: linear-gradient(
+        180deg,
+        var(--pannel-top),
+        var(--pannel-bottom)
+    );
+    border: 1px solid var(--frame);
+    border-radius: 8px;
 }
 
 /* Comes down with the canvas, which fades in as it is added to the page. */
@@ -104,8 +374,46 @@
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@keyframes backdrop-fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Up out of the bar it was opened from. */
+@keyframes dialog-rise {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* The name is the first thing to go once the screen is narrow enough for the bar
+   to run out of room: the balance and the clocks are read while the game is
+   played, and the game the player opened is not something they need telling. The
+   middle column goes with it, so the clocks keep the right edge rather than
+   being left sitting in the middle of the bar. */
+@media (width < 500px) {
     .topbar {
+        grid-template-columns: 1fr auto;
+    }
+
+    .topbar-title {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .topbar,
+    .backdrop,
+    .dialog {
         animation: none;
     }
 }

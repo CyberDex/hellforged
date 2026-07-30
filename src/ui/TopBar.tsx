@@ -1,8 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useStore } from 'zustand';
 import { gameTitle } from 'config/game.name';
 import { gameStore } from 'store/game.store';
 import type { RootLayout } from 'layout/Root.layout';
+import { Balance } from 'ui/Balance';
+import { Button } from 'ui/Button';
+import { Menu } from 'ui/Menu';
+
+// The pop ups the bar opens, only ever one at a time: each covers the game, and
+// two of them would be read through one another.
+type Popup = 'menu' | 'balance';
 
 // The session is as old as the module: the UI is mounted with the game, so this
 // is stamped as the page finishes opening it.
@@ -37,6 +44,9 @@ export function TopBar({ layout }: { layout: RootLayout }) {
     // As wide as the reels are on screen, so the bar reads as the top of the
     // same machine rather than as something laid over it.
     const [width, setWidth] = useState(() => reelWidth(layout));
+    const [popup, setPopup] = useState<Popup>();
+    // Held still, since every dialog listens for the Escape that calls it.
+    const close = useCallback(() => setPopup(undefined), []);
 
     // Both clocks are driven by the one hand. Neither reads out seconds, but it
     // still beats every second, so a minute turns over as it actually does
@@ -58,25 +68,54 @@ export function TopBar({ layout }: { layout: RootLayout }) {
     }, [layout]);
 
     return (
-        <div className="topbar" style={{ width }}>
-            <Stat label="Balance" value={balance.toLocaleString()} />
-            <span className="topbar-title topbar-gold">{gameTitle}</span>
-            <div className="topbar-clocks">
-                <Stat label="Time" value={clock(now)} />
-                <Stat
-                    label="Session"
-                    value={elapsed(now.getTime() - SESSION_START)}
-                />
+        <>
+            <div className="topbar" style={{ width }}>
+                <div className="topbar-left">
+                    {/* The three bars are drawn in CSS, so the button carries
+                        no glyph the game font would have to have. */}
+                    <Button
+                        className="topbar-menu"
+                        aria-label="Menu"
+                        onClick={() => setPopup('menu')}
+                    />
+                    {/* The balance is the way in to setting it, so the figure
+                        the player wants to change is itself the control. */}
+                    <Button onClick={() => setPopup('balance')}>
+                        <Stat
+                            label="Balance"
+                            value={balance.toLocaleString()}
+                        />
+                    </Button>
+                </div>
+                <span className="topbar-title gold">{gameTitle}</span>
+                <div className="topbar-clocks">
+                    <Stat label="Time" value={clock(now)} />
+                    <Stat
+                        label="Session"
+                        value={elapsed(now.getTime() - SESSION_START)}
+                    />
+                </div>
             </div>
-        </div>
+            {popup === 'menu' && (
+                <Menu
+                    onClose={close}
+                    // The menu is a way in to the balance and not a place to
+                    // come back to, so it is left behind rather than under.
+                    onBalance={() => setPopup('balance')}
+                />
+            )}
+            {/* The one sheet handed no measurement of the machine: the rules
+                take the screen rather than the reels. */}
+            {popup === 'balance' && <Balance onClose={close} />}
+        </>
     );
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
     return (
-        <div className="topbar-stat">
+        <span className="topbar-stat">
             <span className="topbar-label">{label}</span>
-            <span className="topbar-value topbar-gold">{value}</span>
-        </div>
+            <span className="topbar-value gold">{value}</span>
+        </span>
     );
 }
