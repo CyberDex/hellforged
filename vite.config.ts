@@ -135,6 +135,17 @@ export default defineConfig((): UserConfig => ({
     build: {
         target: 'esnext',
         assetsDir: 'js',
+        rollupOptions: {
+            output: {
+                // Keeps Pixi out of the entry chunk. Sharing one, its lazy
+                // renderer chunks import the entry back, and the top-level
+                // await in `main.ts` has that entry suspended — so `app.init()`
+                // deadlocks and the build hangs on the loader with no error.
+                // Dev is unaffected: nothing is bundled there.
+                manualChunks: (id) =>
+                    id.includes('node_modules/pixi.js') ? 'pixi' : undefined,
+            },
+        },
     },
     plugins: [
         assetpackPlugin(),
