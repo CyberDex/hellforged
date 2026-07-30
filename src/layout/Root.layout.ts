@@ -2,6 +2,7 @@ import '@pixi/layout';
 import { Layout } from '@pixi/layout';
 import { Sprite } from 'pixi.js';
 import { SpinButton } from './components/SpinButton';
+import { Pannel } from './components/Pannel';
 
 export class RootLayout extends Layout {
     constructor() {
@@ -14,11 +15,42 @@ export class RootLayout extends Layout {
                         styles: { position: 'center' },
                     },
                     buttonSpin: {
-                        content: new SpinButton(),
+                        content: [
+                            {
+                                content: Sprite.from('spinButtonBG'),
+                                styles: {
+                                    position: 'center',
+                                },
+                            },
+                            {
+                                content: new SpinButton(),
+                                styles: {
+                                    position: 'center',
+                                    marginTop: 36,
+                                    marginLeft: 41,
+                                },
+                            },
+                        ],
                         styles: {
                             position: 'center',
-                            marginTop: 270,
-                            marginLeft: 55,
+                            marginTop: 220,
+                            marginLeft: 0,
+                        },
+                    },
+                    betPannel: {
+                        content: new Pannel('Bet'),
+                        styles: {
+                            position: 'center',
+                            marginTop: 210,
+                            marginLeft: -155,
+                        },
+                    },
+                    winPannel: {
+                        content: new Pannel('Win'),
+                        styles: {
+                            position: 'center',
+                            marginTop: 210,
+                            marginLeft: 155,
                         },
                     },
                 },

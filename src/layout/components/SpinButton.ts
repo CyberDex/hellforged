@@ -5,7 +5,7 @@ import { sound } from '../../controllers/sound.controller';
 export class SpinButton extends FancyButton {
     constructor() {
         super({
-            defaultView: 'spin-button',
+            defaultView: 'spinButton',
             anchor: 0.5,
             animations: {
                 hover: {
