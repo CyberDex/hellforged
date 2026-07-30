@@ -9,6 +9,7 @@ export const sounds = {
     reelSpin: { loop: true, volume: 1 },
     reelStop: { loop: false, volume: 1 },
     anticipation: { loop: false, volume: 1 },
+    win: { loop: false, volume: 1 },
 } satisfies Record<string, SoundSettings>;
 
 export type SoundName = keyof typeof sounds;
