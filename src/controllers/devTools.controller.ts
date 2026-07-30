@@ -22,13 +22,15 @@ const draws = [
 // around the middle with room above it for whatever a new scene costs.
 const maxDrawCalls = 20;
 
-// What the panel is given while it is open: enough for the graph and for a
-// cheat button to read its payout out on one line.
-const paneWidth = '260px';
+// What the panel is given while it is open. Nothing in it is labelled from the
+// side any more, so the graph and the buttons each have the whole of this and
+// it is down to what the longest button has to say — a symbol, a count and a
+// multiplier — with room left for the graph to be a shape rather than a spike.
+const paneWidth = '180px';
 
-// What the panel is called, and what the count is hung off while it is shut —
+// What the panel is called: the count, which is all the title bar has to say —
 // see `retitle`.
-const title = 'Dev tools';
+const title = (drawCalls: number) => `DC: ${drawCalls}`;
 
 // Where the panel keeps what it was left with open, under the game's name the
 // way everything else kept in the browser is — see `game.name.ts`. Its own keys
@@ -52,7 +54,7 @@ class DevToolsController {
         const container = this.container();
         const pane = new Pane({
             container,
-            title,
+            title: title(0),
             expanded: this.expanded('pane'),
         });
 
@@ -62,10 +64,22 @@ class DevToolsController {
     }
 
     // Shut, the panel is its title bar and nothing else, so the box it hangs in
-    // is let off the width the readouts need and left to shrink onto that bar.
-    // The rest of the corner goes back to the game rather than staying under a
+    // is let off the width the graph needs and left to shrink onto that bar.
+    // The rest of the corner goes back to the game rather than staying behind a
     // strip of panel that has nothing on it. Set on the way in as well as on the
     // fold, since a panel that opens shut is never folded to get there.
+    //
+    // Shrinking onto the bar has to wait for the fold, and it is the pane that
+    // decides when that is done: it folds on a height of its own and only takes
+    // the folded contents out of the layout once that has run. Until then they
+    // are still there to be measured, and asking them what they want is asking
+    // the graph, which is an SVG left at a width of 100% — a percentage of a box
+    // that is asking it how wide to be, so it is no width at all and the SVG
+    // falls back to the 300px any SVG defaults to. Hence the cap the container
+    // is under: measured or not, it can want no more than the width it has open,
+    // so the panel holds that width for the fold and shrinks once, onto the bar,
+    // as the contents leave. Without it the panel bulges past its open width on
+    // the way down and snaps back at the end.
     private fold(pane: Pane, container: HTMLElement) {
         const fit = (expanded: boolean) => {
             container.style.width = expanded ? paneWidth : 'fit-content';
@@ -99,25 +113,24 @@ class DevToolsController {
 
         this.tally(gl);
 
+        // The shape of the last few seconds, and nothing more: what the frame
+        // just gone cost is on the title bar already, where it is readable with
+        // the panel shut too, so a figure in the pane as well would only be the
+        // same number twice — see `retitle`.
+        //
+        // Unlabelled, since the title bar names it, and that leaves the graph
+        // the whole width of the pane rather than the two thirds a label column
+        // would leave it. Said as an empty label rather than by leaving the
+        // label out: left out, Tweakpane falls back to naming a binding after
+        // the property behind it, and the graph goes up as `drawCalls`.
+        //
         // The pane samples on a timer of its own by default, which would read
         // the same frame twice or miss one; zero hands the timing over to the
-        // refresh below, so both readings are one point per frame.
-        //
-        // The figure is read out over the graph: the graph is the shape a frame
-        // costs, the number is what it actually cost.
-        pane.addBinding(this.#stats, 'drawCalls', {
-            readonly: true,
-            label: 'draw calls',
-            // A count, so it is read out as one rather than to two decimals.
-            format: (value) => value.toFixed(0),
-            interval: 0,
-        });
-
+        // refresh below, so the graph is one point per frame.
         pane.addBinding(this.#stats, 'drawCalls', {
             readonly: true,
             view: 'graph',
-            // Named by the figure above it, which it is the history of.
-            label: '',
+            label: undefined,
             min: 0,
             max: maxDrawCalls,
             interval: 0,
@@ -134,26 +147,28 @@ class DevToolsController {
         });
     }
 
-    // Shut, the readouts fold away with the rest of the panel, and the one
-    // figure worth having an eye on the whole time goes with them. So it moves
-    // onto the title bar, ahead of the name where the eye lands first, and the
-    // panel keeps counting out loud with nothing else showing. Labelled, since
-    // a bare figure on a title bar says nothing about what it is counting.
-    // Open, the pane's own readout has it and the bar goes back to the name.
+    // Shut, the graph folds away with the rest of the panel, and the one figure
+    // worth having an eye on the whole time would go with it. So the title bar
+    // carries it instead, and carries nothing else: the panel has one name to
+    // give and this is more use than it. Labelled, since a bare figure on a
+    // title bar says nothing about what it is counting.
     //
     // Every frame, but only ever as dear as it looks: Tweakpane drops a title
     // it is already showing, so the DOM is touched on the frames the count
     // actually moves and no others.
     private retitle(pane: Pane) {
-        const { drawCalls } = this.#stats;
-
-        pane.title = pane.expanded ? title : `DC: ${drawCalls} · ${title}`;
+        pane.title = title(this.#stats.drawCalls);
     }
 
     // A spin per paying combination the game has, so none of them has to be
     // waited on to be looked at: for every symbol, the pair it pays flat and
     // the three of a kind it pays on its own. Each button spins the machine for
     // real — it only says what the reels have to land on.
+    //
+    // The symbol is written into the button rather than sat beside it in a
+    // label: a label of its own would cost every row a column the buttons then
+    // have to share, and the panel the width of it, to say in two places what
+    // reads perfectly well as one line.
     private cheats(pane: Pane) {
         const folder = pane.addFolder({
             title: 'Cheats',
@@ -166,11 +181,11 @@ class DevToolsController {
             const { two, three } = settings.payouts;
 
             folder
-                .addButton({ label: symbol, title: `two ×${two}` })
+                .addButton({ title: `${symbol} two ×${two}` })
                 .on('click', () => game.cheat(this.payline(symbol, 2)));
 
             folder
-                .addButton({ label: symbol, title: `three ×${three[symbol]}` })
+                .addButton({ title: `${symbol} three ×${three[symbol]}` })
                 .on('click', () => game.cheat(this.payline(symbol, 3)));
         }
 
@@ -212,8 +227,10 @@ class DevToolsController {
     private container() {
         const container = document.createElement('div');
 
-        // Width is left to the fold: it is what the panel is open or shut.
-        container.style.cssText = 'position:fixed;top:8px;right:8px;z-index:2';
+        // Width is left to the fold: it is what the panel is open or shut. The
+        // cap is not — open or shut, mid-fold or settled, the panel is never
+        // wider than it is open. See `fold`.
+        container.style.cssText = `position:fixed;bottom:8px;right:8px;z-index:2;max-width:${paneWidth}`;
 
         document.body.appendChild(container);
 
