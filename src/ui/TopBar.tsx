@@ -6,10 +6,11 @@ import type { RootLayout } from 'layout/Root.layout';
 import { Balance } from 'ui/Balance';
 import { Button } from 'ui/Button';
 import { Menu } from 'ui/Menu';
+import { Rules } from 'ui/Rules';
 
 // The pop ups the bar opens, only ever one at a time: each covers the game, and
 // two of them would be read through one another.
-type Popup = 'menu' | 'balance';
+type Popup = 'menu' | 'rules' | 'balance';
 
 // The session is as old as the module: the UI is mounted with the game, so this
 // is stamped as the page finishes opening it.
@@ -109,13 +110,16 @@ export function TopBar({ layout }: { layout: RootLayout }) {
                     width={reels.width}
                     height={reels.height}
                     onClose={close}
-                    // The menu is a way in to the balance and not a place to
-                    // come back to, so it is left behind rather than under.
+                    // The menu is a way in to the rules and the balance and not
+                    // a place to come back to, so it is left behind rather than
+                    // sat under them.
+                    onRules={() => setPopup('rules')}
                     onBalance={() => setPopup('balance')}
                 />
             )}
             {/* The one sheet handed no measurement of the machine: the rules
                 take the screen rather than the reels. */}
+            {popup === 'rules' && <Rules onClose={close} />}
             {popup === 'balance' && (
                 <Balance width={reels.width} onClose={close} />
             )}

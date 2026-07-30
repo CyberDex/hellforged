@@ -6,23 +6,25 @@ import { Button } from 'ui/Button';
 import { Dialog } from 'ui/Dialog';
 
 // What the player can set about the game rather than play of it: the sound, and
-// the way in to the balance.
+// the way in to the rules and to the balance.
 export function Menu({
     width,
     height,
     onClose,
+    onRules,
     onBalance,
 }: {
     width: number;
     height: number;
     onClose: () => void;
+    onRules: () => void;
     onBalance: () => void;
 }) {
     const { muted, volumes, setMuted, setVolume } = useStore(soundStore);
 
     return (
         // The whole of the reels, and not the width of them alone: what the
-        // menu stands down is three short rows, and they are spread over the
+        // menu stands down is four short rows, and they are spread over the
         // machine rather than gathered at the top of a sheet the size of it.
         <Dialog title="Menu" width={width} minHeight={height} onClose={onClose}>
             <div className="menu">
@@ -58,6 +60,11 @@ export function Menu({
                         onRelease={() => sound.play('click')}
                     />
                 </div>
+
+                <Button className="menu-entry" onClick={onRules}>
+                    <span className="menu-label">Game rules</span>
+                    <span className="gold">›</span>
+                </Button>
 
                 <Button className="menu-entry" onClick={onBalance}>
                     <span className="menu-label">Update balance</span>

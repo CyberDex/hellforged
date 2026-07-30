@@ -82,15 +82,15 @@
     gap: 12px;
 }
 
-/* Three bars: 2px of gold every 6px down a button the height of the text it
+/* Three bars: 2px of gold every 8px down a button the height of the text it
    stands beside. */
 .topbar-menu {
-    width: 20px;
-    height: 14px;
+    width: 24px;
+    height: 18px;
     background: repeating-linear-gradient(
         180deg,
         var(--gold) 0 2px,
-        transparent 2px 6px
+        transparent 2px 8px
     );
     filter: drop-shadow(0 1px 1px var(--outline));
 }
@@ -108,18 +108,18 @@
 }
 
 .topbar-label {
-    font-size: 9px;
+    font-size: 11px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--gold-dim);
 }
 
 .topbar-value {
-    font-size: 15px;
+    font-size: 19px;
 }
 
 .topbar-title {
-    font-size: 19px;
+    font-size: 24px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
 }
@@ -160,7 +160,8 @@
    hands the figure down (see `TopBar.tsx`) — so a pop up covers the machine
    squarely and reads as the same block of it, at the width the bar along the
    top is already drawn at. The 300 below is only what a sheet falls back to
-   when it is opened by something that has not measured anything. */
+   when it is opened by something that has not measured anything, and what a
+   sheet sizing itself here overrides, which is the rules. */
 .dialog {
     box-sizing: border-box;
     width: 300px;
@@ -402,6 +403,88 @@
     );
     border: 1px solid var(--frame);
     border-radius: 8px;
+}
+
+/* The rules are the one thing the overlay shows that is read at length rather
+   than set. Every other sheet is cut to the reels and fits inside them; this one
+   holds more than it can show, so it is given the screen in both directions
+   instead — the full width it will go to, and as much height as it can have —
+   and the document is scrolled inside what is left. It is the one sheet opened
+   without a width handed down to it, so nothing measured off the machine is
+   holding it in (see `Rules.tsx`). The head stays put while the body moves: the
+   sheet is a head over a body it hands the rest of its height to (see
+   `grid-template-rows` above), and this is the body. */
+.rules {
+    width: calc(100vw - 32px);
+    max-height: calc(100vh - 32px);
+}
+
+.rules-body {
+    overflow-y: auto;
+    /* Off the scrollbar, which is laid over the text rather than beside it. */
+    padding-right: 12px;
+    /* The one place the overlay steps out of the game's own face and palette.
+       Everywhere else a figure is glanced at in gold; this is paragraphs read
+       through, so it is set in the plainest face and the plainest white there
+       is, and legibility is allowed to win over the dressing. */
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #fff;
+    /* The overlay is not for selecting, but a rule being quoted to somebody is
+       the one thing on it worth copying. */
+    user-select: text;
+    scrollbar-width: thin;
+    scrollbar-color: var(--frame) transparent;
+}
+
+/* The sheet is already titled `Game rules`, so the document's own first heading
+   would be the same words twice over. */
+.rules-body h1 {
+    display: none;
+}
+
+.rules-body h2 {
+    margin: 22px 0 8px;
+    font-size: 15px;
+    font-weight: normal;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+}
+
+.rules-body p {
+    margin: 0 0 10px;
+}
+
+.rules-body strong {
+    font-weight: normal;
+    color: var(--gold);
+}
+
+/* The paytable and the payline, dressed as the pannels the same figures are
+   read off on the machine: a gold rule under the heading row, and nothing
+   boxing the figures in. */
+.rules-body table {
+    width: 100%;
+    margin: 0 0 12px;
+    border-collapse: collapse;
+}
+
+.rules-body th {
+    padding: 0 10px 6px 0;
+    font-weight: normal;
+    text-align: left;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 12px;
+    color: var(--gold);
+    border-bottom: 1px solid var(--frame);
+}
+
+.rules-body td {
+    padding: 6px 10px 6px 0;
+    border-bottom: 1px solid var(--frame-glow);
 }
 
 /* Comes down with the canvas, which fades in as it is added to the page. */

@@ -11,7 +11,9 @@ import { Button } from 'ui/Button';
 // the machine squarely and reads as the same block of it: whoever opens one has
 // already measured them for the bar along the top and hands the figure down
 // (see `TopBar.tsx`). A height is only given by a sheet with little enough on it
-// to look lost at that size, which is the menu.
+// to look lost at that size, which is the menu. Both are left off by a sheet
+// that wants the screen instead and sizes itself in `ui.css`, which is the
+// rules.
 export function Dialog({
     className,
     title,
