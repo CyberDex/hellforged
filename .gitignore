@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Local Codex instructions
+/AGENTS.md
+/agents/
+
 # AssetPack cache
 .assetpack
 
