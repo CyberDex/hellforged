@@ -29,6 +29,8 @@ The spin is decided in full before a reel has moved, by `src/controllers/backend
 - The slider is locked from the moment the reels start until the game is back to idle: the stake has already been taken, and the win still to come was worked out from it.
 - The stake is taken the moment the reels start; a win is credited once the last reel has stopped.
 - A spin is refused while the balance is below the bet.
+- The balance and the bet are kept in the browser (`localStorage`, under `hellforged.player`), so a reload picks the player up where they left off rather than handing them a fresh `settings.defaultBalance`. Nothing else is kept: the game state and the win belong to the spin that was running, so a reload always opens idle with an empty `Win` pannel. Clearing site data starts a new player.
+- The stake is taken as the reels start and the win is credited as they finish, so a reload in between keeps the balance as the stake left it: the spin is paid for and its win is gone with it.
 
 ## Spin
 
