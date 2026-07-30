@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Ticker } from 'pixi.js';
 import { useStore } from 'zustand';
 import { gameTitle } from 'config/game.name';
 import { settings } from 'config/game.settings';
@@ -48,6 +49,10 @@ export function TopBar({ layout }: { layout: RootLayout }) {
     // Straight off the game's own store, so the bar reads the same balance the
     // reels are played with and there is no second copy of it to keep in step.
     const balance = useStore(gameStore, (state) => state.balance);
+    // The figure the bar actually reads out: the balance it is climbing to, or
+    // the one it has arrived at. The store is still the only balance there is —
+    // this is the reading of it, and it is never what anything is played with.
+    const counted = useCountUp(balance, settings.balanceCountDuration);
     // Whether the game has nothing left to stake: a balance short of the
     // smallest bet it deals in, read only between spins, since a running one has
     // had its stake taken and its win still to pay (see `game.controller.ts`).
@@ -109,7 +114,7 @@ export function TopBar({ layout }: { layout: RootLayout }) {
                     <Button onClick={() => setPopup('balance')}>
                         <Stat
                             label="Balance"
-                            value={balance.toLocaleString()}
+                            value={counted.toLocaleString()}
                         />
                     </Button>
                 </div>
@@ -142,6 +147,54 @@ export function TopBar({ layout }: { layout: RootLayout }) {
             )}
         </>
     );
+}
+
+// A figure that is counted to rather than printed, so money is watched going on
+// and coming off instead of being found already there. It runs on the game's own
+// clock, the same one the win over the reels is counted up on, so both figures
+// climb on the frames the reels are drawn on rather than on a timer of their own.
+// It opens on whatever it is first handed: a session picks its balance up where
+// it was left, and there is nothing to count from.
+function useCountUp(target: number, duration: number) {
+    const [counted, setCounted] = useState(target);
+    // What is on screen, kept beside the state because the count reads it back
+    // every frame: a change part way through carries on from the figure being
+    // read rather than restarting, or jumping to one it never arrived at.
+    const reading = useRef(target);
+
+    useEffect(() => {
+        const from = reading.current;
+        const distance = target - from;
+
+        if (!distance) return;
+
+        let elapsed = 0;
+
+        const count = ({ deltaMS }: Ticker) => {
+            elapsed += deltaMS;
+
+            const progress = Math.min(elapsed / duration, 1);
+
+            // Whole coins, the way every figure in the game is, and the last
+            // frame lands on the target exactly rather than near it.
+            reading.current = Math.round(from + distance * progress);
+            // React drops a render that changes nothing, so the frames a slow
+            // count spends between two figures cost the DOM nothing.
+            setCounted(reading.current);
+
+            if (progress === 1) Ticker.shared.remove(count);
+        };
+
+        Ticker.shared.add(count);
+
+        // A count outlives the frame that started it, so one still climbing is
+        // taken off by whatever replaces it — a further change, or the bar going.
+        return () => {
+            Ticker.shared.remove(count);
+        };
+    }, [target, duration]);
+
+    return counted;
 }
 
 function Stat({ label, value }: { label: string; value: string }) {

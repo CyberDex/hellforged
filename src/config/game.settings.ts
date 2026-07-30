@@ -53,6 +53,9 @@ export const settings = {
     // is held for this long, and its amount counts up over the first part.
     winDuration: 2500,
     winCountDuration: 800,
+    // How long the top bar takes to count the balance to whatever it has
+    // changed to, in either direction, rather than printing the new figure.
+    balanceCountDuration: 600,
     // A big win keeps the zoom it was built up to and is held for as long as
     // its stage above says, its amount counting up over all but the last of it.
     // The first stage is also what a win has to reach to be a big one at all:
