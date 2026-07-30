@@ -40,6 +40,7 @@
 /* What the keyboard is on, in the game's gold rather than in the browser's own
    blue, which is the one colour on the page from nowhere in the art. */
 .press:focus-visible,
+.volume-range:focus-visible,
 .balance-field:focus-visible {
     outline: 1px solid var(--gold);
     outline-offset: 2px;
@@ -274,14 +275,31 @@
     text-align: right;
 }
 
-/* The bet slider, in the DOM: hot metal run along a groove as far as the
-   handle, and the handle itself a coin on its edge. `--filled` is written on by
-   the component, since a track has no way of reading the value it belongs to. */
+/* The volume sliders, in the DOM: hot metal run along a groove as far as the
+   handle, and the handle itself a coin on its edge. */
 .volume-range {
+    /* The coin, and the groove it is run along. The track the two are laid on
+       is as tall as the coin rather than as the groove, and the groove is
+       painted down the middle of that track: with the coin and the track the
+       same height, the coin sits on the line whether the browser hangs it off
+       the top of the track or centres it on the track, which the engines do not
+       agree on and which is what walks a handle off its groove. */
+    --coin: 22px;
+    --groove: 6px;
+    /* Where the gold gives out: under the middle of the coin. The coin's middle
+       only travels from half a coin in to half a coin off the far end, so a
+       straight percentage of the groove would run ahead of the handle at one
+       end and trail it at the other. `--filled` is the share of the way along,
+       written on by the component, since a track has no way of reading the
+       value it belongs to. */
+    --gold-to: calc(var(--filled, 0) * (100% - var(--coin)) + var(--coin) / 2);
     -webkit-appearance: none;
     appearance: none;
+    box-sizing: border-box;
     width: 100%;
-    height: 14px;
+    height: var(--coin);
+    margin: 0;
+    padding: 0;
     background: none;
     cursor: pointer;
 }
@@ -290,41 +308,42 @@
    whole list over the prefix it does not know, so grouping them would leave
    both of them with a plain track. */
 .volume-range::-webkit-slider-runnable-track {
-    height: 3px;
-    border-radius: 2px;
+    height: var(--coin);
     background: linear-gradient(
-        90deg,
-        var(--gold) var(--filled),
-        var(--outline) var(--filled)
-    );
+            90deg,
+            var(--gold) var(--gold-to),
+            var(--outline) var(--gold-to)
+        )
+        center / 100% var(--groove) no-repeat;
 }
 
 .volume-range::-moz-range-track {
-    height: 3px;
-    border-radius: 2px;
+    height: var(--coin);
     background: linear-gradient(
-        90deg,
-        var(--gold) var(--filled),
-        var(--outline) var(--filled)
-    );
+            90deg,
+            var(--gold) var(--gold-to),
+            var(--outline) var(--gold-to)
+        )
+        center / 100% var(--groove) no-repeat;
 }
 
+/* Sized to the border rather than inside it, so the coin measures the `--coin`
+   it is laid on and lands on the middle of the groove exactly. */
 .volume-range::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    /* Half the handle above the track and half below it, which Firefox does of
-       its own accord and WebKit has to be told. */
-    margin-top: -7px;
-    width: 13px;
-    height: 13px;
+    box-sizing: border-box;
+    width: var(--coin);
+    height: var(--coin);
     border: 2px solid var(--outline);
     border-radius: 50%;
     background: var(--gold);
 }
 
 .volume-range::-moz-range-thumb {
-    width: 13px;
-    height: 13px;
+    box-sizing: border-box;
+    width: var(--coin);
+    height: var(--coin);
     border: 2px solid var(--outline);
     border-radius: 50%;
     background: var(--gold);

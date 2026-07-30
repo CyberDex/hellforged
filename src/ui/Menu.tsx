@@ -89,9 +89,13 @@ function Volume({
                 max={1}
                 step={0.05}
                 value={value}
-                // How far along the handle is, since a track has no way of
-                // reading the value it belongs to (see `ui.css`).
-                style={{ '--filled': `${value * 100}%` } as CSSProperties}
+                // How far along the handle is, as the share of the way it
+                // stands at rather than as a distance: the groove works out
+                // where the gold gives out from it, which is under the middle
+                // of the handle and not at that share of the whole groove (see
+                // `ui.css`). A track has no way of reading the value it belongs
+                // to, so it is told.
+                style={{ '--filled': `${value}` } as CSSProperties}
                 onChange={(event) => onChange(event.target.valueAsNumber)}
                 onPointerUp={onRelease}
                 onKeyUp={onRelease}
