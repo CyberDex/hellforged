@@ -10,7 +10,7 @@ export const FONT_FAMILY = 'PirataOne';
 export function setDefaultTextStyle() {
     TextStyle.defaultTextStyle.fontFamily = FONT_FAMILY;
     TextStyle.defaultTextStyle.fill = new FillPattern({
-        texture: Texture.from('texture'),
+        texture: Texture.from('textTexture'),
         repetition: 'repeat',
         textureSpace: 'local',
     });
