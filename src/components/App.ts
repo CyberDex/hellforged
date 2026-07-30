@@ -1,4 +1,4 @@
-import { Application, type ApplicationOptions, Assets } from 'pixi.js';
+import { Application, type ApplicationOptions, ArrayOr, Assets } from 'pixi.js';
 
 export class App extends Application {
     async init(options?: Partial<ApplicationOptions>) {
@@ -11,13 +11,13 @@ export class App extends Application {
         });
     }
 
-    async loadAssets(bundles: string[] = []) {
+    async loadAssets(bundles: ArrayOr<string>) {
         await Assets.init({
             manifest: 'manifest.json',
             basePath: 'assets',
         });
 
-        await Assets.loadBundle(['default', ...bundles]);
+        await Assets.loadBundle(bundles);
 
         document.getElementById('loader')?.remove();
         document.body.appendChild(this.canvas);

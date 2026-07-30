@@ -103,11 +103,6 @@ function assetpackPlugin(): Plugin {
             await ap.watch();
         },
         configureServer: (server) => {
-            // The generated assets sit inside `build.outDir`, which both
-            // `publicDir` and the dev watcher deliberately ignore, so Vite
-            // would never serve them. Rewriting to the real path hands the
-            // request to Vite's static middleware while the app keeps
-            // requesting the same `assets/...` URL it does in production.
             server.middlewares.use((req, _res, next) => {
                 if (req.url?.startsWith('/assets/')) {
                     req.url = `/dist${req.url}`;
@@ -122,8 +117,6 @@ function assetpackPlugin(): Plugin {
                 ap = undefined;
             }
         },
-        // A build empties `dist` before writing the bundle, so the assets can
-        // only be generated once that is done.
         closeBundle: async () => {
             if (!isBuild) return;
 
@@ -134,18 +127,13 @@ function assetpackPlugin(): Plugin {
 
 export default defineConfig((): UserConfig => ({
     base: './',
-    // Nothing left to copy: the asset folder is AssetPack's, and it wipes that
-    // folder on every run.
     publicDir: false,
     server: {
         port: 8080,
         open: true,
     },
-    // Pixi + top-level await in main.ts need a modern output target.
     build: {
         target: 'esnext',
-        // Keeps Vite's own output clear of the generated assets — entry,
-        // chunks, CSS and imported files all land in `dist/js`.
         assetsDir: 'js',
     },
     plugins: [
