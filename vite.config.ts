@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,6 +13,35 @@ import { pixiPipes } from '@assetpack/core/pixi';
 import checker from 'vite-plugin-checker';
 
 const assetsOutput = './dist/assets';
+
+// The game is named once, by `name` in package.json, and reaches the rest of
+// the app from here: `define` hands the two constants to `config/game.name.ts`,
+// and the `%GAME_NAME%` / `%GAME_TITLE%` placeholders in index.html are filled
+// in below. Reskinning this app as another slot renames it in that one place.
+const { name: gameName } = JSON.parse(
+    readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
+) as { name: string };
+
+// The slug spelled out for the player: `dead-mans-gold` -> `Dead Mans Gold`.
+const gameTitle = gameName
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
+function gameNamePlugin(): Plugin {
+    return {
+        name: 'vite-plugin-game-name',
+        transformIndexHtml: {
+            // Ahead of Vite's own `%...%` pass, which warns on placeholders it
+            // has no env variable for.
+            order: 'pre',
+            handler: (html) =>
+                html
+                    .replaceAll('%GAME_TITLE%', gameTitle)
+                    .replaceAll('%GAME_NAME%', gameName),
+        },
+    };
+}
 
 // Bare-specifier imports for the top-level `src` folders, so nothing has to
 // count `../` hops. Keep in sync with `paths` in tsconfig.json.
@@ -147,6 +177,10 @@ function assetpackPlugin(): Plugin {
 export default defineConfig((): UserConfig => ({
     base: './',
     publicDir: false,
+    define: {
+        __GAME_NAME__: JSON.stringify(gameName),
+        __GAME_TITLE__: JSON.stringify(gameTitle),
+    },
     resolve: {
         alias: srcAliases,
     },
@@ -170,6 +204,7 @@ export default defineConfig((): UserConfig => ({
         },
     },
     plugins: [
+        gameNamePlugin(),
         assetpackPlugin(),
         checker({
             typescript: true,

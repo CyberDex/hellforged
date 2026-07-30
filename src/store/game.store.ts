@@ -1,6 +1,7 @@
 import { createStore } from 'zustand/vanilla';
 import { persist } from 'zustand/middleware';
 import { settings } from 'config/game.settings';
+import { gameName } from 'config/game.name';
 
 export type GameState = 'idle' | 'spin' | 'reveal';
 
@@ -29,7 +30,7 @@ export const gameStore = createStore<GameStore>()(
             setWin: (win) => set({ win }),
         }),
         {
-            name: 'hellforged.player',
+            name: `${gameName}.player`,
             // Only the money is kept: the game state and the win belong to the
             // spin that was running, and a reload has no spin, so a session
             // always opens idle with nothing on the win pannel.
