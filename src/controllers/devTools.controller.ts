@@ -21,6 +21,10 @@ const draws = [
 // around the middle with room above it for whatever a new scene costs.
 const maxDrawCalls = 20;
 
+// What the panel is given while it is open: enough for the graph and for a
+// cheat button to read its payout out on one line.
+const paneWidth = '260px';
+
 // The panel the game is watched from while it is being worked on. Mounted only
 // in dev, and loaded that way too, so none of this reaches the player — see
 // `main.ts`. Tweakpane's own docs: https://tweakpane.github.io/docs/
@@ -31,13 +35,22 @@ class DevToolsController {
     #calls = 0;
 
     init() {
-        const pane = new Pane({
-            container: this.container(),
-            title: 'Dev tools',
-        });
+        const container = this.container();
+        const pane = new Pane({ container, title: 'Dev tools' });
 
+        this.fold(pane, container);
         this.drawCalls(pane);
         this.cheats(pane);
+    }
+
+    // Shut, the panel is its title bar and nothing else, so the box it hangs in
+    // is let off the width the readouts need and left to shrink onto that bar.
+    // The rest of the corner goes back to the game rather than staying under a
+    // strip of panel that has nothing on it.
+    private fold(pane: Pane, container: HTMLElement) {
+        pane.on('fold', ({ expanded }) => {
+            container.style.width = expanded ? paneWidth : 'fit-content';
+        });
     }
 
     private drawCalls(pane: Pane) {
@@ -140,8 +153,7 @@ class DevToolsController {
     private container() {
         const container = document.createElement('div');
 
-        container.style.cssText =
-            'position:fixed;top:8px;right:8px;width:260px;z-index:2';
+        container.style.cssText = `position:fixed;top:8px;right:8px;width:${paneWidth};z-index:2`;
 
         document.body.appendChild(container);
 
