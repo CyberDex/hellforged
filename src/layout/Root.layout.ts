@@ -8,6 +8,7 @@ import { SlotMachine } from 'layout/components/SlotMachine';
 import { settings } from 'config/game.settings';
 import { BG } from 'layout/components/BG';
 import { WinLayout } from 'layout/Win.layout';
+import { setDefaultTextStyle } from 'config/font.settings';
 
 export class RootLayout extends Layout {
     bg: BG;
@@ -27,6 +28,8 @@ export class RootLayout extends Layout {
     #zoom = 1;
 
     constructor() {
+        setDefaultTextStyle();
+
         const bg = new BG();
         const spinButton = new SpinButton();
         const betPannel = new Pannel('Bet');

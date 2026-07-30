@@ -10,9 +10,7 @@ export class WinLayout extends Layout {
         const amount = new Text({
             text: '0',
             style: {
-                fontFamily: 'Arial',
-                fill: '#ffca50',
-                fontSize: 64,
+                fontSize: 75,
                 fontWeight: 'bold',
                 align: 'center',
                 stroke: { color: '#000000', width: 8 },
@@ -26,9 +24,8 @@ export class WinLayout extends Layout {
                         content: 'WIN',
                         styles: {
                             position: 'center',
-                            color: '#d3a13b',
-                            fontSize: 30,
-                            marginTop: -55,
+                            fontSize: 50,
+                            marginTop: -40,
                             stroke: { color: '#000000', width: 4 },
                         },
                     },
@@ -41,7 +38,7 @@ export class WinLayout extends Layout {
                             // The amount grows a digit at a time, so it is the
                             // layout that keeps it centred, not its own width.
                             textAlign: 'center',
-                            marginTop: 10,
+                            marginTop: 50,
                         },
                     },
                 },

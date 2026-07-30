@@ -11,10 +11,9 @@ export class Pannel extends Layout {
 
     constructor(title: string) {
         const val = new Text(EMPTY, {
-            fontFamily: 'Arial',
-            fill: '#ffca50',
-            fontSize: 24,
+            fontSize: 32,
             align: 'center',
+            stroke: { color: '#000000', width: 4 },
         });
 
         super({
@@ -28,10 +27,10 @@ export class Pannel extends Layout {
                         content: title,
                         styles: {
                             position: 'center',
-                            color: '#ffca50',
-                            fontSize: 18,
+                            fontSize: 22,
                             marginLeft: -55,
                             marginTop: -10,
+                            stroke: { color: '#000000', width: 4 },
                         },
                     },
                     value: {

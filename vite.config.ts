@@ -68,8 +68,15 @@ const assetpackConfig: AssetPackConfig = {
             },
             manifest: {
                 createShortcuts: true,
-                includeMetaData: false,
                 trimExtensions: true,
+                // Cache busting puts a hash in the filename, and Pixi names a
+                // web font after the file it came from — so the family would
+                // change on every build. The `{wf}` pipe pins it to the name
+                // the font is filed under, and that only reaches the loader as
+                // `data.family` with the metadata written out flat rather than
+                // under `data.tags`.
+                includeMetaData: true,
+                legacyMetaDataOutput: false,
             },
             audio: {
                 inputs: ['.mp3', '.ogg', '.wav'],
