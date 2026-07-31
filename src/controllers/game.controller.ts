@@ -10,7 +10,7 @@ import type { SpinResult } from 'math/spin';
 import type { RootLayout } from 'layout/Root.layout';
 import type { Reels } from 'layout/components/Reels';
 
-class GameController {
+export class GameController {
     #layout?: RootLayout;
     #reels?: Reels;
     #landed = 0;
@@ -21,7 +21,7 @@ class GameController {
     #unsubscribe?: () => void;
 
     init(layout: RootLayout) {
-        const { betSlider, reels, betPannel, winPannel } = layout;
+        const { reels } = layout;
 
         this.#layout = layout;
         this.#reels = reels;
@@ -33,16 +33,9 @@ class GameController {
 
         if (restored.pending) restored.settleSpin();
 
-        // Before the slider is listened to, so restoring the handle is not
-        // read back as a new bet.
-        const { bet, win, symbols } = gameStore.getState();
-
-        betPannel.value = bet;
-        betSlider.value = bet;
+        const { symbols } = gameStore.getState();
 
         if (symbols) reels.symbols = symbols;
-
-        winPannel.value = win;
 
         this.listen(layout);
 
@@ -123,8 +116,6 @@ class GameController {
 
     updateBalance(balance: number) {
         gameStore.getState().setBalance(balance);
-
-        if (this.state === 'idle') this.settle();
     }
 
     destroy() {
@@ -137,7 +128,11 @@ class GameController {
         const { spinButton, betSlider, reels, winPannel, winLayout } = layout;
 
         spinButton.onPress.connect(() => this.spin());
-        betSlider.onUpdate.connect((bet) => gameStore.getState().setBet(bet));
+        betSlider.onUpdate.connect((bet) => {
+            const { bet: current, setBet } = gameStore.getState();
+
+            if (bet !== current) setBet(bet);
+        });
 
         reels.on('stopped', () => this.onReelStopped());
 
@@ -155,10 +150,8 @@ class GameController {
 
         if (!layout) return;
 
-        const { reels, betPannel, winPannel, winLayout } = layout;
-        const { state, bet, win } = current;
-
-        if (bet !== previous.bet) betPannel.value = bet;
+        const { reels, winPannel, winLayout } = layout;
+        const { state, win } = current;
 
         if (win !== previous.win) {
             if (win > 0) {
@@ -169,74 +162,92 @@ class GameController {
             }
         }
 
-        if (state === previous.state) return;
+        if (state !== previous.state) {
+            if (state === 'spin') {
+                sound.play('reelSpin');
+            } else if (previous.state === 'spin') {
+                sound.stop('reelSpin');
+            }
 
-        if (state !== 'idle') this.lockControls();
+            if (state === 'idle') {
+                winLayout.hide();
+                reels.highlight(null);
 
-        if (state === 'spin') {
-            sound.play('reelSpin');
-        } else if (previous.state === 'spin') {
-            sound.stop('reelSpin');
+                if (layout.unzoom()) sound.play('reelStop');
+            }
         }
 
-        if (state === 'idle') {
-            winLayout.hide();
-            reels.highlight(null);
+        if (state === 'idle') return this.settle();
 
-            // The announcement is what reveals the figure; the pannel is
-            // what keeps it beside the reels.
-            winPannel.value = win;
-
-            if (layout.unzoom()) sound.play('reelStop');
-            this.settle();
-        }
+        this.renderControls();
     }
 
     private settle() {
         const { balance, setBalance } = gameStore.getState();
 
-        if (balance > 0 && balance < gmeSettings.minBet) setBalance(0);
-
-        this.capBet();
-        this.lockControls();
-    }
-
-    private lockControls() {
-        if (!this.#layout) return;
-
-        const { spinButton, betSlider, betPannel, winLayout } = this.#layout;
-        const { canSpin } = this;
-
-        spinButton.enabled = canSpin;
-        betSlider.enabled = canSpin;
-
-        if (canSpin) {
-            betPannel.value = gameStore.getState().bet;
-            winLayout.hide();
+        if (balance > 0 && balance < gmeSettings.minBet) {
+            setBalance(0);
 
             return;
         }
 
-        // A running spin still reads out its stake; only being out empties it.
-        if (this.state !== 'idle') return;
+        if (this.capBet()) return;
+
+        this.renderControls();
+    }
+
+    private renderControls() {
+        if (!this.#layout) return;
+
+        const { spinButton, betSlider, betPannel, winPannel, winLayout } =
+            this.#layout;
+        const { state, bet, win } = gameStore.getState();
+        const { canSpin } = this;
+
+        spinButton.enabled = canSpin;
+        betSlider.enabled = canSpin;
+        betSlider.max = this.maxBet;
+        betSlider.value = bet;
+
+        // A running spin keeps its stake visible and leaves the animated win
+        // figure to the reveal callback.
+        if (state !== 'idle') {
+            betPannel.value = bet;
+
+            return;
+        }
+
+        winPannel.value = win;
+
+        if (canSpin) {
+            betPannel.value = bet;
+            winLayout.hide();
+
+            return;
+        }
 
         betPannel.clear();
         winLayout.outOfFunds();
     }
 
     private capBet() {
-        const betSlider = this.#layout?.betSlider;
+        const { bet, setBet } = gameStore.getState();
+        const max = this.maxBet;
 
-        if (!betSlider) return;
+        if (bet <= max) return false;
 
-        const { balance, bet } = gameStore.getState();
+        setBet(max);
 
-        betSlider.max = Math.max(
+        return true;
+    }
+
+    private get maxBet() {
+        const { balance } = gameStore.getState();
+
+        return Math.max(
             Math.min(gmeSettings.maxBet, balance),
             gmeSettings.minBet,
         );
-
-        if (bet > betSlider.max) betSlider.value = betSlider.max;
     }
 
     private stopDelay(index: number) {
