@@ -198,9 +198,12 @@ const assetpackConfig: AssetPackConfig = {
             audio: {
                 inputs: ['.mp3', '.ogg', '.wav'],
                 outputs: [
+                    // Recompressed even when the source already is the format,
+                    // so a heavy master shipped as .mp3 leaves at the mix's
+                    // own bitrate rather than as it came in.
                     {
                         formats: ['.mp3'],
-                        recompress: false,
+                        recompress: true,
                         options: {
                             audioBitrate: 96,
                             audioChannels: 1,
@@ -209,7 +212,7 @@ const assetpackConfig: AssetPackConfig = {
                     },
                     {
                         formats: ['.ogg'],
-                        recompress: false,
+                        recompress: true,
                         options: {
                             audioBitrate: 32,
                             audioChannels: 1,
