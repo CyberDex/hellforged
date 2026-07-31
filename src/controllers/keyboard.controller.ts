@@ -52,10 +52,11 @@ class KeyboardController {
 
     // Whether the keys are the game's to answer. Anything on the overlay that
     // holds the focus is being worked from the keyboard itself — a button that
-    // has been pressed, a field being typed into — and the menu takes them whole:
-    // it lays a veil over the game that keeps pointers off the reels, and the keys
-    // are kept off with it rather than playing the machine from behind the drawer
-    // that is standing open over it (see `.veil` in `ui.css`).
+    // has been pressed, a field being typed into — and whatever the overlay has
+    // open takes them whole: the drawer out of the bar and the sheet the rules are
+    // read on each lay a veil over the game that keeps pointers off the reels, and
+    // the keys are kept off with it rather than playing the machine from behind
+    // what is standing open over it (see `.veil` in `ui.css`).
     private get free() {
         return (
             document.activeElement === document.body &&

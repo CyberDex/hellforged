@@ -270,9 +270,11 @@
    (see `.hud`), and that mount is what an absolute box inside it measures against,
    so nothing here has to be told how wide the machine was drawn.
 
-   Everything the overlay shows that is not a reading off the machine is on this
-   one drawer: the rules and the balance are let down inside it (see
-   `.menu-section`) rather than opened over the game. */
+   What the drawer holds is what is set rather than what is read: the sound, the way
+   the game is drawn, and the balance let down inside it (see `.menu-section`). The
+   rules are the one thing off it — they are read at length, and a drawer as narrow
+   as the reels is no place for that, so they are opened over the game on a sheet of
+   their own (see `.rules`). */
 .menu {
     position: absolute;
     top: calc(100% + 8px);
@@ -349,8 +351,8 @@
 }
 
 /* An entry and the section it stands down, as the one row of the menu: the gap
-   the drop spaces its rows by is between the two folds and not inside one, so a
-   section that is shut leaves no room behind it. */
+   the drop spaces its rows by is around the fold and not inside it, so a section
+   that is shut leaves no room behind it. */
 .menu-fold {
     display: grid;
 }
@@ -593,20 +595,88 @@
     border-radius: 8px;
 }
 
-/* The rules are the one thing the overlay shows that is read at length rather than
-   set, and the one thing on the drop with more on it than there is room for: the
-   section is held to a share of the screen and the document is scrolled inside
-   what it is given, so letting it down can never run the drawer off the bottom of
-   the game. */
+/* The rules on a sheet of their own, over the game rather than let down inside the
+   drawer: they are the one thing the overlay shows that is read at length rather
+   than set, and the drawer is cut to the reels, which is too narrow a column to
+   read a document down. So this is the one thing the overlay opens over the
+   machine, and it is given all but the last per cent of the screen both ways.
+
+   Fixed to the screen and laid beside the mount the bar and its drawer hang off
+   rather than on it (see `.hud`): that mount is the width the reels measure, and
+   this is the one sheet in the game not cut to them. Cut from the same pane as the
+   two of them all the same (see `.glass`), so it reads as a piece of the same
+   machine: the game is blurred behind the whole of it and goes on turning under the
+   rules as light on them.
+
+   `dvh` and `dvw` rather than `vh` and `vw`: a phone's address bar comes and goes,
+   and the sheet is held to the screen the game is actually being shown on rather
+   than to the tallest that screen ever gets. */
+.rules {
+    position: fixed;
+    /* The last per cent of the screen, left at either edge: 98% each way. */
+    inset: 1dvh 1dvw;
+    box-sizing: border-box;
+    display: grid;
+    /* The head, then the document under it: the title and the way out keep their
+       own height and the body is handed the whole of what is left. Never less than
+       none of it — the body is what scrolls, and a row that cannot shrink past its
+       content would push the bottom of the sheet off the screen instead. */
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 18px;
+    padding: 16px 22px 22px;
+    pointer-events: auto;
+    border-radius: 14px;
+    /* Up off the bar it was opened from. */
+    animation: rules-rise 200ms ease-out both;
+}
+
+.rules-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--frame);
+}
+
+.rules-title {
+    font-size: 19px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.rules-close {
+    font-size: 26px;
+    line-height: 1;
+}
+
+/* The document itself, scrolled inside whatever height the head leaves it: the
+   sheet is as tall as the screen, and there is still more to read than that holds.
+
+   Held to a measure and stood down the middle of the sheet rather than run the
+   width of it: the screen is given to the sheet so that the paytable and its
+   symbols are read at a glance instead of a line at a time, not so that a sentence
+   is dragged the length of a monitor — a line much past eighty characters loses the
+   eye on its way back to the left edge. */
 .rules-body {
-    max-height: 42vh;
+    justify-self: center;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 80ch;
     overflow-y: auto;
     /* Off the scrollbar, which is laid over the text rather than beside it. */
     padding-right: 12px;
     /* The one place the overlay steps out of the game's palette. Everywhere else
        a figure is glanced at in gold; this is paragraphs read through, so it is
-       set in the plainest white there is. */
-    font-size: 15px;
+       set in the plainest white there is.
+
+       Read at the size the sheet is opened at: the measure above is counted in
+       characters, so the type and the column it is set in grow together and the
+       document is a page of the sheet at any screen rather than the same small
+       print in the middle of a bigger and bigger one. The floor is what it was
+       read at on the drawer, for a phone, and the ceiling is as large as running
+       text wants to be. */
+    font-size: clamp(15px, 0.55dvw + 8px, 19px);
     line-height: 1.6;
     color: #fff;
     /* The overlay is not for selecting, but a rule being quoted to somebody is
@@ -689,6 +759,20 @@
     }
 }
 
+/* Up off the bar the sheet was opened from, and only the last of the way: it is all
+   but the whole screen, and a sheet that size sliding any distance reads as the page
+   moving rather than as a sheet coming up over it. */
+@keyframes rules-rise {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
 /* The name is the first thing to go once the screen is narrow enough for the bar
    to run out of room: the balance and the clocks are read while the game is
    played, and the game the player opened is not something they need telling. The
@@ -716,7 +800,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .topbar {
+    .topbar,
+    .rules {
         animation: none;
     }
 

@@ -7,14 +7,16 @@ import { gameStore } from 'store/game.store';
 import type { RootLayout } from 'layout/Root.layout';
 import { Button } from 'ui/Button';
 import { Menu } from 'ui/Menu';
-import type { Section } from 'ui/Menu';
+import { Rules } from 'ui/Rules';
 import { formatAmount } from 'utils/formatAmount';
 
-// What the bar has open. Everything the overlay shows is on the one drawer out of
-// the bar, so this is whether that is down and which of its two sections is let
-// out with it: `menu` is the drawer on its own, and the other two are the drawer
-// with that section standing open (see `Menu.tsx`).
-type Open = 'menu' | Section;
+// What the bar has open, and only ever the one of them: the drawer out of the bar
+// on its own, the drawer with the balance standing open inside it (see
+// `Menu.tsx`), or the rules on a sheet over the game. The sheet is opened from
+// the drawer and takes its place rather than standing over it — the drawer is a
+// way in to the rules and not somewhere to come back to, and it would be behind
+// the sheet either way (see `Rules.tsx`).
+type Open = 'menu' | 'balance' | 'rules';
 
 // The session is as old as the module: the UI is mounted with the game, so this
 // is stamped as the page finishes opening it.
@@ -63,7 +65,11 @@ export function TopBar({ layout }: { layout: RootLayout }) {
     // is the machine turned round rather than a sheet of its own put over it.
     const [width, setWidth] = useState(() => reelWidth(layout));
     const [open, setOpen] = useState<Open>();
-    // Held still, since the menu listens for the Escape that calls it.
+    // Whether the drawer is down, which is everything the bar opens but the rules:
+    // those are on a sheet of their own and stand where the drawer would.
+    const drawer = open === 'menu' || open === 'balance';
+    // Held still, since the drawer and the sheet both listen for the Escape that
+    // calls it.
     const close = useCallback(() => setOpen(undefined), []);
 
     // Both clocks are driven by the one hand. Neither reads out seconds, but it
@@ -102,7 +108,7 @@ export function TopBar({ layout }: { layout: RootLayout }) {
                 `.veil` in `ui.css`). It is laid before the bar, so the bar and the
                 drop are both still over it and both still take their own
                 clicks. */}
-            {open && <div className="veil" onClick={close} />}
+            {drawer && <div className="veil" onClick={close} />}
             {/* The bar and the drawer under it, side by side on the one mount at
                 the machine's own width: the drawer hangs off this rather than off
                 the bar, so what is behind it to be blurred is the game and not the
@@ -119,7 +125,7 @@ export function TopBar({ layout }: { layout: RootLayout }) {
                         <Button
                             className="topbar-menu"
                             aria-label="Menu"
-                            aria-expanded={open !== undefined}
+                            aria-expanded={drawer}
                             // The drawer is no longer the next thing along from
                             // its own handle, so the handle is told what it opens
                             // rather than leaving it to be found.
@@ -150,18 +156,25 @@ export function TopBar({ layout }: { layout: RootLayout }) {
                     </div>
                 </div>
                 <Menu
-                    open={open !== undefined}
-                    // The drawer on its own is no section, and either of the
-                    // other two is that section standing open on it.
-                    section={open === 'menu' ? undefined : open}
-                    // Asked for again, a section that is already open shuts and
-                    // leaves the drawer standing.
-                    onSection={(section) =>
-                        setOpen((was) => (was === section ? 'menu' : section))
+                    open={drawer}
+                    balance={open === 'balance'}
+                    // Asked for again, the section shuts and leaves the drawer
+                    // standing.
+                    onBalance={() =>
+                        setOpen((was) =>
+                            was === 'balance' ? 'menu' : 'balance',
+                        )
                     }
+                    onRules={() => setOpen('rules')}
                     onClose={close}
                 />
             </div>
+            {/* The one thing the overlay opens over the machine rather than out of
+                the bar, so it is laid beside the mount the bar and its drawer hang
+                off rather than on it: that mount is the width the reels measure,
+                and this is the one sheet in the game not cut to them — it is given
+                the screen instead (see `.rules` in `ui.css`). */}
+            {open === 'rules' && <Rules onClose={close} />}
         </>
     );
 }

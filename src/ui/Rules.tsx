@@ -1,9 +1,10 @@
-import { Suspense, use } from 'react';
+import { Suspense, use, useEffect } from 'react';
 import { marked } from 'marked';
 import { Sprite, Texture } from 'pixi.js';
 import { settings } from 'config/game.settings';
 import { definition, symbols } from 'config/game.definition';
 import { app } from 'controllers/app.controller';
+import { Button } from 'ui/Button';
 import { formatAmount } from 'utils/formatAmount';
 
 // The rules as the player is told them: their own document, filed with the art
@@ -98,14 +99,50 @@ function Body() {
     );
 }
 
-// Let down inside the menu rather than opened over the game, so the rules are
-// read off the same drawer they are asked for from (see `Menu.tsx`). It is the
-// one thing on that drawer with more on it than there is room for, so it scrolls
-// what it cannot show (see `.rules-body` in `ui.css`).
-export function Rules() {
+// Opened over the game rather than let down inside the menu: the rules are the
+// one thing the overlay shows that is read at length rather than glanced at or
+// set, and the drawer they are asked for from is cut to the reels, which is too
+// narrow a column to read a document down. So this is the one sheet the overlay
+// puts over the machine, and it is given all but the last per cent of the screen
+// in both directions, scrolling what even that cannot show (see `.rules` in
+// `ui.css`).
+//
+// The sheet and the veil under it are laid side by side rather than one inside
+// the other: the veil is what shuts the sheet on a click anywhere off it and what
+// keeps that click off the reels, and a sheet standing beside it has no clicks of
+// its own to stop from reaching it.
+export function Rules({ onClose }: { onClose: () => void }) {
+    // Shut on Escape, the way the drawer is. The sheet takes the drawer's place
+    // rather than standing over it (see `TopBar.tsx`), so the key is only ever
+    // listened for once.
+    useEffect(() => {
+        const close = ({ key }: KeyboardEvent) => {
+            if (key === 'Escape') onClose();
+        };
+
+        window.addEventListener('keydown', close);
+
+        return () => window.removeEventListener('keydown', close);
+    }, [onClose]);
+
     return (
-        <Suspense fallback={<div className="rules-body" />}>
-            <Body />
-        </Suspense>
+        <>
+            <div className="veil" onClick={onClose} />
+            <div className="rules glass" role="dialog" aria-label="Game rules">
+                <div className="rules-head">
+                    <span className="rules-title gold">Game rules</span>
+                    <Button
+                        className="rules-close gold"
+                        aria-label="Close"
+                        onClick={onClose}
+                    >
+                        ×
+                    </Button>
+                </div>
+                <Suspense fallback={<div className="rules-body" />}>
+                    <Body />
+                </Suspense>
+            </div>
+        </>
     );
 }

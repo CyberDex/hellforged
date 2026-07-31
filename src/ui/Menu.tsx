@@ -6,16 +6,12 @@ import { graphicsStore } from 'store/graphics.store';
 import { soundStore } from 'store/sound.store';
 import { Balance } from 'ui/Balance';
 import { Button } from 'ui/Button';
-import { Rules } from 'ui/Rules';
-
-// The two entries on the menu that stand something down of their own rather than
-// switching something on it. Only ever one of them is let out at a time, which is
-// the drop's height held to something the screen has room for.
-export type Section = 'rules' | 'balance';
 
 // What the player can set about the game rather than play of it: the sound, how
-// it is drawn, and the rules and the balance, each let down inside the menu on
-// the entry that names it.
+// it is drawn, and the balance, which is let down inside the menu on the entry
+// that names it. The rules are the one entry that leads off the drawer instead of
+// standing something down inside it — they are read at length, and this drop is
+// as wide as the reels (see `Rules.tsx`).
 //
 // It drops out of the bar rather than covering the machine: it is cut to the bar,
 // so it reads as the machine turned round rather than a sheet put over it. Hung
@@ -26,13 +22,15 @@ export type Section = 'rules' | 'balance';
 // keyboard along with the screen.
 export function Menu({
     open,
-    section,
-    onSection,
+    balance,
+    onBalance,
+    onRules,
     onClose,
 }: {
     open: boolean;
-    section?: Section;
-    onSection: (section: Section) => void;
+    balance: boolean;
+    onBalance: () => void;
+    onRules: () => void;
     onClose: () => void;
 }) {
     const { muted, volumes, setMuted, setVolume } = useStore(soundStore);
@@ -101,28 +99,30 @@ export function Menu({
                 </Button>
             </div>
 
-            <Fold
-                label="Game rules"
-                open={section === 'rules'}
-                onToggle={() => onSection('rules')}
+            {/* The rules are opened over the game rather than stood down inside
+                the drawer (see `Rules.tsx`), so the entry is the row itself and
+                has no section hanging off it. Its chevron is left lying on its
+                side, the way a shut section's is: nothing here is being turned
+                down onto the drop, the entry leads off it. */}
+            <Button
+                className="menu-entry"
+                aria-haspopup="dialog"
+                onClick={onRules}
             >
-                <Rules />
-            </Fold>
+                <span className="menu-label">Game rules</span>
+                <span className="menu-chevron gold">›</span>
+            </Button>
 
-            <Fold
-                label="Update balance"
-                open={section === 'balance'}
-                onToggle={() => onSection('balance')}
-            >
-                <Balance open={section === 'balance'} onClose={onClose} />
+            <Fold label="Update balance" open={balance} onToggle={onBalance}>
+                <Balance open={balance} onClose={onClose} />
             </Fold>
         </div>
     );
 }
 
 // An entry and what it has to stand down, as the one row of the menu: shut, the
-// section under it takes up none of the drop's height, so the two entries read as
-// two more lines of the menu until one of them is asked for.
+// section under it takes up none of the drop's height, so the entry reads as one
+// more line of the menu until it is asked for.
 function Fold({
     label,
     open,
