@@ -62,7 +62,7 @@ export function TopBar() {
     return (
         <>
             {/* Before the bar, so the bar and the drop keep their own clicks. */}
-            {drawer && <div className="veil" onClick={close} />}
+            {drawer && <div className="veil" onPointerDown={close} />}
             {/* The drawer hangs off this mount, not the bar, so its glass
                 blurs the game rather than the bar's (see `.hud` in ui.css). */}
             <div className="hud">

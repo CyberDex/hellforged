@@ -81,7 +81,7 @@ export function Rules({ onClose }: { onClose: () => void }) {
 
     return (
         <>
-            <div className="veil" onClick={onClose} />
+            <div className="veil" onPointerDown={onClose} />
             <div className="rules glass" role="dialog" aria-label="Game rules">
                 <div className="rules-head">
                     <span className="rules-title gold">Game rules</span>
