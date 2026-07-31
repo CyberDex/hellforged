@@ -25,6 +25,10 @@ export class RootLayout extends Layout {
     readonly slotMachine: SlotMachine;
     readonly winLayout: WinLayout;
 
+    // Everything the game is played on, which is everything but the
+    // background, zoomed as one. Nothing to do with the React overlay: that
+    // draws in the DOM over the canvas (see `ui/ui.controller.tsx`).
+    readonly #ui: Layout;
     // Kept so a resize can put the zoom back.
     #zoom = 1;
     #growing?: Tween;
@@ -84,13 +88,10 @@ export class RootLayout extends Layout {
         this.reels = reels;
         this.slotMachine = slotMachine;
         this.winLayout = winLayout;
+        this.#ui = this.getChildByID('ui') as Layout;
 
-        // this is the only place where pixiLayout needs to listen for resize,
-        // all the magic happends inside of it basing on configs
-        window.addEventListener('resize', () =>
-            this.resize(window.innerWidth, window.innerHeight),
-        );
-        this.resize(window.innerWidth, window.innerHeight);
+        window.addEventListener('resize', () => this.onResize());
+        this.onResize();
     }
 
     zoom(duration: number) {
@@ -101,6 +102,7 @@ export class RootLayout extends Layout {
             to: gmeSettings.anticipationZoom,
             onUpdate: (zoom) => {
                 this.#zoom = zoom;
+                this.applyZoom();
             },
         });
     }
@@ -113,7 +115,23 @@ export class RootLayout extends Layout {
         const zoomed = this.#zoom !== 1;
 
         this.#zoom = 1;
+        this.applyZoom();
 
         return zoomed;
+    }
+
+    // this is the only place where pixiLayout needs to listen for resize,
+    // all the magic happends inside of it basing on configs
+    private onResize() {
+        this.resize(window.innerWidth, window.innerHeight);
+        this.applyZoom();
+    }
+
+    // Leaned in about the middle of the screen; the background is left out of
+    // it and holds still behind. The layout writes its own scale as it lays
+    // out, so the zoom goes back over the top of it.
+    private applyZoom() {
+        this.#ui.origin.set(this.#ui.width / 2, this.#ui.height / 2);
+        this.#ui.scale.set(this.#zoom);
     }
 }
