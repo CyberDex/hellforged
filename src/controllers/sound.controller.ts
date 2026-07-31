@@ -8,9 +8,9 @@ import {
 import { soundStore } from 'store/sound.store';
 
 class SoundController {
-    #howls: Map<SoundName, Howl> = new Map();
-    #played: Map<SoundName, number> = new Map();
-    #unsubscribe: () => void;
+    readonly #howls: Map<SoundName, Howl> = new Map();
+    readonly #played: Map<SoundName, number> = new Map();
+    readonly #unsubscribe: () => void;
 
     constructor() {
         // Applied to what is already playing too, not only the next sound.

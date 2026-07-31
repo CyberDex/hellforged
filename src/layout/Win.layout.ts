@@ -9,9 +9,9 @@ import { CoinShower } from 'layout/components/CoinShower';
 import { formatAmount } from 'utils/formatAmount';
 
 export class WinLayout extends Layout {
-    #title: Text;
-    #amount: Text;
-    #coins: CoinShower;
+    readonly #title: Text;
+    readonly #amount: Text;
+    readonly #coins: CoinShower;
     #count?: Tween;
 
     constructor() {

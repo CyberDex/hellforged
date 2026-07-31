@@ -6,8 +6,8 @@ import type { Position } from 'engine/engine';
 const { reelGap } = visuals.machine;
 
 export class Reels extends Container {
-    #reels: Reel[] = [];
-    #rowHeight: number;
+    readonly #reels: Reel[] = [];
+    readonly #rowHeight: number;
 
     constructor(strips: string[][], rows: number) {
         super();

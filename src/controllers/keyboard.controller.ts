@@ -10,7 +10,7 @@ class KeyboardController {
     #layout?: RootLayout;
     // One reference for adding and removing, or the listener could never
     // come off the window again.
-    #press = (event: KeyboardEvent) => this.press(event);
+    readonly #press = (event: KeyboardEvent) => this.press(event);
 
     init(layout: RootLayout) {
         this.#layout = layout;

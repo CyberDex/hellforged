@@ -7,7 +7,7 @@ import { formatAmount } from 'utils/formatAmount';
 const EMPTY = '-';
 
 export class Pannel extends Layout {
-    #value: Text;
+    readonly #value: Text;
 
     constructor(title: string) {
         const val = new Text({

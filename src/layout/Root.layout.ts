@@ -15,17 +15,17 @@ import { WinLayout } from 'layout/Win.layout';
 import { setDefaultTextStyle } from 'config/font.settings';
 
 export class RootLayout extends Layout {
-    bg: BG;
-    spinButton: SpinButton;
-    betSlider: BetSlider;
-    betPannel: Pannel;
-    winPannel: Pannel;
-    reels: Reels;
-    slotMachine: SlotMachine;
-    winLayout: WinLayout;
+    readonly bg: BG;
+    readonly spinButton: SpinButton;
+    readonly betSlider: BetSlider;
+    readonly betPannel: Pannel;
+    readonly winPannel: Pannel;
+    readonly reels: Reels;
+    readonly slotMachine: SlotMachine;
+    readonly winLayout: WinLayout;
 
     // Everything but the background, zoomed as one.
-    #ui: Layout;
+    readonly #ui: Layout;
     // Kept so a resize can put the zoom back.
     #zoom = 1;
     #growing?: Tween;

@@ -21,16 +21,16 @@ function dip(progress: number): number {
 }
 
 export class Reel extends Container {
-    #slots: Symbol[] = [];
-    #symbolHeight: number;
-    #reelHeight: number;
-    #speed: number;
+    readonly #slots: Symbol[] = [];
+    readonly #symbolHeight: number;
+    readonly #reelHeight: number;
+    readonly #speed: number;
     #spinning = false;
     #stopping = false;
     #queue: string[] = [];
     #bounce?: Tween;
     #offset = 0;
-    #strip: string[];
+    readonly #strip: string[];
 
     constructor(slots: number, strip: string[]) {
         super();

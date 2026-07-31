@@ -18,6 +18,17 @@ export default tseslint.config(
         languageOptions: {
             ecmaVersion: 'latest',
             sourceType: 'module',
+            // Type information, which `prefer-readonly` below needs to tell
+            // a field that is only written in the constructor from one that
+            // is reassigned later.
+            parserOptions: {
+                // The stragglers tsconfig.json's `include` leaves out still
+                // get type information, from a default project of their own.
+                projectService: {
+                    allowDefaultProject: ['scripts/*.ts', 'vite.config.ts'],
+                },
+                tsconfigRootDir: import.meta.dirname,
+            },
         },
         plugins: {
             import: importPlugin,
@@ -57,6 +68,10 @@ export default tseslint.config(
             // inline-marked (`import { type A, type B }`) still emits the
             // module for its side effects. Collapse it to `import type { A, B }`.
             '@typescript-eslint/no-import-type-side-effects': 'error',
+            // A private field the class never reassigns is a constant of the
+            // instance; saying so stops an accidental reassignment from
+            // compiling, and keeps the marker honest as the class evolves.
+            '@typescript-eslint/prefer-readonly': 'error',
             // The one quote rule Prettier can't cover: it rewrites " to ' but
             // never touches backticks. This flags template literals used where
             // a plain string would do. Kept in sync with Prettier's
