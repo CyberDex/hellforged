@@ -150,7 +150,14 @@ function Volume({
                 style={{ '--filled': `${value}` } as CSSProperties}
                 onChange={(event) => onChange(event.target.valueAsNumber)}
                 onPointerUp={onRelease}
-                onKeyUp={onRelease}
+                onKeyUp={({ key }) => {
+                    if (
+                        key.startsWith('Arrow') ||
+                        ['Home', 'End', 'PageUp', 'PageDown'].includes(key)
+                    ) {
+                        onRelease?.();
+                    }
+                }}
             />
             <span className="volume-value gold">
                 {Math.round(value * 100)}%
