@@ -1,5 +1,5 @@
-// The pack ships two texture tiers (1x and @0.5x); the renderer is capped to
-// match the biggest one, so anything above 2 only burns fillrate.
+// The pack ships two texture tiers (1x and @0.5x). The renderer is capped at 2
+// (existing clamp), so values above 2 only burn fillrate.
 const MAX_RENDER_RESOLUTION = 2;
 
 // Physical pixels above which the @0.5x art upscales visibly: the largest
@@ -13,8 +13,8 @@ export function getRenderResolution(dpr = window.devicePixelRatio) {
 // Ordered preference for Assets.init: both tiers are always listed so assets
 // that exist in a single resolution still resolve through the fallback.
 export function getAssetResolutions(
-    screenWidth = window.screen.width,
-    screenHeight = window.screen.height,
+    screenWidth = window.innerWidth,
+    screenHeight = window.innerHeight,
     dpr = window.devicePixelRatio,
 ) {
     const physical =
