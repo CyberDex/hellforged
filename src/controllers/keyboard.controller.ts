@@ -8,11 +8,19 @@ const { betSteps, betStepCommand } = settings;
 // The keys work the same button and slider the pointer does.
 class KeyboardController {
     #layout?: RootLayout;
+    // One reference for adding and removing, or the listener could never
+    // come off the window again.
+    #press = (event: KeyboardEvent) => this.press(event);
 
     init(layout: RootLayout) {
         this.#layout = layout;
 
-        window.addEventListener('keydown', (event) => this.press(event));
+        window.addEventListener('keydown', this.#press);
+    }
+
+    destroy() {
+        window.removeEventListener('keydown', this.#press);
+        this.#layout = undefined;
     }
 
     private press(event: KeyboardEvent) {

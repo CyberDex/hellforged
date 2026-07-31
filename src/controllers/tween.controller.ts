@@ -32,10 +32,10 @@ class TweenController {
     #running: Running[] = [];
 
     constructor() {
-        // On the shared ticker for good: Pixi reads a listener's next after
-        // calling it, so one that takes itself off mid-tick ends the frame
-        // there and every listener behind it is skipped. An empty list costs
-        // nothing to walk.
+        // On the shared ticker until destroyed, never mid-tick: Pixi reads a
+        // listener's next after calling it, so one that takes itself off
+        // mid-tick ends the frame there and every listener behind it is
+        // skipped. An empty list costs nothing to walk.
         Ticker.shared.add(this.tick, this);
     }
 
@@ -63,6 +63,11 @@ class TweenController {
         // Flagged, not removed: a tween may be stopped from inside another
         // one's frame, while the list is being walked.
         return { stop: () => void (running.stopped = true) };
+    }
+
+    destroy() {
+        Ticker.shared.remove(this.tick, this);
+        this.#running = [];
     }
 
     private tick({ deltaMS }: Ticker) {

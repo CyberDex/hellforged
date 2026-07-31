@@ -18,6 +18,7 @@ class GameController {
     #symbols: string[][] = [];
     #positions: Position[] = [];
     #anticipation: SpinResult['anticipation'];
+    #unsubscribe?: () => void;
 
     init(layout: RootLayout) {
         const { betSlider, reels, betPannel, winPannel } = layout;
@@ -99,6 +100,14 @@ class GameController {
         if (this.state === 'idle') this.settle();
     }
 
+    // The store outlives the game: left subscribed, it would keep the
+    // controller — and the layout it holds — reachable for good.
+    destroy() {
+        this.#unsubscribe?.();
+        this.#layout = undefined;
+        this.#reels = undefined;
+    }
+
     private listen(layout: RootLayout) {
         const { spinButton, betSlider, reels, winPannel, winLayout } = layout;
 
@@ -109,7 +118,7 @@ class GameController {
 
         winLayout.on('revealed', (win: number) => (winPannel.value = win));
 
-        gameStore.subscribe((current, previous) =>
+        this.#unsubscribe = gameStore.subscribe((current, previous) =>
             this.reflect(current, previous),
         );
     }
