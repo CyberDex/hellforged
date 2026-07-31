@@ -5,7 +5,8 @@ import { sound } from './sound.controller';
 import { tween } from './tween.controller';
 import { gameStore } from 'store/game.store';
 import type { GameState, GameStore } from 'store/game.store';
-import type { Position, SpinResult } from 'engine/engine';
+import type { Position } from 'math/definition';
+import type { SpinResult } from 'math/spin';
 import type { RootLayout } from 'layout/Root.layout';
 import type { Reels } from 'layout/components/Reels';
 

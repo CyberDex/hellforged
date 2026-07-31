@@ -1,7 +1,7 @@
 // The maths half of the game, as data: another machine shape is another one
 // of these, not other code. The type import is relative with its extension so
-// plain node can run this and the engine for `scripts/simulate.ts`.
-import type { GameDefinition } from '../engine/engine.ts';
+// plain node can run this and the maths for `scripts/simulate.ts`.
+import type { GameDefinition } from '../math/definition.ts';
 
 // Full-line payouts in bets — also the set of symbols the game plays with.
 const full: Record<string, number> = {

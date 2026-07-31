@@ -1,10 +1,10 @@
 import { definition } from 'config/game.definition';
 import { settings } from 'config/game.settings';
-import { spin } from 'engine/engine';
-import type { SpinResult } from 'engine/engine';
+import { spin } from 'math/spin';
+import type { SpinResult } from 'math/spin';
 
 // Stands in for the server: the seam a real backend would sit behind,
-// answering with the same `SpinResult`. The deciding itself is the engine's.
+// answering with the same `SpinResult`. The deciding itself lives in `math/`.
 // TODO: rewrite this to be DI controller to accept a real backend,
 //  and make the backend controller a thin wrapper around it.
 class ApiController {

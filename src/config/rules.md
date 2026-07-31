@@ -1,6 +1,6 @@
 # Game Rules
 
-A 3x3 slot with a single payline — as it ships. The shape, the strips, the lines and the paytable are all one piece of data, `src/config/game.definition.ts`, and the maths that reads it (`src/engine/engine.ts`) is indifferent to all four: another machine is another definition rather than other code.
+A 3x3 slot with a single payline — as it ships. The shape, the strips, the lines and the paytable are all one piece of data, `src/config/game.definition.ts`, and the maths that reads it (`src/math/`) is indifferent to all four: another machine is another definition rather than other code.
 
 ## Grid
 
@@ -21,7 +21,7 @@ Each reel is strung with a strip (`definition.strips`), and a spin is one stop p
 
 ## Outcome
 
-The spin is decided by `src/engine/engine.ts` under `src/controllers/api.controller.ts` — the latter stands in for the server: it is asked the moment the button is pressed and answers `settings.responseTime` later (currently 300ms), with what a real one would send back. That answer is a `SpinResult`: the grid, the wins read off it with the cells each was paid for, what they pay between them, and whether the spin is worth drawing out (see [Anticipation](#anticipation)). The reels are already turning while the server thinks and only ever stop on its answer. Each reel is handed its symbols when it is asked to stop and lands on exactly those, so nothing about the result depends on the animation — the outcome is in hand before a reel has stopped, never before one has moved.
+The spin is decided by `src/math/spin.ts` under `src/controllers/api.controller.ts` — the latter stands in for the server: it is asked the moment the button is pressed and answers `settings.responseTime` later (currently 300ms), with what a real one would send back. That answer is a `SpinResult`: the grid, the wins read off it with the cells each was paid for, what they pay between them, and whether the spin is worth drawing out (see [Anticipation](#anticipation)). The reels are already turning while the server thinks and only ever stop on its answer. Each reel is handed its symbols when it is asked to stop and lands on exactly those, so nothing about the result depends on the animation — the outcome is in hand before a reel has stopped, never before one has moved.
 
 ## Balance
 
@@ -62,7 +62,7 @@ The spin is decided by `src/engine/engine.ts` under `src/controllers/api.control
 
 ## Anticipation
 
-- Whether a spin is drawn out is the outcome's to say, decided by the engine with the rest of it (`SpinResult.anticipation`): a line that has kept to the symbol it opened on all the way to the last reel can still fill, so that reel is held back — it spins `settings.anticipationSpins` times as long as it otherwise would (currently 2, so 3200ms instead of 1600ms).
+- Whether a spin is drawn out is the outcome's to say, decided by the maths with the rest of it (`SpinResult.anticipation`): a line that has kept to the symbol it opened on all the way to the last reel can still fill, so that reel is held back — it spins `settings.anticipationSpins` times as long as it otherwise would (currently 2, so 3200ms instead of 1600ms).
 - Everything but the background is zoomed in over the wait: the machine, the pannels and the spin button all grow together to `settings.anticipationZoom` of their size, evenly, about the middle of the screen, so the game fills more of it the longer the last reel holds out. The rows show the same amount of themselves throughout — the reel window grows with them — and the background is left where it is, still behind the zoom.
 - The zoom runs from the moment the reel before the held-back one lands until the held-back one lands, and is fully in by the time it does. What happens next is the only thing about the anticipation that depends on the outcome:
     - **The last symbol misses** — the reels jump straight back out to size, with none of the travel the zoom had, and the pair is paid at normal size.

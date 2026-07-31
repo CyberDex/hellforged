@@ -1,5 +1,5 @@
 import { definition, symbols } from 'config/game.definition';
-import { rollGrid } from 'engine/engine';
+import { rollGrid } from 'math/rollGrid';
 import { gameStore } from 'store/game.store';
 import { API } from '../api.controller';
 import { game } from '../game.controller';

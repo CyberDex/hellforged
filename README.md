@@ -21,11 +21,11 @@ pnpm build            # lint + typecheck run on pre-push
  ┌─────────────────┐  spin(bet)  ┌──────────────────────────────────────┐
  │ game.controller │────────────▶│ api.controller — server stand-in     │
  │ idle→spin→reveal│◀────────────│ answers a responseTime later, from   │
- └───────┬─────────┘ SpinResult, │ engine/engine.ts: pure maths over    │
+ └───────┬─────────┘ SpinResult, │ math/spin.ts: pure maths over        │
          │ writes    while the   │ game.definition.ts (strips · rows ·  │
          ▼           reels turn  │ lines · paytable — all data)         │
  ┌──────────────────────────────┐└──────────────────────────────────────┘
- │ zustand stores: game         │      `pnpm sim` reads the same engine
+ │ zustand stores: game         │      `pnpm sim` reads the same maths
  │ (persisted) · sound ·        │      with no browser: 95.2% measured RTP
  │ graphics                     │
  └───────┬──────────────┬───────┘

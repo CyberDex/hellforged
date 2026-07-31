@@ -111,9 +111,9 @@ const srcAliases = Object.fromEntries(
     [
         'config',
         'controllers',
-        'engine',
         'filters',
         'layout',
+        'math',
         'store',
         'ui',
         'utils',
