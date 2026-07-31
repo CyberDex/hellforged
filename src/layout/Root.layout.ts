@@ -1,11 +1,12 @@
 import '@pixi/layout';
 import { Layout } from '@pixi/layout';
-import { Sprite } from 'pixi.js';
 import { tween } from 'controllers/tween.controller';
 import type { Tween } from 'controllers/tween.controller';
-import { SpinButton } from 'layout/components/SpinButton';
-import { BetSlider } from 'layout/components/BetSlider';
-import { Pannel } from 'layout/components/Pannel';
+import type { SpinButton } from 'layout/components/SpinButton';
+import type { BetSlider } from 'layout/components/BetSlider';
+import { SpinPannel } from 'layout/components/SpinPannel';
+import { BetPannel } from 'layout/components/BetPannel';
+import { WinPannel } from 'layout/components/WinPannel';
 import { Reels } from 'layout/components/Reels';
 import { SlotMachine } from 'layout/components/SlotMachine';
 import { settings } from 'config/game.settings';
@@ -18,8 +19,8 @@ export class RootLayout extends Layout {
     readonly bg: BG;
     readonly spinButton: SpinButton;
     readonly betSlider: BetSlider;
-    readonly betPannel: Pannel;
-    readonly winPannel: Pannel;
+    readonly betPannel: BetPannel;
+    readonly winPannel: WinPannel;
     readonly reels: Reels;
     readonly slotMachine: SlotMachine;
     readonly winLayout: WinLayout;
@@ -34,99 +35,26 @@ export class RootLayout extends Layout {
         setDefaultTextStyle();
 
         const bg = new BG();
-        const spinButton = new SpinButton();
-        const betSlider = new BetSlider();
-        const betPannel = new Pannel('Bet');
-        const winPannel = new Pannel('Win');
+        const buttonSpin = new SpinPannel();
+        const betPannel = new BetPannel();
+        const winPannel = new WinPannel();
         const reels = new Reels(definition.strips, definition.rows);
-        const slotMachine = new SlotMachine(
-            Sprite.from('reels'),
-            reels,
-            Sprite.from('mask'),
-        );
+        const slotMachine = new SlotMachine(reels);
         const winLayout = new WinLayout();
 
         super({
             content: {
                 id: 'content',
                 content: {
-                    bg: {
-                        content: bg,
-                        styles: { position: 'center' },
-                    },
+                    bg,
                     ui: {
                         content: {
-                            slotMachine: {
-                                content: slotMachine,
-                                styles: {
-                                    position: 'center',
-                                    // The grid is all the machine measures;
-                                    // cabinet and window are larger.
-                                    width: slotMachine.width,
-                                    height: slotMachine.height,
-                                    marginTop: slotMachine.offset,
-                                },
-                            },
-                            buttonSpin: {
-                                content: [
-                                    {
-                                        content: Sprite.from('spinButtonBG'),
-                                        styles: {
-                                            position: 'center',
-                                        },
-                                    },
-                                    {
-                                        content: spinButton,
-                                        styles: {
-                                            position: 'center',
-                                            marginTop: 36,
-                                            marginLeft: 41,
-                                        },
-                                    },
-                                ],
-                                styles: {
-                                    position: 'center',
-                                    marginTop: 220,
-                                    marginLeft: 0,
-                                },
-                            },
-                            betPannel: {
-                                content: [
-                                    {
-                                        content: betPannel,
-                                        styles: { position: 'center' },
-                                    },
-                                    {
-                                        content: betSlider,
-                                        styles: {
-                                            position: 'center',
-                                            marginTop: 35,
-                                            marginLeft: 10,
-                                        },
-                                    },
-                                ],
-                                styles: {
-                                    position: 'center',
-                                    marginTop: 210,
-                                    marginLeft: -155,
-                                },
-                            },
-                            winPannel: {
-                                content: winPannel,
-                                styles: {
-                                    position: 'center',
-                                    marginTop: 210,
-                                    marginLeft: 155,
-                                },
-                            },
+                            slotMachine,
+                            buttonSpin,
+                            betPannel,
+                            winPannel,
                             // Last, so it draws over the reels.
-                            win: {
-                                content: winLayout,
-                                styles: {
-                                    position: 'center',
-                                    marginTop: -15,
-                                },
-                            },
+                            win: winLayout,
                         },
                         styles: {
                             position: 'center',
@@ -151,8 +79,8 @@ export class RootLayout extends Layout {
         });
 
         this.bg = bg;
-        this.spinButton = spinButton;
-        this.betSlider = betSlider;
+        this.spinButton = buttonSpin.button;
+        this.betSlider = betPannel.slider;
         this.betPannel = betPannel;
         this.winPannel = winPannel;
         this.reels = reels;
@@ -164,7 +92,9 @@ export class RootLayout extends Layout {
         this.onResize();
     }
 
-    onResize() {
+    // this is the only place whole layout needs to listen for resize,
+    // all the magic happends inside of it basing on configs
+    private onResize() {
         this.resize(window.innerWidth, window.innerHeight);
 
         // The layout writes its own scale as it lays out; the zoom goes back

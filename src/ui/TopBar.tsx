@@ -4,7 +4,6 @@ import { gameTitle } from 'config/game.name';
 import { settings } from 'config/game.settings';
 import { tween } from 'controllers/tween.controller';
 import { gameStore } from 'store/game.store';
-import type { RootLayout } from 'layout/Root.layout';
 import { Button } from 'ui/Button';
 import { Menu } from 'ui/Menu';
 import { Rules } from 'ui/Rules';
@@ -14,8 +13,6 @@ import { formatAmount } from 'utils/formatAmount';
 type Open = 'menu' | 'balance' | 'rules';
 
 const SESSION_START = Date.now();
-
-const reelWidth = (layout: RootLayout) => layout.slotMachine.getBounds().width;
 
 const clock = (date: Date) =>
     date.toLocaleTimeString([], {
@@ -32,7 +29,7 @@ function elapsed(ms: number) {
         .join(':');
 }
 
-export function TopBar({ layout }: { layout: RootLayout }) {
+export function TopBar() {
     const balance = useStore(gameStore, (state) => state.balance);
     // The reading of the balance, never what anything is played with.
     const counted = useCountUp(balance, settings.balanceCountDuration);
@@ -42,8 +39,6 @@ export function TopBar({ layout }: { layout: RootLayout }) {
         ({ state, balance }) => state === 'idle' && balance < settings.minBet,
     );
     const [now, setNow] = useState(() => new Date());
-    // Hung off the reels' width, so the bar reads as the top of the machine.
-    const [width, setWidth] = useState(() => reelWidth(layout));
     const [open, setOpen] = useState<Open>();
     const drawer = open === 'menu' || open === 'balance';
     // Held still: the drawer and the sheet both listen for the Escape.
@@ -57,16 +52,6 @@ export function TopBar({ layout }: { layout: RootLayout }) {
         return () => clearInterval(tick);
     }, []);
 
-    useEffect(() => {
-        const measure = () => setWidth(reelWidth(layout));
-
-        // The game listens for resize first, so the reels have already moved
-        // by the time they are measured here.
-        window.addEventListener('resize', measure);
-
-        return () => window.removeEventListener('resize', measure);
-    }, [layout]);
-
     // Comes down on the balance section as it runs out; closed again on a
     // balance still out, it stays closed.
     useEffect(() => {
@@ -79,7 +64,7 @@ export function TopBar({ layout }: { layout: RootLayout }) {
             {drawer && <div className="veil" onClick={close} />}
             {/* The drawer hangs off this mount, not the bar, so its glass
                 blurs the game rather than the bar's (see `.hud` in ui.css). */}
-            <div className="hud" style={{ width }}>
+            <div className="hud">
                 <div className="topbar glass">
                     <div className="topbar-left">
                         <Button

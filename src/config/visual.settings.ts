@@ -4,12 +4,13 @@
 export const visuals = {
     machine: {
         reelGap: 30,
-        // How far the art's window sits below its middle, in art pixels,
-        // before the cabinet is stretched onto the grid.
-        cabinetOffset: 32,
-        // Also in art pixels: out past the outside columns so nothing clips,
-        // in over the top and bottom rows so the strip reads as running past
-        // the window. The art only reads undistorted near its native 3x3.
+        // The window as the cabinet art draws it: centred, its middle this
+        // far below the art's own, and this big — all in art pixels. New
+        // cabinet, new measurements.
+        cabinetWindow: { offset: 32, width: 437, height: 261 },
+        // Out past the outside columns so nothing clips, in over the top and
+        // bottom rows so the strip reads as running past the window. The art
+        // only reads undistorted near its native 3x3.
         windowOverhang: 8.5,
         windowCrop: 49.5,
         dimmedFace: 0.4,

@@ -1,6 +1,5 @@
 import { createRoot } from 'react-dom/client';
 import { FONT_FAMILY } from 'config/font.settings';
-import type { RootLayout } from 'layout/Root.layout';
 import { TopBar } from 'ui/TopBar';
 import 'ui/ui.css';
 
@@ -11,9 +10,10 @@ const palette = fetch('assets/theme/theme.json').then(
     (response) => response.json() as Promise<Record<string, string>>,
 );
 
-// React draws in the DOM over the canvas, never inside the Pixi scene; the
-// overlay lets every pointer through to it (see `ui.css`).
-export async function mountUI(layout: RootLayout) {
+// React draws in the DOM over the canvas, never inside the Pixi scene, and
+// knows nothing of it: the overlay takes its measures from `ui.css` alone,
+// and lets every pointer through to the game (see `ui.css`).
+export async function mountUI() {
     const root = document.createElement('div');
 
     root.id = 'ui';
@@ -28,5 +28,5 @@ export async function mountUI(layout: RootLayout) {
 
     document.body.appendChild(root);
 
-    createRoot(root).render(<TopBar layout={layout} />);
+    createRoot(root).render(<TopBar />);
 }

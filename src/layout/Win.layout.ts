@@ -69,8 +69,10 @@ export class WinLayout extends Layout {
                 },
             },
             styles: {
+                position: 'center',
                 width: '100%',
                 height: '100%',
+                marginTop: -15,
             },
         });
 

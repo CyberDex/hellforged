@@ -16,7 +16,7 @@ game.init(layout);
 // After the game: the keys only press what is already wired up.
 keyboard.init(layout);
 
-await mountUI(layout);
+await mountUI();
 
 // Compiled out of a build, so Tweakpane is never shipped to the player.
 // TODO: this is available for git pages, uncomment lines before go to prod!!!

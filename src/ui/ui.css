@@ -53,13 +53,14 @@
     backdrop-filter: var(--pane);
 }
 
-/* The mount the bar and the drawer both hang off, at the width the reels
-   measure — written on as the game is laid out (see `TopBar.tsx`). */
+/* The mount the bar and the drawer both hang off. The overlay never asks the
+   game how wide it is: the bar wears its own measure, set here to taste. */
 .hud {
     position: absolute;
     top: 0;
     left: 50%;
     transform: translateX(-50%);
+    width: min(92vw, 560px);
 }
 
 .topbar {

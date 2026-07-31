@@ -1,14 +1,18 @@
 import '@pixi/layout';
-import { Sprite, Texture } from 'pixi.js';
+import { Sprite } from 'pixi.js';
 import { visuals } from 'config/visual.settings';
 import { BurnFilter } from 'filters/burn.filter';
 import { graphicsStore } from 'store/graphics.store';
+import { Layout } from '@pixi/layout';
 
-export class BG extends Sprite {
+export class BG extends Layout {
     #burn?: BurnFilter;
 
     constructor() {
-        super(Texture.from('bg'));
+        super({
+            content: Sprite.from('bg'),
+            styles: { position: 'center' },
+        });
 
         graphicsStore.subscribe(() => this.shade());
         this.shade();

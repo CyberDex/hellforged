@@ -1,5 +1,6 @@
 import '@pixi/layout';
 import { Layout } from '@pixi/layout';
+import type { Styles } from '@pixi/layout';
 import { Sprite, Text } from 'pixi.js';
 import { formatAmount } from 'utils/formatAmount';
 
@@ -9,7 +10,7 @@ const EMPTY = '-';
 export class Pannel extends Layout {
     readonly #value: Text;
 
-    constructor(title: string) {
+    constructor(title: string, styles?: Styles) {
         const val = new Text({
             text: EMPTY,
             style: {
@@ -61,6 +62,7 @@ export class Pannel extends Layout {
             styles: {
                 width: '100%',
                 height: '100%',
+                ...styles,
             },
         });
 
