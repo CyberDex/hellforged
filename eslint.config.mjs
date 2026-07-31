@@ -3,6 +3,7 @@ import js from '@eslint/js';
 // can't contradict Prettier. Formatting itself is Prettier's job alone — running
 // it through ESLint too makes the two fight on save.
 import prettier from 'eslint-config-prettier/flat';
+import importPlugin from 'eslint-plugin-import';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
@@ -18,7 +19,31 @@ export default tseslint.config(
             ecmaVersion: 'latest',
             sourceType: 'module',
         },
+        plugins: {
+            import: importPlugin,
+        },
+        settings: {
+            // Follows the tsconfig `paths` aliases, so no-cycle can walk
+            // `controllers/*`-style imports and not just relative ones.
+            'import/resolver': {
+                typescript: true,
+            },
+            // no-cycle walks the graph by parsing each imported file itself;
+            // without being told what parses TypeScript it fails on the first
+            // `.ts` file — silently, reporting no cycles at all.
+            'import/parsers': {
+                '@typescript-eslint/parser': ['.ts', '.tsx'],
+            },
+        },
         rules: {
+            // The module-singleton controllers make an import cycle easy to
+            // close by accident, and ES modules don't fail on one loudly: the
+            // later module of the pair just sees an uninitialised binding,
+            // which only blows up once someone touches it at module scope —
+            // possibly months after the cycle itself was merged. Catch the
+            // edge when it's drawn. `import type` edges are erased at compile
+            // time and rightly don't count.
+            'import/no-cycle': 'error',
             // Anything used only in type position must be imported with the
             // `import type` form, so the bundler can drop the import outright
             // instead of keeping a runtime dependency on a module we never
