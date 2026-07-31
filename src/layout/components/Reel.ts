@@ -3,22 +3,8 @@ import { settings } from 'config/game.settings';
 import { visuals } from 'config/visual.settings';
 import { tween } from 'controllers/tween.controller';
 import type { Tween } from 'controllers/tween.controller';
+import { dip } from 'utils/dip';
 import { Symbol } from './Symbol';
-
-// 0 -> 1 -> 0: down with landing momentum, eased back onto the grid.
-function dip(progress: number): number {
-    const { bounceDown } = settings;
-
-    if (progress < bounceDown) {
-        const down = progress / bounceDown;
-
-        return down * (2 - down);
-    }
-
-    const back = (progress - bounceDown) / (1 - bounceDown);
-
-    return (1 + Math.cos(back * Math.PI)) / 2;
-}
 
 export class Reel extends Container {
     readonly #slots: Symbol[] = [];
@@ -141,7 +127,7 @@ export class Reel extends Container {
         this.#bounce = tween.run({
             duration: settings.bounceDuration,
             to: settings.bounceDistance * this.#symbolHeight,
-            ease: dip,
+            ease: dip(settings.bounceDown),
             // Absolute offset, so the strip returns exactly where it landed.
             onUpdate: (offset) => {
                 this.move(offset - this.#offset);
