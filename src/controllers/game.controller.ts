@@ -297,7 +297,9 @@ class GameController {
     }
 
     // The win decides the stage, not the symbols.
-    private get bigWin() {
+    private get bigWin(): BigWinStage | undefined {
+        if (!this.#bigWinStages.length) return undefined;
+
         return this.#bigWinStages[this.#bigWinStages.length - 1];
     }
 
