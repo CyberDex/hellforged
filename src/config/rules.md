@@ -14,7 +14,7 @@ Five symbols, no wilds or scatters:
 
 `H1`, `H2`, `H3`, `H4`, `H5` (`settings.symbols`)
 
-They differ only in what three of them pay, `H1` the most and `H5` the least (`settings.payouts.three`, which is where the symbol list itself comes from — a symbol on a reel is a symbol with a payout).
+They differ only in what a payline filled with them pays, `H1` the most and `H5` the least (`settings.payouts.full`, which is where the symbol list itself comes from — a symbol on a reel is a symbol with a payout).
 
 Each spin picks symbols independently and uniformly at random (see `src/utils/getRandomSymbol.ts`), so every symbol has the same 1-in-5 chance in every slot.
 
@@ -71,15 +71,17 @@ The spin is decided in full before a reel has moved, by `src/controllers/backend
 
 ## Winning
 
-Evaluated on the middle row only:
+Evaluated on the middle row only. What pays is the **run** that row opens on: how many reels it goes before it comes off the symbol on the first one.
 
-| Middle row                          | Pays                                              |
-| ----------------------------------- | ------------------------------------------------- |
-| 3 matching symbols                  | bet x the symbol's own (`settings.payouts.three`) |
-| First two matching, third different | bet x 2 (`settings.payouts.two`)                  |
-| First two different                 | nothing                                           |
+| Middle row                          | Pays                                                |
+| ----------------------------------- | --------------------------------------------------- |
+| 3 matching symbols                  | bet x the symbol's own (`settings.payouts.full`)    |
+| First two matching, third different | bet x 2 (`settings.payouts.partial`, at a run of 2) |
+| First two different                 | nothing                                             |
 
-Three of a kind pays on the symbol it filled up with:
+A run that reaches every reel is a filled payline and pays on its symbol. Anything short of that pays flat, whatever the symbol, at the longest length `settings.payouts.partial` lists that the run covers — so a run shorter than the shortest listed pays nothing, and a longer run can never pay less than a shorter one. This is what makes the width of the machine config rather than an assumption: on a 4-reel game three in a row and then a miss pays the pair's flat figure, not the filled line's, and a paytable for a wider machine adds a rung per new length rather than being read off three positions.
+
+A filled payline pays on the symbol it filled up with:
 
 | Symbol | Pays     |
 | ------ | -------- |
@@ -91,11 +93,11 @@ Three of a kind pays on the symbol it filled up with:
 
 - One matching symbol on its own pays nothing.
 - A win has to start on the first reel, so a pair only counts on reels 1 and 2. A pair on reels 2 and 3 pays nothing, and neither does a first-and-third match.
-- Only one win is paid per spin: three of a kind pays on its symbol instead of, not in addition to, the pair it contains.
+- Only one win is paid per spin: a run pays at its own length instead of, not in addition to, the shorter ones inside it.
 - The win amount scales with the bet.
-- A pair pays the same whatever symbol it is; only three of a kind reads the symbol.
+- A run short of the whole line pays the same whatever symbol it is; only a filled payline reads the symbol.
 - The payouts live in `src/config/game.settings.ts` alongside the rest of the game config.
-- Every symbol is as likely as every other, so the payline fills up on 1 spin in 25 and leaves a pair on 4 in 25. Between them the table pays back about 95% of what is staked over time (`(30+18+12+10+9)/125 + 0.16 x 2`), so a balance drifts down rather than either way.
+- Every symbol is as likely as every other, so on this 3x3 the payline fills up on 1 spin in 25 and leaves a pair on 4 in 25. Between them the table pays back about 95% of what is staked over time (`(30+18+12+10+9)/125 + 0.16 x 2`), so a balance drifts down rather than either way. A machine of another width pays back something else: the return is worked out from the rungs in `settings.payouts` against the odds of each run, and is the one figure a change to either has to be walked back to by hand.
 
 ## Showing a win
 

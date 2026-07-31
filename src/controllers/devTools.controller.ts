@@ -161,9 +161,9 @@ class DevToolsController {
     }
 
     // A spin per paying combination the game has, so none of them has to be
-    // waited on to be looked at: for every symbol, the pair it pays flat and
-    // the three of a kind it pays on its own. Each button spins the machine for
-    // real — it only says what the reels have to land on.
+    // waited on to be looked at: for every symbol, every run of it the paytable
+    // pays for. Each button spins the machine for real — it only says what the
+    // reels have to land on.
     //
     // The symbol is written into the button rather than sat beside it in a
     // label: a label of its own would cost every row a column the buttons then
@@ -178,15 +178,11 @@ class DevToolsController {
         folder.on('fold', ({ expanded }) => this.remember('cheats', expanded));
 
         for (const symbol of settings.symbols) {
-            const { two, three } = settings.payouts;
-
-            folder
-                .addButton({ title: `${symbol} two ×${two}` })
-                .on('click', () => game.cheat(this.payline(symbol, 2)));
-
-            folder
-                .addButton({ title: `${symbol} three ×${three[symbol]}` })
-                .on('click', () => game.cheat(this.payline(symbol, 3)));
+            for (const { count, payout } of this.wins(symbol)) {
+                folder
+                    .addButton({ title: `${symbol} ${count} ×${payout}` })
+                    .on('click', () => game.cheat(this.payline(symbol, count)));
+            }
         }
 
         // The buttons press the machine's own, so they go dead wherever it
@@ -197,9 +193,27 @@ class DevToolsController {
         gameStore.subscribe(follow);
     }
 
+    // Every run of a symbol the paytable pays for, shortest first: the lengths
+    // listed as partials, and then the whole payline, which is the one that
+    // pays on the symbol itself. Lengths the machine has no reels for are left
+    // off, so a paytable written for a wider one puts up no button that cannot
+    // be landed.
+    private wins(symbol: string) {
+        const { partial, full } = settings.payouts;
+        const counts = Object.keys(partial)
+            .map(Number)
+            .filter((count) => count < settings.reels)
+            .sort((a, b) => a - b);
+
+        return [
+            ...counts.map((count) => ({ count, payout: partial[count] })),
+            { count: settings.reels, payout: full[symbol] },
+        ];
+    }
+
     // The payline a cheat lands: the first `count` reels on the symbol, and any
-    // reel left over deliberately off it, since a pair only pays as a pair
-    // while the reel after it misses.
+    // reel left over deliberately off it, since a run only pays at its own
+    // length while the reel after it misses.
     private payline(symbol: string, count: number) {
         const { symbols } = settings;
         const miss = symbols[(symbols.indexOf(symbol) + 1) % symbols.length];
