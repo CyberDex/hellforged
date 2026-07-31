@@ -19,8 +19,9 @@ keyboard.init(layout);
 await mountUI(layout);
 
 // Compiled out of a build, so Tweakpane is never shipped to the player.
-if (import.meta.env.DEV) {
-    const { devTools } = await import('controllers/devTools.controller');
+// TODO: this is available for git pages, uncomment lines before go to prod!!!
+// if (import.meta.env.DEV) {
+const { devTools } = await import('controllers/devTools.controller');
 
-    devTools.init();
-}
+devTools.init();
+// }

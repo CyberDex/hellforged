@@ -5,6 +5,8 @@ import type { SpinResult } from 'engine/engine';
 
 // Stands in for the server: the seam a real backend would sit behind,
 // answering with the same `SpinResult`. The deciding itself is the engine's.
+// TODO: rewrite this to be DI controller to accept a real backend,
+//  and make the backend controller a thin wrapper around it.
 class ApiController {
     #forced: string[][] | null = null;
 
