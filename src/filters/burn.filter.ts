@@ -33,4 +33,9 @@ export class BurnFilter extends Filter {
         this.#time += deltaMS / 1000;
         this.#uniforms.uniforms.uTime = this.#time;
     };
+
+    override destroy(destroyPrograms?: boolean) {
+        Ticker.shared.remove(this.#tick);
+        super.destroy(destroyPrograms);
+    }
 }
