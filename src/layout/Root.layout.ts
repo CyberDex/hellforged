@@ -69,7 +69,10 @@ export class RootLayout extends Layout {
                                     height: slotMachine.height,
                                     // The grid sits this far below the middle,
                                     // which leaves the cabinet centred on it.
-                                    marginTop: 32,
+                                    // The machine works it out, since it is the
+                                    // one that knows how far its art was
+                                    // stretched to reach the grid.
+                                    marginTop: slotMachine.offset,
                                 },
                             },
                             buttonSpin: {

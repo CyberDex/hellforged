@@ -9,8 +9,23 @@ export const visuals = {
         // Between one reel and the next, in pixels.
         reelGap: 30,
         // The window in the cabinet art sits this far below the middle of it,
-        // so the art is lifted by it to line its window up with the grid.
+        // so the art is lifted by it to line its window up with the grid. In
+        // the art's own pixels, before the cabinet is stretched onto the grid.
         cabinetOffset: 32,
+        // How far that window falls outside the grid, also in the art's own
+        // pixels: it is let out past the outside columns, so nothing is clipped
+        // where the symbols end, and taken in over the top and bottom rows, so
+        // those are only ever part seen and the strip reads as running on past
+        // the window rather than starting and stopping at it.
+        //
+        // These are what the window is, rather than what the art happens to
+        // measure — the cabinet and its window are stretched from the size they
+        // were drawn at onto whatever grid `settings.reels` and `settings.rows`
+        // ask for (see `SlotMachine.ts`), so the two sprites frame a machine of
+        // any size. The art was drawn around a 3x3 and only reads undistorted
+        // there; a grid far off that shape wants art cut for it.
+        windowOverhang: 8.5,
+        windowCrop: 49.5,
     },
     // The button leans out under the pointer and settles back at the same pace
     // whether it is let go or pressed, so the three states read as the one

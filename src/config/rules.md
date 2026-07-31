@@ -7,6 +7,7 @@ A 3x3 slot with a single payline.
 - 3 reels, 3 rows (`settings.reels`, `settings.rows`).
 - Only the **middle row** participates in wins — one symbol per reel, 3 symbols total.
 - The **top** and **bottom** rows are purely visual (they exist to show the reel strip). They never form or extend a win.
+- Both figures are live config: the grid is built from them, the spin is rolled and paid over whatever they say (see [Winning](#winning)), and the cabinet and the window it is cropped to are stretched onto it, so nothing has to be resized by hand for another number of reels or rows. The art is the one thing that is not indifferent to the shape: it was drawn around a 3x3 and only reads undistorted there, so a machine far off that wants sprites cut for it (`visuals.machine`).
 
 ## Symbols
 
