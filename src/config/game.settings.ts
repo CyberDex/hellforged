@@ -1,12 +1,22 @@
-// What three of a kind pays, in bets, on the symbol the payline filled up with.
-// This is also the set of symbols the game plays with, so every symbol on a reel
-// is a symbol with a payout.
-const three: Record<string, number> = {
+// What a full payline pays, in bets, on the symbol it filled up with. This is
+// also the set of symbols the game plays with, so every symbol on a reel is a
+// symbol with a payout.
+const full: Record<string, number> = {
     H1: 30,
     H2: 18,
     H3: 12,
     H4: 10,
     H5: 9,
+};
+
+// What a win short of a full payline pays, in bets, by the number of reels its
+// run covers. Flat, whatever the symbol: only a filled line reads the symbol.
+// A run is paid at the longest length listed here that it reaches, so a run
+// shorter than the shortest listed pays nothing, and a reel added to the game
+// leaves no run unpriced — though a wider machine wants a rung of its own for
+// each new length rather than paying four in a row what a pair pays.
+const partial: Record<number, number> = {
+    2: 2,
 };
 
 // What a win has to pay to be revealed as a big one, in stages: a win falls
@@ -23,7 +33,7 @@ const bigWinStages = [
 export const settings = {
     reels: 3,
     rows: 3,
-    symbols: Object.keys(three),
+    symbols: Object.keys(full),
     // What the player starts with, and what every spin costs.
     defaultBalance: 1000000,
     defaultBet: 1,
@@ -31,11 +41,14 @@ export const settings = {
     // and at most.
     minBet: 1,
     maxBet: 1000000,
-    // Bet multipliers for the payline: a single symbol pays nothing, a pair pays
-    // flat whatever symbol it is, and three of a kind pays on its symbol.
-    // Symbols land uniformly, so 1 spin in 25 fills the payline and 4 in 25
-    // leave a pair, which pays back ~95% of what is staked over time.
-    payouts: { two: 2, three },
+    // Bet multipliers for the payline: a win is the run of one symbol the line
+    // opens on, paid flat at whatever length it reaches short of the whole line
+    // and on its own symbol once it fills, so a single symbol pays nothing at
+    // any width of machine. Symbols land uniformly, so on the 3x3 the game
+    // ships as, 1 spin in 25 fills the payline and 4 in 25 leave a pair, which
+    // pays back ~95% of what is staked over time. A grid of another size pays
+    // back something else, and the rungs above are what settles it.
+    payouts: { partial, full },
     // How fast the reel strip travels, in symbols per second.
     spinSpeed: 20,
     // How far a landing reel dips past the row grid, in symbols, and how long

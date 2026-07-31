@@ -30,13 +30,16 @@ const copy = fetch('assets/rules/rules.md').then((response) => response.text());
 // into a cell of its own the first time it is run.
 const figures: Record<string, string> = {
     '%PAYTABLE%': [
-        '| Symbol | Three of a kind |',
+        // Named for the reels the game is actually played on rather than for
+        // the three it ships with, so the column cannot come to head figures
+        // that take a fourth reel to land.
+        `| Symbol | ${settings.reels} of a kind |`,
         '| ------ | --------------- |',
-        ...Object.entries(settings.payouts.three).map(
+        ...Object.entries(settings.payouts.full).map(
             ([symbol, payout]) => `| ${symbol} | ${payout} x bet |`,
         ),
     ].join('\n'),
-    '%PAIR%': settings.payouts.two.toString(),
+    '%PAIR%': (settings.payouts.partial[2] ?? 0).toString(),
     '%MINBET%': formatAmount(settings.minBet),
     '%MAXBET%': formatAmount(settings.maxBet),
 };

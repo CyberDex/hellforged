@@ -5,6 +5,7 @@ const GAP = 30;
 
 export class Reels extends Container {
     #reels: Reel[] = [];
+    #rowHeight: number;
 
     constructor(reels: number, rows: number) {
         super();
@@ -24,6 +25,8 @@ export class Reels extends Container {
 
         const [{ width, height }] = this.#reels;
 
+        this.#rowHeight = height / rows;
+
         // Fixed bounds, so the grid still measures its rows once the window is
         // masking it — otherwise the machine around it is sized by whatever the
         // mask happens to leave showing.
@@ -33,6 +36,12 @@ export class Reels extends Container {
             reels * width + (reels - 1) * GAP,
             height,
         );
+    }
+
+    // How tall one row of the grid stands, which is the least the window over
+    // it can be cropped to — see `SlotMachine`.
+    get rowHeight() {
+        return this.#rowHeight;
     }
 
     // The reels always start together; the controller stops them one by one.
