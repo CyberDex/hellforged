@@ -30,16 +30,10 @@ export class SpinButton extends FancyButton {
         });
 
         this.onDown.connect(() => sound.play('click'));
+        this.onPress.connect(() => this.rotate());
     }
 
-    // The space bar's press: `onDown` is a finger's alone, so the click is
-    // sounded here (see `keyboard.controller.ts`).
-    press() {
-        sound.play('click');
-        this.onPress.emit();
-    }
-
-    rotate() {
+    private rotate() {
         this.#turn?.stop();
         this.#turn = tween.run({
             duration: rotateDuration,

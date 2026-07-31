@@ -1,6 +1,7 @@
 import { settings } from 'config/game.settings';
 import { game } from './game.controller';
 import type { RootLayout } from 'layout/Root.layout';
+import { sound } from 'controllers/sound.controller';
 
 const { betSteps, betStepCommand } = settings;
 
@@ -23,7 +24,10 @@ class KeyboardController {
 
         // One spin per press, however long the bar is held down.
         if (key === ' ') {
-            if (!repeat) layout.spinButton.press();
+            if (!repeat) {
+                sound.play('click');
+                game.spin();
+            }
 
             return;
         }

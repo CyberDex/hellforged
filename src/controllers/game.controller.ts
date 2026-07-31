@@ -121,7 +121,7 @@ class GameController {
 
         if (!layout) return;
 
-        const { spinButton, reels, betPannel, winPannel, winLayout } = layout;
+        const { reels, betPannel, winPannel, winLayout } = layout;
         const { state, bet, win } = current;
 
         if (bet !== previous.bet) betPannel.value = bet;
@@ -140,7 +140,6 @@ class GameController {
         if (state !== 'idle') this.lockControls();
 
         if (state === 'spin') {
-            spinButton.rotate();
             sound.play('reelSpin');
         } else if (previous.state === 'spin') {
             sound.stop('reelSpin');
