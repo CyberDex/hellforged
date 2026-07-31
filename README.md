@@ -5,6 +5,7 @@
 </p>
 
 ## Run?
+
 ```
 pnpm i && pnpm dev    # dev also mounts a draw-call panel + cheats, bottom right
 pnpm sim [spins]      # spins the maths headlessly and reads back the return
@@ -42,10 +43,10 @@ pnpm build            # lint + typecheck run on pre-push
  not in components. All timed motion runs through the one tween.controller.
 ```
 
-## Libraries
+## Libraries?
 
-- **pixi.js 8** — renders and animates the machine; 
-- **@pixi/layout** sizes the scene, 
+- **pixi.js 8** — renders and animates the machine;
+- **@pixi/layout** sizes the scene,
 - **@pixi/ui** backs the button and slider.
 - **react 19** — DOM overlay above the canvas (top bar, menu, balance, rules). Never inside the Pixi tree; pointers fall through to the game.
 - **zustand (vanilla)** — framework-free stores both worlds read; balance/bet/last result persist to `localStorage`.
@@ -53,7 +54,7 @@ pnpm build            # lint + typecheck run on pre-push
 - **tweakpane** — dev-only panel (draw-call graph, cheat spins), compiled out of production builds.
 - **vite + assetpack** — build and asset pipeline: sprites packed into one atlas, audio transcoded, manifest generated. The `{tps}`/`{copy}`/`{m}` folder tags are AssetPack pipe instructions.
 
-## Data flow
+## Data flow?
 
 1. A press reaches `game.controller`; only `idle` takes it, so spamming cannot re-enter a spin.
 2. The stake comes off the balance and the reels start turning at once; the spin goes out to `backend.controller` — a server stand-in that answers a `responseTime` round trip later with the whole outcome as data.
@@ -61,7 +62,7 @@ pnpm build            # lint + typecheck run on pre-push
 4. The last reel landing credits the win and stores the result; wins reveal over the reels with the cells they were paid for lit.
 5. Everything on screen is written from the store — the controller's one subscription drives the Pixi side, React reads the same store — so no figure exists twice.
 
-## Data
+## Data?
 
 - **The machine is one piece of data**, `game.definition.ts`: the strip each reel is strung with (how often a symbol appears on it is the weighting), how many rows the window shows, the paylines as a row per reel, and the paytable (`full` per symbol, `partial` per run length). Another machine — wider, deeper, more lines, other odds — is another definition, not other code.
 - **A spin is a `SpinResult`**: the grid, each win with the cells it was paid for (the reveal highlights from data), the total, and which reels to hold back. Pure data, no Pixi in it — the shape a real server would answer with, and what `pnpm sim` measures a million of.
