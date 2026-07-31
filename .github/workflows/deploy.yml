@@ -5,21 +5,19 @@ on:
         branches: [main]
     workflow_dispatch:
 
+# Pages is served from the `gh-pages` branch (not the Pages API), because one
+# repo can only have a single API-driven deployment — and we need room for the
+# per-PR previews that live under `pr-preview/` on that same branch.
 permissions:
-    contents: read
-    pages: write
-    id-token: write
+    contents: write
 
 concurrency:
-    group: pages
+    group: gh-pages-main
     cancel-in-progress: true
 
 jobs:
     deploy:
         runs-on: ubuntu-latest
-        environment:
-            name: github-pages
-            url: ${{ steps.deployment.outputs.page_url }}
         steps:
             - uses: actions/checkout@v4
             - uses: pnpm/action-setup@v4
@@ -29,9 +27,13 @@ jobs:
                   cache: pnpm
             - run: pnpm install --frozen-lockfile
             - run: pnpm build
-            - uses: actions/configure-pages@v5
-            - uses: actions/upload-pages-artifact@v3
+            # Skip Jekyll: the build output is already a static site.
+            - run: touch dist/.nojekyll
+            - uses: JamesIves/github-pages-deploy-action@v4
               with:
-                  path: dist
-            - id: deployment
-              uses: actions/deploy-pages@v4
+                  folder: dist
+                  branch: gh-pages
+                  # Everything at the root is ours to replace; the preview
+                  # umbrella belongs to pr-preview.yml.
+                  clean: true
+                  clean-exclude: pr-preview/

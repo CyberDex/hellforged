@@ -1,0 +1,48 @@
+name: Deploy PR preview
+
+on:
+    pull_request:
+        types: [opened, reopened, synchronize, closed]
+
+permissions:
+    contents: write
+    pull-requests: write
+
+concurrency:
+    group: gh-pages-preview-${{ github.event.number }}
+    cancel-in-progress: true
+
+jobs:
+    preview:
+        # PRs from forks run with a read-only token, so they cannot publish to
+        # `gh-pages`. Skip rather than fail.
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: pnpm/action-setup@v4
+              if: github.event.action != 'closed'
+            - uses: actions/setup-node@v4
+              if: github.event.action != 'closed'
+              with:
+                  node-version: 22
+                  cache: pnpm
+            - if: github.event.action != 'closed'
+              run: pnpm install --frozen-lockfile
+            - if: github.event.action != 'closed'
+              run: pnpm build
+            - if: github.event.action != 'closed'
+              run: touch dist/.nojekyll
+
+            # Publishes to gh-pages under pr-preview/pr-<number>/ and keeps a
+            # sticky comment on the PR pointing at it. Works because vite is
+            # configured with `base: './'`, so the bundle is path-agnostic.
+            - uses: rossjrw/pr-preview-action@v1
+              with:
+                  source-dir: dist
+                  preview-branch: gh-pages
+                  umbrella-dir: pr-preview
+                  # `auto` only covers opened/synchronize/closed; be explicit so
+                  # reopened redeploys too.
+                  action: ${{ github.event.action == 'closed' && 'remove' || 'deploy' }}
