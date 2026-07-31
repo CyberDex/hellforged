@@ -10,6 +10,7 @@
         "lint": "eslint \"**/*.{ts,tsx}\" && prettier --check \"**/*.{ts,tsx}\"",
         "lint:fix": "eslint . --fix && prettier --write .",
         "typecheck": "tsc",
+        "sim": "node --disable-warning=ExperimentalWarning scripts/simulate.ts",
         "format": "prettier --write .",
         "dev": "vite",
         "prepare": "husky"
