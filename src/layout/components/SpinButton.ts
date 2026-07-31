@@ -1,15 +1,22 @@
 import '@pixi/layout';
 import { FancyButton } from '@pixi/ui';
-import { Ticker } from 'pixi.js';
 import { visuals } from 'config/visual.settings';
 import { sound } from 'controllers/sound.controller';
+import { tween } from 'controllers/tween.controller';
+import type { Tween } from 'controllers/tween.controller';
 
 const { hoverScale, tweenDuration, rotateDuration } = visuals.spinButton;
 
 export class SpinButton extends FancyButton {
+    // The turn a spin sets going, held so a second spin picks the button up
+    // where it is rather than sending another turn round on top of it.
+    #turn?: Tween;
+
     constructor() {
         // Out under the pointer and back to size as it leaves or presses, so
-        // the three states are the one movement, taken at the one pace.
+        // the three states are the one movement, taken at the one pace. This
+        // one is `@pixi/ui`'s own rather than the game's: it is the view
+        // swapping that runs it, and nothing here starts it.
         const lean = (scale: number) => ({
             props: { scale: { x: scale, y: scale } },
             duration: tweenDuration,
@@ -39,16 +46,19 @@ export class SpinButton extends FancyButton {
     }
 
     rotate() {
-        const fullTurn = Math.PI * 2;
-
-        const tick = ({ deltaMS }: Ticker) => {
-            this.rotation += (fullTurn * deltaMS) / rotateDuration;
-            if (this.rotation < fullTurn) return;
-
-            this.rotation = 0;
-            Ticker.shared.remove(tick);
-        };
-
-        Ticker.shared.add(tick);
+        this.#turn?.stop();
+        this.#turn = tween.run({
+            duration: rotateDuration,
+            to: Math.PI * 2,
+            onUpdate: (rotation) => {
+                this.rotation = rotation;
+            },
+            // Round is where it started, so it is put back there rather than
+            // left standing a whole turn on.
+            onComplete: () => {
+                this.rotation = 0;
+                this.#turn = undefined;
+            },
+        });
     }
 }

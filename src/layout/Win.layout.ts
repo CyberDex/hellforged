@@ -1,8 +1,10 @@
 import '@pixi/layout';
 import { Layout } from '@pixi/layout';
-import { Text, Ticker } from 'pixi.js';
+import { Text } from 'pixi.js';
 import { settings } from 'config/game.settings';
 import { sound } from 'controllers/sound.controller';
+import { tween } from 'controllers/tween.controller';
+import type { Tween } from 'controllers/tween.controller';
 import { CoinShower } from 'layout/components/CoinShower';
 import { formatAmount } from 'utils/formatAmount';
 
@@ -12,9 +14,9 @@ export class WinLayout extends Layout {
     #title: Text;
     #amount: Text;
     #coins: CoinShower;
-    // A count outlives the call that started it, so the ticker it runs on is
-    // kept to be taken off again by whatever comes up over it next.
-    #count?: (ticker: Ticker) => void;
+    // A count outlives the call that started it, so it is kept to be stopped
+    // again by whatever comes up over it next.
+    #count?: Tween;
 
     constructor() {
         const title = new Text({
@@ -92,7 +94,6 @@ export class WinLayout extends Layout {
     // win counts up over nearly all of the longer reveal it is given and a
     // smaller one is quicker than the time it is left up for.
     show(win: number, countDuration = settings.winCountDuration) {
-        let elapsed = 0;
         // What the amount currently reads, kept so the count is only heard and
         // rewritten on the frames the figure actually moves on. It starts at
         // the zero the announcement below puts up, so no coin lands on it.
@@ -103,15 +104,16 @@ export class WinLayout extends Layout {
 
         this.announce('WIN', '0');
 
-        this.#count = ({ deltaMS }: Ticker) => {
-            elapsed += deltaMS;
+        this.#count = tween.run({
+            duration: countDuration,
+            to: win,
+            onUpdate: (climbing) => {
+                const amount = Math.round(climbing);
 
-            const progress = Math.min(elapsed / countDuration, 1);
-            const amount = Math.round(win * progress);
+                // Every figure the count climbs through drops a coin, so the
+                // money is heard being added up as well as read.
+                if (amount === counted) return;
 
-            // Every figure the count climbs through drops a coin, so the money
-            // is heard being added up as well as read.
-            if (amount !== counted) {
                 counted = amount;
                 this.#amount.text = formatAmount(amount);
                 sound.play('coin');
@@ -134,18 +136,15 @@ export class WinLayout extends Layout {
                 // one comes off the number for every figure it counts through,
                 // so the shower pours out of the amount as it is being read.
                 if (stages > 0) this.#coins.drop(this.dropPoint);
-            }
-
+            },
             // The count has arrived at what the spin paid, so the win is now
             // revealed: it has been read out in full over the reels, and
             // whatever else carries the figure can take it from here.
-            if (progress === 1) {
+            onComplete: () => {
                 this.stopCount();
                 this.emit('revealed', win);
-            }
-        };
-
-        Ticker.shared.add(this.#count);
+            },
+        });
     }
 
     // A balance that can no longer be staked is said where the money would have
@@ -186,9 +185,7 @@ export class WinLayout extends Layout {
     }
 
     private stopCount() {
-        if (!this.#count) return;
-
-        Ticker.shared.remove(this.#count);
+        this.#count?.stop();
         this.#count = undefined;
     }
 }

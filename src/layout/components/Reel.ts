@@ -1,5 +1,7 @@
 import { Container, Rectangle, Ticker } from 'pixi.js';
 import { settings } from 'config/game.settings';
+import { tween } from 'controllers/tween.controller';
+import type { Tween } from 'controllers/tween.controller';
 import { getRandomSymbol } from 'utils/getRandomSymbol';
 import { Symbol } from './Symbol';
 
@@ -27,11 +29,11 @@ export class Reel extends Container {
     #speed: number;
     #spinning = false;
     #stopping = false;
-    #bouncing = false;
-    #elapsed = 0;
     // The symbols still to be fed in on top before the reel can land.
     #queue: string[] = [];
-    // How far the strip currently sits below the row grid, mid-bounce.
+    // The dip the reel is riding out, once it has landed, and how far below the
+    // row grid that currently has the strip sitting.
+    #bounce?: Tween;
     #offset = 0;
 
     constructor(slots: number) {
@@ -84,10 +86,15 @@ export class Reel extends Container {
         // Resumes the reel if the previous spin is still landing or bouncing.
         this.#stopping = false;
 
-        if (this.#bouncing) {
+        // A dip is momentum off a landing rather than travel, so a reel asked
+        // to go again mid-dip is put straight back on the grid and spun from
+        // there rather than carrying the offset into the next spin.
+        if (this.#bounce) {
+            this.#bounce.stop();
+            this.#bounce = undefined;
+
             this.move(-this.#offset);
 
-            this.#bouncing = false;
             this.#offset = 0;
         }
 
@@ -106,12 +113,6 @@ export class Reel extends Container {
     }
 
     private tick({ deltaMS }: Ticker) {
-        if (this.#bouncing) {
-            this.bounce(deltaMS);
-
-            return;
-        }
-
         // The top symbol rests at -#symbolHeight, so this is what is left to
         // travel for the symbols to land back on the row grid — a whole symbol
         // when they are on it already.
@@ -127,15 +128,7 @@ export class Reel extends Container {
         // outcome sits one row above the grid, and this last move slides it
         // down onto the rows.
         if (this.#stopping && !this.#queue.length && align <= distance) {
-            this.move(align);
-
-            this.#stopping = false;
-            // The reel has landed as far as the game is concerned; the dip
-            // that follows is momentum, not travel.
-            this.#bouncing = true;
-            this.#elapsed = 0;
-
-            this.emit('stopped');
+            this.land(align);
 
             return;
         }
@@ -143,27 +136,39 @@ export class Reel extends Container {
         this.move(distance);
     }
 
-    private bounce(deltaMS: number) {
-        this.#elapsed += deltaMS;
+    // The last move of a spin, sliding the outcome down onto the rows. The reel
+    // has landed as far as the game is concerned once it has: the travel is
+    // over and comes off the clock, and the dip that follows it is momentum.
+    private land(align: number) {
+        this.move(align);
 
-        const progress = Math.min(this.#elapsed / settings.bounceDuration, 1);
-        // Driven from an absolute offset rather than per-tick deltas, so the
-        // strip comes back to the grid exactly where it landed.
-        const offset =
-            progress < 1
-                ? dip(progress) * settings.bounceDistance * this.#symbolHeight
-                : 0;
-
-        this.move(offset - this.#offset);
-
-        this.#offset = offset;
-
-        if (progress < 1) return;
-
-        this.#bouncing = false;
+        this.#stopping = false;
         this.#spinning = false;
 
         Ticker.shared.remove(this.tick, this);
+
+        this.emit('stopped');
+
+        this.#bounce = tween.run({
+            duration: settings.bounceDuration,
+            to: settings.bounceDistance * this.#symbolHeight,
+            ease: dip,
+            // Driven from an absolute offset rather than per-frame deltas, so
+            // the strip comes back to the grid exactly where it landed.
+            onUpdate: (offset) => {
+                this.move(offset - this.#offset);
+
+                this.#offset = offset;
+            },
+            // On the grid whatever the dip was tuned to, rather than wherever
+            // its last frame happened to leave the strip.
+            onComplete: () => {
+                this.move(-this.#offset);
+
+                this.#offset = 0;
+                this.#bounce = undefined;
+            },
+        });
     }
 
     private move(distance: number) {

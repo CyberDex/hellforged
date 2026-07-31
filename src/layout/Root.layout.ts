@@ -1,6 +1,8 @@
 import '@pixi/layout';
 import { Layout } from '@pixi/layout';
-import { Sprite, Ticker } from 'pixi.js';
+import { Sprite } from 'pixi.js';
+import { tween } from 'controllers/tween.controller';
+import type { Tween } from 'controllers/tween.controller';
 import { SpinButton } from 'layout/components/SpinButton';
 import { BetSlider } from 'layout/components/BetSlider';
 import { Pannel } from 'layout/components/Pannel';
@@ -24,10 +26,10 @@ export class RootLayout extends Layout {
     // Everything the game is played on, which is everything but the background:
     // it is laid out over the whole screen and zoomed as one.
     #ui: Layout;
-    #elapsed = 0;
-    #duration = 0;
     // How far the UI is currently zoomed in, kept so a resize can put it back.
     #zoom = 1;
+    // The lean in, while it is still going out, so it can be dropped part way.
+    #growing?: Tween;
 
     constructor() {
         setDefaultTextStyle();
@@ -191,17 +193,24 @@ export class RootLayout extends Layout {
     // time, and stays at full size until it is put back. The background is left
     // out of it and holds the screen still behind the zoom.
     zoom(duration: number) {
-        this.#elapsed = 0;
-        this.#duration = duration;
-
-        Ticker.shared.add(this.grow, this);
+        this.#growing?.stop();
+        this.#growing = tween.run({
+            duration,
+            from: 1,
+            to: settings.anticipationZoom,
+            onUpdate: (zoom) => {
+                this.#zoom = zoom;
+                this.#ui.scale.set(zoom);
+            },
+        });
     }
 
     // Straight back to size, with none of the travel the zoom had. Says whether
     // there was a zoom to come down from, since dropping back to size is a move
     // the game makes and is heard, while a spin that never leaned in is not.
     unzoom() {
-        Ticker.shared.remove(this.grow, this);
+        this.#growing?.stop();
+        this.#growing = undefined;
 
         const zoomed = this.#zoom !== 1;
 
@@ -209,16 +218,5 @@ export class RootLayout extends Layout {
         this.#ui.scale.set(this.#zoom);
 
         return zoomed;
-    }
-
-    private grow({ deltaMS }: Ticker) {
-        this.#elapsed += deltaMS;
-
-        const progress = Math.min(this.#elapsed / this.#duration, 1);
-
-        this.#zoom = 1 + (settings.anticipationZoom - 1) * progress;
-        this.#ui.scale.set(this.#zoom);
-
-        if (progress === 1) Ticker.shared.remove(this.grow, this);
     }
 }

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Ticker } from 'pixi.js';
 import { useStore } from 'zustand';
 import { gameTitle } from 'config/game.name';
 import { settings } from 'config/game.settings';
+import { tween } from 'controllers/tween.controller';
 import { gameStore } from 'store/game.store';
 import type { RootLayout } from 'layout/Root.layout';
 import { Button } from 'ui/Button';
@@ -168,34 +168,26 @@ function useCountUp(target: number, duration: number) {
 
     useEffect(() => {
         const from = reading.current;
-        const distance = target - from;
 
-        if (!distance) return;
+        if (target === from) return;
 
-        let elapsed = 0;
-
-        const count = ({ deltaMS }: Ticker) => {
-            elapsed += deltaMS;
-
-            const progress = Math.min(elapsed / duration, 1);
-
-            // Whole coins, the way every figure in the game is, and the last
-            // frame lands on the target exactly rather than near it.
-            reading.current = Math.round(from + distance * progress);
-            // React drops a render that changes nothing, so the frames a slow
-            // count spends between two figures cost the DOM nothing.
-            setCounted(reading.current);
-
-            if (progress === 1) Ticker.shared.remove(count);
-        };
-
-        Ticker.shared.add(count);
+        const count = tween.run({
+            duration,
+            from,
+            to: target,
+            onUpdate: (climbing) => {
+                // Whole coins, the way every figure in the game is, and the
+                // last frame lands on the target exactly rather than near it.
+                reading.current = Math.round(climbing);
+                // React drops a render that changes nothing, so the frames a
+                // slow count spends between two figures cost the DOM nothing.
+                setCounted(reading.current);
+            },
+        });
 
         // A count outlives the frame that started it, so one still climbing is
-        // taken off by whatever replaces it — a further change, or the bar going.
-        return () => {
-            Ticker.shared.remove(count);
-        };
+        // stopped by whatever replaces it — a further change, or the bar going.
+        return () => count.stop();
     }, [target, duration]);
 
     return counted;
