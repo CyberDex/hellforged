@@ -1,7 +1,7 @@
 import '@pixi/layout';
 import { Layout } from '@pixi/layout';
 import { Text } from 'pixi.js';
-import { gmeSettings } from 'config/game.settings';
+import type { BigWinStage } from 'config/game.settings';
 import { sound } from 'controllers/sound.controller';
 import { tween } from 'controllers/tween.controller';
 import type { Tween } from 'controllers/tween.controller';
@@ -86,7 +86,11 @@ export class WinLayout extends Layout {
         this.visible = false;
     }
 
-    show(win: number, countDuration = gmeSettings.winCountDuration) {
+    show(
+        win: number,
+        countDuration: number,
+        bigWinStages: readonly BigWinStage[],
+    ) {
         // Rewritten (and heard) only on the frames the figure actually moves.
         let counted = 0;
         let stages = 0;
@@ -107,8 +111,8 @@ export class WinLayout extends Layout {
 
                 // The climbing number decides the announcement; a frame can
                 // pass several stages, and only the last is left up.
-                while (stages < gmeSettings.bigWinStages.length) {
-                    const stage = gmeSettings.bigWinStages[stages];
+                while (stages < bigWinStages.length) {
+                    const stage = bigWinStages[stages];
 
                     if (amount < stage.from) break;
 

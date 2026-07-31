@@ -1,4 +1,8 @@
-import { gmeSettings } from 'config/game.settings';
+import {
+    gmeSettings,
+    selectBigWinStages,
+    type BigWinStage,
+} from 'config/game.settings';
 import { gameDefinition } from 'config/game.definition';
 import { API } from './api.controller';
 import { sound } from './sound.controller';
@@ -16,6 +20,7 @@ class GameController {
     #landed = 0;
     // The API's outcome, held until the reels finish landing on it.
     #win = 0;
+    #bigWinStages: BigWinStage[] = [];
     #positions: Position[] = [];
     #anticipation: SpinResult['anticipation'];
     #unsubscribe?: () => void;
@@ -75,6 +80,7 @@ class GameController {
         this.#reels?.spin();
 
         this.#win = 0;
+        this.#bigWinStages = [];
         this.#positions = [];
         this.#landed = 0;
         this.#anticipation = undefined;
@@ -108,6 +114,7 @@ class GameController {
         );
 
         this.#win = outcome.win;
+        this.#bigWinStages = selectBigWinStages(outcome.win);
         this.#positions = outcome.wins.flatMap(({ positions }) => positions);
         this.#anticipation = outcome.anticipation;
 
@@ -162,7 +169,7 @@ class GameController {
 
         if (win !== previous.win) {
             if (win > 0) {
-                winLayout.show(win, this.countDuration);
+                winLayout.show(win, this.countDuration, this.#bigWinStages);
                 sound.play('win');
             } else {
                 winPannel.value = win;
@@ -291,9 +298,7 @@ class GameController {
 
     // The win decides the stage, not the symbols.
     private get bigWin() {
-        return gmeSettings.bigWinStages
-            .filter(({ from }) => this.#win >= from)
-            .pop();
+        return this.#bigWinStages[this.#bigWinStages.length - 1];
     }
 
     private get revealDuration() {
