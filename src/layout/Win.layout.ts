@@ -8,14 +8,10 @@ import type { Tween } from 'controllers/tween.controller';
 import { CoinShower } from 'layout/components/CoinShower';
 import { formatAmount } from 'utils/formatAmount';
 
-// Whatever the game has to say over the reels is said in two lines: what has
-// happened, over the figure it happened for.
 export class WinLayout extends Layout {
     #title: Text;
     #amount: Text;
     #coins: CoinShower;
-    // A count outlives the call that started it, so it is kept to be stopped
-    // again by whatever comes up over it next.
     #count?: Tween;
 
     constructor() {
@@ -56,8 +52,8 @@ export class WinLayout extends Layout {
                             position: 'center',
                             width: '100%',
                             height: '100%',
-                            // The amount grows a digit at a time, so it is the
-                            // layout that keeps it centred, not its own width.
+                            // The amount grows a digit at a time; the layout
+                            // keeps it centred, not its own width.
                             textAlign: 'center',
                             marginTop: 50,
                         },
@@ -81,25 +77,15 @@ export class WinLayout extends Layout {
         this.#title = title;
         this.#amount = amount;
         this.#coins = new CoinShower();
-        // Under both lines, and placed by nothing: the coins are thrown about
-        // the whole space the announcement is laid out over, so they are added
-        // straight to it rather than as content of it, which would have the
-        // layout measuring and fitting a container that is empty half the time.
+        // Straight to the layout, not as content: content would be measured
+        // and fitted as an often-empty box.
         this.addChildAt(this.#coins, 0);
         this.visible = false;
     }
 
-    // The amount is counted up from zero rather than printed, so the win reads
-    // as it is being added up. How long it takes is the caller's, since a big
-    // win counts up over nearly all of the longer reveal it is given and a
-    // smaller one is quicker than the time it is left up for.
     show(win: number, countDuration = settings.winCountDuration) {
-        // What the amount currently reads, kept so the count is only heard and
-        // rewritten on the frames the figure actually moves on. It starts at
-        // the zero the announcement below puts up, so no coin lands on it.
+        // Rewritten (and heard) only on the frames the figure actually moves.
         let counted = 0;
-        // How many of the big win stages the count has climbed past, each of
-        // which it only ever passes the once on its way up.
         let stages = 0;
 
         this.announce('WIN', '0');
@@ -110,19 +96,14 @@ export class WinLayout extends Layout {
             onUpdate: (climbing) => {
                 const amount = Math.round(climbing);
 
-                // Every figure the count climbs through drops a coin, so the
-                // money is heard being added up as well as read.
                 if (amount === counted) return;
 
                 counted = amount;
                 this.#amount.text = formatAmount(amount);
                 sound.play('coin');
 
-                // The figures a win becomes a bigger one at are passed
-                // mid-count, so it is the climbing number that changes what is
-                // announced over it rather than the win it is climbing to. A
-                // frame can carry the count past more than one of them at once,
-                // in which case only the last it reached is left up.
+                // The climbing number decides the announcement; a frame can
+                // pass several stages, and only the last is left up.
                 while (stages < settings.bigWinStages.length) {
                     const stage = settings.bigWinStages[stages];
 
@@ -132,14 +113,8 @@ export class WinLayout extends Layout {
                     stages++;
                 }
 
-                // From the first of them on the coin is seen as well as heard:
-                // one comes off the number for every figure it counts through,
-                // so the shower pours out of the amount as it is being read.
                 if (stages > 0) this.#coins.drop(this.dropPoint);
             },
-            // The count has arrived at what the spin paid, so the win is now
-            // revealed: it has been read out in full over the reels, and
-            // whatever else carries the figure can take it from here.
             onComplete: () => {
                 this.stopCount();
                 this.emit('revealed', win);
@@ -147,9 +122,6 @@ export class WinLayout extends Layout {
         });
     }
 
-    // A balance that can no longer be staked is said where the money would have
-    // been read out, since it is the same news about the same reels: there is
-    // nothing more coming off them.
     outOfFunds() {
         this.announce('OUT OF', 'FUNDS');
     }
@@ -160,9 +132,7 @@ export class WinLayout extends Layout {
         this.visible = false;
     }
 
-    // Where a coin is dropped from, in the shower's own space: anywhere along
-    // the figure as it currently reads, wherever the layout has just centred it
-    // — so a number that grows a digit at a time showers wider with it.
+    // Anywhere along the figure, so a growing number showers wider with it.
     private get dropPoint() {
         const { x, y, width, height } = this.#amount.getBounds();
 
@@ -173,9 +143,7 @@ export class WinLayout extends Layout {
     }
 
     private announce(title: string, amount: string) {
-        // Anything already climbing to a figure belongs to what is being
-        // written over, so it is taken off before the lines are replaced, and
-        // the coins it had in the air go with it.
+        // A running count belongs to what is being written over; its coins go too.
         this.stopCount();
         this.#coins.clear();
 

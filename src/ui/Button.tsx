@@ -1,11 +1,8 @@
 import type { ComponentProps } from 'react';
 import { sound } from 'controllers/sound.controller';
 
-// Every button the overlay lays over the game. It carries the `press` class,
-// which is what asks a pointer back off the overlay and takes the browser's own
-// dressing off it (see `ui.css`), and it sounds the same click the spin button
-// does, on the press rather than on the release, so a button in the DOM answers
-// the way the one on the machine does.
+// Every overlay button: `press` asks the pointer back off the overlay (see
+// `ui.css`), and the click sounds on the press, the way the spin button's does.
 export function Button({
     className,
     onPointerDown,
@@ -21,9 +18,8 @@ export function Button({
                 onPointerDown?.(event);
             }}
             // A button worked from the keyboard is clicked without ever being
-            // pointed at, and says so: the click counts the presses behind it
-            // (`detail`) and that one is made by none. It is the press the
-            // pointer never made, so it is clicked here instead.
+            // pressed (`detail` counts the presses behind a click), so the
+            // click the pointer never made is sounded here.
             onClick={(event) => {
                 if (event.detail === 0) sound.play('click');
                 onClick?.(event);

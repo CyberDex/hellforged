@@ -4,19 +4,13 @@ import { settings } from 'config/game.settings';
 import { visuals } from 'config/visual.settings';
 import { sound } from 'controllers/sound.controller';
 
-// How the track and the handle on it are drawn, as configured.
 const { width, height, handle, pit, metal, outline, outlineWidth } =
     visuals.betSlider;
-// Fully rounded ends, whatever the track is drawn at.
 const radius = height / 2;
 
-// The bet is dragged rather than typed: the handle runs the whole range in one
-// sweep, and the amount it lands on is read off the pannel above it.
 export class BetSlider extends Slider {
     constructor() {
         super({
-            // Stroked in its own colour, which reads as a slightly thicker
-            // track rather than as an edge around it.
             bg: new Graphics()
                 .roundRect(0, 0, width, height, radius)
                 .fill(pit)
@@ -28,18 +22,13 @@ export class BetSlider extends Slider {
                 .circle(0, 0, handle)
                 .fill(metal)
                 .stroke({ color: outline, width: outlineWidth }),
-            // The top end is only the widest the slider ever opens: the game
-            // brings it down to the balance whenever that no longer covers a
-            // bet staked this high.
             min: settings.minBet,
             max: settings.maxBet,
             value: settings.defaultBet,
         });
 
-        // The handle hangs off both ends of the track, so how wide the slider
-        // measures depends on where it happens to be sitting. This pins the
-        // widest of it down, so a resize always lays the track out in the same
-        // place rather than shifting it under the pannel.
+        // The handle hangs off both ends, so measured width depends on where
+        // it sits; pinning the widest keeps a resize from shifting the track.
         const bounds = new Graphics()
             .rect(-handle, 0, width + handle * 2, height)
             .fill({ color: outline, alpha: 0 });
@@ -47,36 +36,23 @@ export class BetSlider extends Slider {
         bounds.eventMode = 'none';
         this.addChildAt(bounds, 0);
 
-        // A coin for every figure the bet passes through, so a sweep is heard
-        // being counted out the way the win is, rather than landing as one
-        // click when the handle is let go. Only under the player's finger:
-        // `onUpdate` also fires when the game itself moves the handle, and
-        // placing it or capping it to the balance is not money being staked.
+        // Only under the finger: `onUpdate` also fires when the game itself
+        // places or caps the handle.
         this.onUpdate.connect(() => {
             if (this.dragging) sound.play('coin');
         });
     }
 
-    // Moved by a key rather than by a finger (see `keyboard.controller.ts`):
-    // the handle goes the given number of steps along the track, the setter
-    // holding it to the ends of it as a drag is held. A coin is counted out for
-    // the move the way one is under the finger, and a handle already at the end
-    // it was sent to has passed no figure and is not heard.
     nudge(steps: number) {
         const bet = this.value;
 
         this.value += steps * this.step;
 
+        // A handle already at the end it was sent to passed no figure.
         if (this.value !== bet) sound.play('coin');
     }
 
-    // A bet there is no setting of is taken off the machine rather than left
-    // sitting there unanswering: the stake for a running spin has already been
-    // taken, and a balance that is out has nothing to stake either way. The
-    // pannel above stays up and keeps reading the bet out, so what the spin
-    // was paid for is still there while the handle that set it is away. Hidden
-    // also takes the slider out of hit testing, so there is nothing left to
-    // drag rather than something that quietly refuses.
+    // Hidden rather than greyed, which also takes it out of hit testing.
     set enabled(enabled: boolean) {
         this.visible = enabled;
     }

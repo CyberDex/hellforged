@@ -8,15 +8,11 @@ import type { Tween } from 'controllers/tween.controller';
 const { hoverScale, tweenDuration, rotateDuration } = visuals.spinButton;
 
 export class SpinButton extends FancyButton {
-    // The turn a spin sets going, held so a second spin picks the button up
-    // where it is rather than sending another turn round on top of it.
+    // Held so a second spin picks the turn up rather than stacking another.
     #turn?: Tween;
 
     constructor() {
-        // Out under the pointer and back to size as it leaves or presses, so
-        // the three states are the one movement, taken at the one pace. This
-        // one is `@pixi/ui`'s own rather than the game's: it is the view
-        // swapping that runs it, and nothing here starts it.
+        // `@pixi/ui`'s own animation shape, run by the view swapping.
         const lean = (scale: number) => ({
             props: { scale: { x: scale, y: scale } },
             duration: tweenDuration,
@@ -36,10 +32,8 @@ export class SpinButton extends FancyButton {
         this.onDown.connect(() => sound.play('click'));
     }
 
-    // Pressed by something that is not a pointer, which is the space bar (see
-    // `keyboard.controller.ts`). The click is sounded here, since `onDown` is a
-    // finger's alone, and the press itself goes out as the signal a click sends,
-    // so whatever answers it cannot tell the two apart.
+    // The space bar's press: `onDown` is a finger's alone, so the click is
+    // sounded here (see `keyboard.controller.ts`).
     press() {
         sound.play('click');
         this.onPress.emit();
@@ -53,8 +47,6 @@ export class SpinButton extends FancyButton {
             onUpdate: (rotation) => {
                 this.rotation = rotation;
             },
-            // Round is where it started, so it is put back there rather than
-            // left standing a whole turn on.
             onComplete: () => {
                 this.rotation = 0;
                 this.#turn = undefined;

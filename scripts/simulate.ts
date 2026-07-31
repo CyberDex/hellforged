@@ -1,8 +1,6 @@
-// The return read off the definition rather than walked out by hand: the game
-// is spun headlessly, at one bet a spin, and what came back is counted. Run
-// with `pnpm sim [spins]`. Plain node runs it, stripping the types on the way
-// in, which is why the engine and the definition keep clear of Pixi and of the
-// bundler's path aliases.
+// Spins the game headlessly at one bet a spin and counts what came back. Run
+// with `pnpm sim [spins]`. Plain node runs it, which is why the engine and
+// the definition keep clear of Pixi and of the bundler's path aliases.
 import { definition } from '../src/config/game.definition.ts';
 import { spin } from '../src/engine/engine.ts';
 
@@ -10,8 +8,6 @@ const spins = Number(process.argv[2] ?? 1_000_000);
 
 let paid = 0;
 let hits = 0;
-// What each rung of the paytable landed and paid, keyed as it would be read
-// out: the symbol for a filled line, the bare length for a run short of one.
 const rungs = new Map<string, { landed: number; paid: number }>();
 
 for (let i = 0; i < spins; i++) {

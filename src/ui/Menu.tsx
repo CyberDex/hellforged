@@ -6,40 +6,26 @@ import { graphicsStore } from 'store/graphics.store';
 import { soundStore } from 'store/sound.store';
 import { Balance } from 'ui/Balance';
 import { Button } from 'ui/Button';
-import { Rules } from 'ui/Rules';
 
-// The two entries on the menu that stand something down of their own rather than
-// switching something on it. Only ever one of them is let out at a time, which is
-// the drop's height held to something the screen has room for.
-export type Section = 'rules' | 'balance';
-
-// What the player can set about the game rather than play of it: the sound, how
-// it is drawn, and the rules and the balance, each let down inside the menu on
-// the entry that names it.
-//
-// It drops out of the bar rather than covering the machine: it is cut to the bar,
-// so it reads as the machine turned round rather than a sheet put over it. Hung
-// off the mount the bar itself hangs off rather than off the bar (see `TopBar.tsx`),
-// which is what leaves the game behind it to be blurred through its glass. It
-// stays in the DOM shut as well as open, so the one class animates it both down
-// and back up (see `ui.css`) — hidden while it is away, which takes it off the
-// keyboard along with the screen.
+// Stays in the DOM shut as well as open, so the one class animates the
+// drawer both down and back up (see `ui.css`).
 export function Menu({
     open,
-    section,
-    onSection,
+    balance,
+    onBalance,
+    onRules,
     onClose,
 }: {
     open: boolean;
-    section?: Section;
-    onSection: (section: Section) => void;
+    balance: boolean;
+    onBalance: () => void;
+    onRules: () => void;
     onClose: () => void;
 }) {
     const { muted, volumes, setMuted, setVolume } = useStore(soundStore);
     const { shader, setShader } = useStore(graphicsStore);
 
-    // Shut on Escape, the way the whole drawer is, and only while it is open:
-    // shut, the key is the game's again.
+    // Only while open: shut, the key is the game's again.
     useEffect(() => {
         if (!open) return;
 
@@ -66,9 +52,7 @@ export function Menu({
                 </Button>
             </div>
 
-            {/* Dimmed rather than taken away while the game is muted: the levels
-                are still the player's to set, they just are not being heard at
-                the moment. */}
+            {/* Dimmed, not taken away: the levels stay the player's to set. */}
             <div className={`menu-volumes${muted ? ' menu-muted' : ''}`}>
                 <Volume
                     label="Music"
@@ -79,16 +63,11 @@ export function Menu({
                     label="Effects"
                     value={volumes.fx}
                     onChange={(volume) => setVolume('fx', volume)}
-                    // Nothing on screen says how loud the effects have been set,
-                    // so one is played back at the new level as the handle is let
-                    // go and the player hears what they have chosen.
+                    // Played back on release, so the new level is heard.
                     onRelease={() => sound.play('click')}
                 />
             </div>
 
-            {/* The burn over the background costs the machine a pass of every
-                frame, so it is the player's to switch off on one the game runs
-                poorly on (see `BG.ts`). */}
             <div className="menu-row">
                 <span className="menu-label">Shader</span>
                 <Button
@@ -101,28 +80,22 @@ export function Menu({
                 </Button>
             </div>
 
-            <Fold
-                label="Game rules"
-                open={section === 'rules'}
-                onToggle={() => onSection('rules')}
+            <Button
+                className="menu-entry"
+                aria-haspopup="dialog"
+                onClick={onRules}
             >
-                <Rules />
-            </Fold>
+                <span className="menu-label">Game rules</span>
+                <span className="menu-chevron gold">›</span>
+            </Button>
 
-            <Fold
-                label="Update balance"
-                open={section === 'balance'}
-                onToggle={() => onSection('balance')}
-            >
-                <Balance open={section === 'balance'} onClose={onClose} />
+            <Fold label="Update balance" open={balance} onToggle={onBalance}>
+                <Balance open={balance} onClose={onClose} />
             </Fold>
         </div>
     );
 }
 
-// An entry and what it has to stand down, as the one row of the menu: shut, the
-// section under it takes up none of the drop's height, so the two entries read as
-// two more lines of the menu until one of them is asked for.
 function Fold({
     label,
     open,
@@ -142,9 +115,6 @@ function Fold({
                 onClick={onToggle}
             >
                 <span className="menu-label">{label}</span>
-                {/* Lying on its side while the section is shut and turned down
-                    onto it once it is open, so the one glyph says both which way
-                    the section goes and which way it is standing. */}
                 <span className="menu-chevron gold">›</span>
             </Button>
             <div className={`menu-section${open ? ' menu-section-open' : ''}`}>
@@ -175,12 +145,8 @@ function Volume({
                 max={1}
                 step={0.05}
                 value={value}
-                // How far along the handle is, as the share of the way it stands
-                // at rather than as a distance: the groove works out where the
-                // gold gives out from it, which is under the middle of the handle
-                // and not at that share of the whole groove (see `ui.css`). A
-                // track has no way of reading the value it belongs to, so it is
-                // told.
+                // The groove cannot read its own value, so it is told where
+                // the gold gives out (see `ui.css`).
                 style={{ '--filled': `${value}` } as CSSProperties}
                 onChange={(event) => onChange(event.target.valueAsNumber)}
                 onPointerUp={onRelease}
