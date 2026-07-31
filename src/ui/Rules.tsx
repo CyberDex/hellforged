@@ -41,35 +41,66 @@ const names = new RegExp(`\\b(?:${symbols.join('|')})\\b`, 'g');
 
 // The sheet's frames are trimmed and rotated to pack, so the symbol is drawn
 // through a sprite to put it back upright inside its square.
-const face = (symbol: string) => {
-    const source = app.renderer.extract
-        .canvas(new Sprite(Texture.from(symbol)))
-        .toDataURL?.();
+const faceUrls: string[] = [];
 
-    return source
-        ? `<img class="symbol" src="${source}" alt="${symbol}">`
-        : symbol;
+const face = async (symbol: string) => {
+    const sprite = new Sprite(Texture.from(symbol));
+    const canvas = app.renderer.extract.canvas(sprite);
+
+    sprite.destroy();
+
+    const blob = canvas.convertToBlob
+        ? await canvas.convertToBlob({ type: 'image/png' })
+        : canvas.toBlob
+          ? await new Promise<Blob | null>((resolve) =>
+                canvas.toBlob?.(resolve, 'image/png'),
+            )
+          : null;
+
+    if (!blob) return symbol;
+
+    const source = URL.createObjectURL(blob);
+
+    faceUrls.push(source);
+
+    return `<img class="symbol" src="${source}" alt="${symbol}">`;
 };
+
+// The browser releases object URLs on navigation. HMR does not navigate, so a
+// replaced rules module gives back the URLs it created itself.
+if (import.meta.hot) {
+    import.meta.hot.dispose(() => {
+        for (const source of faceUrls) URL.revokeObjectURL(source);
+    });
+}
 
 // Rendered on first open — module load happens before there is a renderer to
 // cut symbols from.
-let html: string | undefined;
+let html: Promise<string> | undefined;
 
 const rendered = (source: string) =>
-    (html ??= marked.parse(
-        source
-            .replace(/%\w+%/g, (name) => figures[name] ?? name)
-            // After the figures: the paytable is only there once filled in.
-            .replace(names, face),
-        { async: false },
-    ));
+    (html ??= Promise.all(
+        symbols.map(async (symbol) => [symbol, await face(symbol)] as const),
+    ).then((entries) => {
+        const faces = Object.fromEntries(entries);
+
+        return marked.parse(
+            source
+                .replace(/%\w+%/g, (name) => figures[name] ?? name)
+                // After the figures: the paytable is only there once filled in.
+                .replace(names, (symbol) => faces[symbol] ?? symbol),
+            { async: false },
+        );
+    }));
 
 function Body() {
+    const source = use(copy);
+
     return (
         // The document ships with the game's own assets; not player-written.
         <div
             className="rules-body"
-            dangerouslySetInnerHTML={{ __html: rendered(use(copy)) }}
+            dangerouslySetInnerHTML={{ __html: use(rendered(source)) }}
         />
     );
 }
