@@ -1,8 +1,9 @@
 import { Sprite, Texture } from 'pixi.js';
-import { getRandomSymbol } from 'utils/getRandomSymbol';
 
 export class Symbol extends Sprite {
-    constructor(symbol = getRandomSymbol()) {
+    // A symbol is always told its first face: which faces there are to wear is
+    // the definition's business, not this sprite's.
+    constructor(symbol: string) {
         super(Texture.from(symbol));
     }
 

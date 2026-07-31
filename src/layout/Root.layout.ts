@@ -9,6 +9,7 @@ import { Pannel } from 'layout/components/Pannel';
 import { Reels } from 'layout/components/Reels';
 import { SlotMachine } from 'layout/components/SlotMachine';
 import { settings } from 'config/game.settings';
+import { definition } from 'config/game.definition';
 import { BG } from 'layout/components/BG';
 import { WinLayout } from 'layout/Win.layout';
 import { setDefaultTextStyle } from 'config/font.settings';
@@ -39,7 +40,7 @@ export class RootLayout extends Layout {
         const betSlider = new BetSlider();
         const betPannel = new Pannel('Bet');
         const winPannel = new Pannel('Win');
-        const reels = new Reels(settings.reels, settings.rows);
+        const reels = new Reels(definition.strips, definition.rows);
         // The cabinet, the reels and the window they are cropped to are placed
         // as one, so nothing has to keep the three of them lined up.
         const slotMachine = new SlotMachine(

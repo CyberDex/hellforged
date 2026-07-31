@@ -1,8 +1,8 @@
 import { Container, Rectangle, Ticker } from 'pixi.js';
 import { settings } from 'config/game.settings';
+import { visuals } from 'config/visual.settings';
 import { tween } from 'controllers/tween.controller';
 import type { Tween } from 'controllers/tween.controller';
-import { getRandomSymbol } from 'utils/getRandomSymbol';
 import { Symbol } from './Symbol';
 
 // 0 -> 1 -> 0. Down with the momentum the reel landed with, decelerating into
@@ -35,14 +35,19 @@ export class Reel extends Container {
     // row grid that currently has the strip sitting.
     #bounce?: Tween;
     #offset = 0;
+    // What the reel is strung with, which is where every face it shows in
+    // passing is drawn from.
+    #strip: string[];
 
-    constructor(slots: number) {
+    constructor(slots: number, strip: string[]) {
         super();
+
+        this.#strip = strip;
 
         // One spare symbol above the reel: it fills the top row while the
         // others slide down.
         for (let i = -1; i < slots; i++) {
-            const symbol = new Symbol();
+            const symbol = new Symbol(this.face());
 
             symbol.y = i * symbol.height;
 
@@ -80,6 +85,21 @@ export class Reel extends Container {
 
             if (slot) slot.symbol = symbols[row];
         }
+    }
+
+    // The rows a win covers stay at full face and the rest step back, so the
+    // grid itself says which of its cells were paid for. `null` is the reel at
+    // rest: every face forward. The spare above the grid steps back with the
+    // losers, unseen behind the window either way.
+    highlight(rows: number[] | null) {
+        this.#slots.forEach((slot, index) => {
+            // #slots runs top to bottom from the spare symbol above the grid,
+            // so the rows start one past it.
+            slot.alpha =
+                !rows || rows.includes(index - 1)
+                    ? 1
+                    : visuals.machine.dimmedFace;
+        });
     }
 
     spin() {
@@ -182,12 +202,19 @@ export class Reel extends Container {
             const bottom = this.#slots[this.#slots.length - 1];
 
             bottom.y = this.#slots[0].y - this.#symbolHeight;
-            // Off the queue while the reel is landing, random for as long as
-            // it is still spinning.
-            bottom.symbol = this.#queue.shift() ?? getRandomSymbol();
+            // Off the queue while the reel is landing, off the strip for as
+            // long as it is still spinning.
+            bottom.symbol = this.#queue.shift() ?? this.face();
 
             this.#slots.pop();
             this.#slots.unshift(bottom);
         }
+    }
+
+    // A face drawn off the strip, for rows that are only passing by: the blur
+    // of a spin shows symbols in the company the strip actually keeps them in,
+    // so a symbol strung on rarely is rare in passing too.
+    private face() {
+        return this.#strip[Math.floor(Math.random() * this.#strip.length)];
     }
 }

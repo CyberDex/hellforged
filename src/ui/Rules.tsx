@@ -2,6 +2,7 @@ import { Suspense, use } from 'react';
 import { marked } from 'marked';
 import { Sprite, Texture } from 'pixi.js';
 import { settings } from 'config/game.settings';
+import { definition, symbols } from 'config/game.definition';
 import { app } from 'controllers/app.controller';
 import { formatAmount } from 'utils/formatAmount';
 
@@ -33,13 +34,13 @@ const figures: Record<string, string> = {
         // Named for the reels the game is actually played on rather than for
         // the three it ships with, so the column cannot come to head figures
         // that take a fourth reel to land.
-        `| Symbol | ${settings.reels} of a kind |`,
+        `| Symbol | ${definition.strips.length} of a kind |`,
         '| ------ | --------------- |',
-        ...Object.entries(settings.payouts.full).map(
+        ...Object.entries(definition.payouts.full).map(
             ([symbol, payout]) => `| ${symbol} | ${payout} x bet |`,
         ),
     ].join('\n'),
-    '%PAIR%': (settings.payouts.partial[2] ?? 0).toString(),
+    '%PAIR%': (definition.payouts.partial[2] ?? 0).toString(),
     '%MINBET%': formatAmount(settings.minBet),
     '%MAXBET%': formatAmount(settings.maxBet),
 };
@@ -50,7 +51,7 @@ const figures: Record<string, string> = {
 // puts the face the game is dressed in there instead — cut out of the art at
 // runtime, so a reskin's paytable is filled with its own symbols and neither
 // this file nor the document is touched for it.
-const names = new RegExp(`\\b(?:${settings.symbols.join('|')})\\b`, 'g');
+const names = new RegExp(`\\b(?:${symbols.join('|')})\\b`, 'g');
 
 // The sprites are packed into one sheet, trimmed and turned on their side to
 // fit, so a symbol cannot be lifted straight out of it by its frame: it is

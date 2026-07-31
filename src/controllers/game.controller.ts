@@ -1,8 +1,10 @@
 import { settings } from 'config/game.settings';
+import { definition } from 'config/game.definition';
 import { backend } from './backend.controller';
 import { sound } from './sound.controller';
 import { gameStore } from 'store/game.store';
 import type { GameState } from 'store/game.store';
+import type { Position, SpinResult } from 'engine/engine';
 import type { RootLayout } from 'layout/Root.layout';
 import type { Reels } from 'layout/components/Reels';
 
@@ -12,12 +14,15 @@ class GameController {
     #landed = 0;
     // What the backend already worked out, held back until the reels have
     // finished showing where it came from: the win then goes onto the balance,
-    // and the symbols into storage as what the reels are left showing.
+    // and the symbols into storage as what the reels are left showing. The
+    // cells the wins were paid for are kept with them, for the reveal to point
+    // at.
     #win = 0;
     #symbols: string[][] = [];
-    // Whether this spin holds its last reel back, decided with the outcome,
-    // before a reel has moved.
-    #anticipating = false;
+    #positions: Position[] = [];
+    // Which reels this spin holds back, if any, decided with the outcome and
+    // before a reel has moved: the engine says which ones a win still hangs on.
+    #anticipation: SpinResult['anticipation'];
 
     // Wired once the layout exists: the controller listens to the view and
     // drives it back, so no component has to know about the store.
@@ -105,6 +110,9 @@ class GameController {
             // holds the zoom for all of it, so both come down together.
             if (state === 'idle') {
                 winLayout.hide();
+                // The reveal is over, so every face on the grid comes back
+                // forward with it.
+                reels.highlight(null);
 
                 // The announcement is what reveals the figure, but the pannel
                 // is what keeps it: a reveal that never got to finish counting
@@ -146,15 +154,15 @@ class GameController {
         return state === 'idle' && balance >= settings.minBet;
     }
 
-    // Dev only: the next spin is handed the payline it has to land on rather
-    // than rolling one, and the button is pressed for the player, so a
-    // combination can be watched without waiting for it to come up. Turned away
-    // wherever a press would be, so a forced payline is never left queued for a
-    // spin the player takes later.
-    cheat(payline: string[]) {
+    // Dev only: the next spin is handed the grid it has to land on rather than
+    // rolling one, and the button is pressed for the player, so a combination
+    // can be watched without waiting for it to come up. Turned away wherever a
+    // press would be, so a forced grid is never left queued for a spin the
+    // player takes later.
+    cheat(grid: string[][]) {
         if (!this.canSpin) return;
 
-        backend.force(payline);
+        backend.force(grid);
         this.spin();
     }
 
@@ -265,32 +273,31 @@ class GameController {
         const outcome = backend.spin(bet);
 
         this.#win = outcome.win;
-        this.#symbols = outcome.reels;
+        this.#symbols = outcome.grid;
+        this.#positions = outcome.wins.flatMap(({ positions }) => positions);
         this.#landed = 0;
-        // Every reel but the last landing on the same symbol leaves the top win
-        // in play, which is what the last reel is drawn out for. What it ends up
-        // paying is what the zoom is then dropped or held on.
-        this.#anticipating = outcome.payline
-            .slice(0, -1)
-            .every((symbol) => symbol === outcome.payline[0]);
+        // A line kept to one symbol all the way to the last reel leaves its top
+        // win in play, which is what that reel is drawn out for. What it ends
+        // up paying is what the zoom is then dropped or held on.
+        this.#anticipation = outcome.anticipation;
         this.setState('spin');
         this.#reels?.spin();
 
         // all reels start together, then stop left to right one delay apart
-        for (let index = 0; index < settings.reels; index++) {
+        for (let index = 0; index < definition.strips.length; index++) {
             setTimeout(
-                () => this.#reels?.stop(index, outcome.reels[index]),
+                () => this.#reels?.stop(index, outcome.grid[index]),
                 this.stopDelay(index),
             );
         }
     }
 
-    // How long into the spin a reel is asked to stop. The last one is held back
-    // on a spin that can still fill the payline, so it spins several times as
-    // long as it otherwise would.
+    // How long into the spin a reel is asked to stop. The ones the outcome says
+    // to hold back — those a win still hangs on — spin several times as long as
+    // they otherwise would.
     private stopDelay(index: number) {
         const delay = settings.spinDuration + index * settings.reelStopDelay;
-        const held = this.#anticipating && index === settings.reels - 1;
+        const held = this.#anticipation && index >= this.#anticipation.fromReel;
 
         return held ? delay * settings.anticipationSpins : delay;
     }
@@ -303,17 +310,21 @@ class GameController {
 
         this.#landed++;
 
-        if (this.#anticipating) {
-            // The reel before the held-back one has landed: the game zooms in
-            // from here, over the gap between the two stops, and is full in by
-            // the time the held-back reel lands.
-            if (this.#landed === settings.reels - 1) {
+        if (this.#anticipation) {
+            const { fromReel } = this.#anticipation;
+
+            // The last reel before the held-back ones has landed: the game
+            // zooms in from here, over the gap between the two stops, and is
+            // full in by the time the first held-back reel lands.
+            if (this.#landed === fromReel) {
                 sound.play('anticipation');
                 this.#layout?.zoom(
-                    this.stopDelay(settings.reels - 1) -
-                        this.stopDelay(settings.reels - 2),
+                    this.stopDelay(fromReel) - this.stopDelay(fromReel - 1),
                 );
-            } else if (this.#landed === settings.reels && !this.bigWin) {
+            } else if (
+                this.#landed === definition.strips.length &&
+                !this.bigWin
+            ) {
                 // The last reel landed on nothing worth leaning in for: the
                 // reels jump back out to size and whatever it did pay is paid at
                 // it. A big win keeps the zoom, and the reveal comes up inside
@@ -325,7 +336,7 @@ class GameController {
         }
 
         // The spin is over once the last reel has landed.
-        if (this.#landed < settings.reels) return;
+        if (this.#landed < definition.strips.length) return;
 
         const { balance, setBalance, setResult } = gameStore.getState();
 
@@ -338,6 +349,11 @@ class GameController {
         // idle and the button unlocks as the last reel lands.
         if (this.#win <= 0) return this.setState('idle');
 
+        // The reels are standing on the outcome, so they can say where the
+        // money came from: the cells the wins were paid for keep their face
+        // while the rest of the grid steps back behind them, for as long as
+        // the reveal is up.
+        this.#reels?.highlight(this.#positions);
         this.setState('reveal');
 
         // A win is left up long enough to be read and counted up.

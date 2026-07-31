@@ -1,6 +1,7 @@
 import { Container, Rectangle } from 'pixi.js';
 import { visuals } from 'config/visual.settings';
 import { Reel } from './Reel';
+import type { Position } from 'engine/engine';
 
 const { reelGap } = visuals.machine;
 
@@ -8,11 +9,13 @@ export class Reels extends Container {
     #reels: Reel[] = [];
     #rowHeight: number;
 
-    constructor(reels: number, rows: number) {
+    // One reel per strip: the strip is what the reel shows passing while it
+    // spins, so the grid is as wide as the definition strings it.
+    constructor(strips: string[][], rows: number) {
         super();
 
-        for (let i = 0; i < reels; i++) {
-            const reel = new Reel(rows);
+        strips.forEach((strip, i) => {
+            const reel = new Reel(rows, strip);
 
             reel.x = i * (reel.width + reelGap);
 
@@ -22,7 +25,7 @@ export class Reels extends Container {
 
             this.#reels.push(reel);
             this.addChild(reel);
-        }
+        });
 
         const [{ width, height }] = this.#reels;
 
@@ -34,7 +37,7 @@ export class Reels extends Container {
         this.boundsArea = new Rectangle(
             0,
             0,
-            reels * width + (reels - 1) * reelGap,
+            strips.length * width + (strips.length - 1) * reelGap,
             height,
         );
     }
@@ -48,6 +51,20 @@ export class Reels extends Container {
     // The reels always start together; the controller stops them one by one.
     spin() {
         for (const reel of this.#reels) reel.spin();
+    }
+
+    // The cells wins were paid for are left at full face and the rest of the
+    // grid steps back behind them, so the reels themselves say where the money
+    // came from. `null` brings every face forward again.
+    highlight(positions: Position[] | null) {
+        this.#reels.forEach((reel, index) => {
+            reel.highlight(
+                positions &&
+                    positions
+                        .filter(([column]) => column === index)
+                        .map(([, row]) => row),
+            );
+        });
     }
 
     // Each reel is handed the column of the outcome it has to land on.

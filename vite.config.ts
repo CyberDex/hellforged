@@ -108,12 +108,19 @@ function faviconPlugin(): Plugin {
 // Bare-specifier imports for the top-level `src` folders, so nothing has to
 // count `../` hops. Keep in sync with `paths` in tsconfig.json.
 const srcAliases = Object.fromEntries(
-    ['config', 'controllers', 'filters', 'layout', 'store', 'ui', 'utils'].map(
-        (folder) => [
-            folder,
-            fileURLToPath(new URL(`./src/${folder}`, import.meta.url)),
-        ],
-    ),
+    [
+        'config',
+        'controllers',
+        'engine',
+        'filters',
+        'layout',
+        'store',
+        'ui',
+        'utils',
+    ].map((folder) => [
+        folder,
+        fileURLToPath(new URL(`./src/${folder}`, import.meta.url)),
+    ]),
 );
 
 const preserveTransformedFolder: AssetPipe = {

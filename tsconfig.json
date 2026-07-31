@@ -15,6 +15,7 @@
         "paths": {
             "config/*": ["./src/config/*"],
             "controllers/*": ["./src/controllers/*"],
+            "engine/*": ["./src/engine/*"],
             "filters/*": ["./src/filters/*"],
             "layout/*": ["./src/layout/*"],
             "store/*": ["./src/store/*"],

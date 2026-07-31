@@ -26,6 +26,9 @@ export const visuals = {
         // there; a grid far off that shape wants art cut for it.
         windowOverhang: 8.5,
         windowCrop: 49.5,
+        // What the faces a win was not paid for fade to while it is read out,
+        // so the cells it was stand forward of the grid around them.
+        dimmedFace: 0.4,
     },
     // The button leans out under the pointer and settles back at the same pace
     // whether it is let go or pressed, so the three states read as the one

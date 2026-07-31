@@ -1,7 +1,8 @@
 import type { GlRenderingContext, WebGLRenderer } from 'pixi.js';
 import { Pane } from 'tweakpane';
 import { gameName } from 'config/game.name';
-import { settings } from 'config/game.settings';
+import { definition, symbols } from 'config/game.definition';
+import { rollGrid } from 'engine/engine';
 import { gameStore } from 'store/game.store';
 import { app } from './app.controller';
 import { game } from './game.controller';
@@ -177,11 +178,11 @@ class DevToolsController {
 
         folder.on('fold', ({ expanded }) => this.remember('cheats', expanded));
 
-        for (const symbol of settings.symbols) {
+        for (const symbol of symbols) {
             for (const { count, payout } of this.wins(symbol)) {
                 folder
                     .addButton({ title: `${symbol} ${count} ×${payout}` })
-                    .on('click', () => game.cheat(this.payline(symbol, count)));
+                    .on('click', () => game.cheat(this.grid(symbol, count)));
             }
         }
 
@@ -199,28 +200,32 @@ class DevToolsController {
     // off, so a paytable written for a wider one puts up no button that cannot
     // be landed.
     private wins(symbol: string) {
-        const { partial, full } = settings.payouts;
+        const { partial, full } = definition.payouts;
+        const reels = definition.strips.length;
         const counts = Object.keys(partial)
             .map(Number)
-            .filter((count) => count < settings.reels)
+            .filter((count) => count < reels)
             .sort((a, b) => a - b);
 
         return [
             ...counts.map((count) => ({ count, payout: partial[count] })),
-            { count: settings.reels, payout: full[symbol] },
+            { count: reels, payout: full[symbol] },
         ];
     }
 
-    // The payline a cheat lands: the first `count` reels on the symbol, and any
-    // reel left over deliberately off it, since a run only pays at its own
-    // length while the reel after it misses.
-    private payline(symbol: string, count: number) {
-        const { symbols } = settings;
+    // The grid a cheat lands: rolled off the strips like any spin, then the
+    // first payline filled with `count` of the symbol and put deliberately off
+    // it after, since a run only pays at its own length while the reel after
+    // it misses.
+    private grid(symbol: string, count: number) {
+        const grid = rollGrid(definition);
         const miss = symbols[(symbols.indexOf(symbol) + 1) % symbols.length];
 
-        return Array.from({ length: settings.reels }, (_, reel) =>
-            reel < count ? symbol : miss,
-        );
+        definition.lines[0].forEach((row, reel) => {
+            grid[reel][row] = reel < count ? symbol : miss;
+        });
+
+        return grid;
     }
 
     private tally(gl: GlRenderingContext) {
