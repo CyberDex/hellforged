@@ -7,12 +7,12 @@ export const settingsVisual = {
         // The window as the cabinet art draws it: centred, its middle this
         // far below the art's own, and this big — all in art pixels. New
         // cabinet, new measurements.
-        cabinetWindow: { offset: 32, width: 437, height: 261 },
+        cabinetWindow: { offset: 32, width: 737, height: 393 },
         // Out past the outside columns so nothing clips, in over the top and
         // bottom rows so the strip reads as running past the window. The art
-        // only reads undistorted near its native 3x3.
+        // only reads undistorted near its native 5x4.
         windowOverhang: 8.5,
-        windowCrop: 49.5,
+        windowCrop: 43.5,
         dimmedFace: 0.4,
     },
     spinButton: {

@@ -1,33 +1,30 @@
 # Game Rules
 
-A three-reel slot with a single payline.
+A five-reel slot with a single payline.
 
 ## The payline
 
-The reels show three rows, but only the **middle** one is played. The top and
-bottom rows are there to show the strip moving — nothing on them ever pays.
+The reels show four rows, but only the **second** one is played. The rows above
+and below it are there to show the strip moving — nothing on them ever pays.
 
-A win has to start on the leftmost reel.
+A win has to start on the leftmost reel, and it pays for as far as it runs
+before the row comes off the symbol it opened on.
 
-| Middle row                        | Pays                |
-| --------------------------------- | ------------------- |
-| Three matching symbols            | see the table below |
-| The first two matching, third not | %PAIR% x your bet   |
-| The first two different           | nothing             |
+%RUNS%
 
-Only one win is paid per spin, and three of a kind pays instead of — not on top
-of — the pair inside it. A pair on the second and third reels pays nothing, and
-neither does a first-and-third match.
+Only one win is paid per spin, and a longer run pays instead of — not on top of
+— the shorter ones inside it. A run that starts anywhere but the first reel pays
+nothing, and neither do matching symbols with a different one between them.
 
 ## What each symbol pays
 
-Three of a kind pays on the symbol the payline filled up with. Each figure below
-is what your bet is multiplied by.
+A payline filled all the way across pays on the symbol it filled up with. Each
+figure below is what your bet is multiplied by.
 
 %PAYTABLE%
 
-A pair pays the same whatever symbol it is. Only three of a kind reads the
-symbol.
+A run short of the whole line pays the same whatever symbol it is. Only a filled
+line reads the symbol.
 
 ## Your bet
 
@@ -41,9 +38,9 @@ turning: the spin has already been paid for, and there is nothing left to set.
 
 ## Spinning
 
-All three reels start together and stop from left to right.
+All five reels start together and stop from left to right.
 
-When the first two reels land on the same symbol, three of a kind is still
+When the first four reels land on the same symbol, a filled line is still
 possible, so the last reel is held back and drawn out while the game zooms in.
 That happens whether or not the last reel lands on the match: the outcome is
 settled before the reels move, so the wait never says how the spin ends.
@@ -59,6 +56,6 @@ coming back picks up where you left off.
 
 ## Return to player
 
-Every symbol is as likely as every other, so the payline fills up on 1 spin in
-25 and leaves a pair on 4 in 25. Over time the game pays back about 95% of what
-is staked.
+Every symbol is as likely as every other, so the payline opens on a pair 1 spin
+in 5 and fills all the way across 1 in 625. Over time the game pays back about
+95% of what is staked.

@@ -1,13 +1,13 @@
 # Game Rules
 
-A 3x3 slot with a single payline — as it ships. The shape, the strips, the lines and the paytable are all one piece of data, `src/config/game.definition.ts`, and the maths that reads it (`src/math/`) is indifferent to all four: another machine is another definition rather than other code.
+A 5x4 slot with a single payline — as it ships. The shape, the strips, the lines and the paytable are all one piece of data, `src/config/game.definition.ts`, and the maths that reads it (`src/math/`) is indifferent to all four: another machine is another definition rather than other code.
 
 ## Grid
 
-- 3 reels, 3 rows (`definition.strips` — one strip per reel — and `definition.rows`).
-- Only the **middle row** participates in wins: the one payline `definition.lines` lists is `[1, 1, 1]`, the middle row of every reel. A line is a row per reel, left to right, and lines are added as data rather than coded.
-- The **top** and **bottom** rows are purely visual (they exist to show the reel strip). They never form or extend a win.
-- All of it is live config: the grid is built from the definition, the spin is rolled and paid over whatever it says (see [Winning](#winning)), and the cabinet and the window it is cropped to are stretched onto it, so nothing has to be resized by hand for another number of reels or rows. The art is the one thing that is not indifferent to the shape: it was drawn around a 3x3 and only reads undistorted there, so a machine far off that wants sprites cut for it (`visuals.machine`).
+- 5 reels, 4 rows (`definition.strips` — one strip per reel — and `definition.rows`).
+- Only the **second row** participates in wins: the one payline `definition.lines` lists is `[1, 1, 1, 1, 1]`, the second row of every reel. A line is a row per reel, left to right, and lines are added as data rather than coded.
+- The rows **above** and **below** it are purely visual (they exist to show the reel strip). They never form or extend a win.
+- All of it is live config: the grid is built from the definition, the spin is rolled and paid over whatever it says (see [Winning](#winning)), and the cabinet and the window it is cropped to are stretched onto it, so nothing has to be resized by hand for another number of reels or rows. The art is the one thing that is not indifferent to the shape: it was drawn around a 5x4 and only reads undistorted there, so a machine far off that wants sprites cut for it (`visuals.machine`).
 
 ## Symbols
 
@@ -56,49 +56,51 @@ The spin is decided by `src/math/spin.ts` under `src/controllers/api.controller.
 - The first reel stops after `settings.spinDuration` — or as soon as the server's answer is in hand, if that takes longer — and each following reel stops one delay later. Total spin length is therefore `spinDuration + (reels - 1) * reelStopDelay`, stretched by anything the answer ran past the first stop — unless the last reel is held back (see [Anticipation](#anticipation)).
 - Setting `reelStopDelay` to `0` makes all reels stop together.
 - The strip travels at `settings.spinSpeed` symbols per second (currently 20).
-- A reel does not halt on the spot: it keeps sliding until it has fed its three outcome symbols in on top and lined them back up with the row grid, which takes up to four symbols of travel. Keep `reelStopDelay` above that worst case (`(rows + 1) * 1000 / spinSpeed`, currently 200ms) or the stop order can blur.
+- A reel does not halt on the spot: it keeps sliding until it has fed its four outcome symbols in on top and lined them back up with the row grid, which takes up to five symbols of travel. Keep `reelStopDelay` above that worst case (`(rows + 1) * 1000 / spinSpeed`, currently 250ms) or the stop order can blur.
 - Landing ends with a pushback: the strip dips `settings.bounceDistance` of a symbol below the row grid and eases back up over `settings.bounceDuration`. It is cosmetic — the reel counts as stopped the moment it reaches the grid, before the dip.
 - The spin is considered over once the last reel stops; only then is the win evaluated.
 
 ## Anticipation
 
-- Whether a spin is drawn out is the outcome's to say, decided by the maths with the rest of it (`SpinResult.anticipation`): a line that has kept to the symbol it opened on all the way to the last reel can still fill, so that reel is held back — it spins `settings.anticipationSpins` times as long as it otherwise would (currently 2, so 3200ms instead of 1600ms).
+- Whether a spin is drawn out is the outcome's to say, decided by the maths with the rest of it (`SpinResult.anticipation`): a line that has kept to the symbol it opened on all the way to the last reel can still fill, so that reel is held back — it spins `settings.anticipationSpins` times as long as it otherwise would (currently 2, so 4200ms instead of 2100ms).
 - Everything but the background is zoomed in over the wait: the machine, the pannels and the spin button all grow together to `settings.anticipationZoom` of their size, evenly, about the middle of the screen, so the game fills more of it the longer the last reel holds out. The rows show the same amount of themselves throughout — the reel window grows with them — and the background is left where it is, still behind the zoom.
 - The zoom runs from the moment the reel before the held-back one lands until the held-back one lands, and is fully in by the time it does. What happens next is the only thing about the anticipation that depends on the outcome:
-    - **The last symbol misses** — the reels jump straight back out to size, with none of the travel the zoom had, and the pair is paid at normal size.
+    - **The last symbol misses** — the reels jump straight back out to size, with none of the travel the zoom had, and the run of four is paid at normal size.
     - **The last symbol matches** — the zoom is held. The reveal comes up inside it and the game only drops back to size when it returns to idle (see [Showing a win](#showing-a-win)).
 - `anticipation` plays once as the zoom starts, over the spin loop.
-- A pair on the first two reels always draws the third reel out, whether it lands on the match or not. The outcome is decided before the reels move, so the anticipation is only ever a build-up and never says how the spin ends.
+- Four of a kind on the first four reels always draws the fifth reel out, whether it lands on the match or not. The outcome is decided before the reels move, so the anticipation is only ever a build-up and never says how the spin ends.
 
 ## Winning
 
-Evaluated on the middle row only. What pays is the **run** that row opens on: how many reels it goes before it comes off the symbol on the first one.
+Evaluated on the second row only. What pays is the **run** that row opens on: how many reels it goes before it comes off the symbol on the first one.
 
-| Middle row                          | Pays                                                  |
-| ----------------------------------- | ----------------------------------------------------- |
-| 3 matching symbols                  | bet x the symbol's own (`definition.payouts.full`)    |
-| First two matching, third different | bet x 2 (`definition.payouts.partial`, at a run of 2) |
-| First two different                 | nothing                                               |
+| Second row          | Pays                                                   |
+| ------------------- | ------------------------------------------------------ |
+| 5 matching symbols  | bet x the symbol's own (`definition.payouts.full`)     |
+| A run of 4          | bet x 20 (`definition.payouts.partial`, at a run of 4) |
+| A run of 3          | bet x 5 (`definition.payouts.partial`, at a run of 3)  |
+| A run of 2          | bet x 2 (`definition.payouts.partial`, at a run of 2)  |
+| First two different | nothing                                                |
 
-A run that reaches every reel is a filled payline and pays on its symbol. Anything short of that pays flat, whatever the symbol, at the longest length `definition.payouts.partial` lists that the run covers — so a run shorter than the shortest listed pays nothing, and a longer run can never pay less than a shorter one. This is what makes the width of the machine config rather than an assumption: on a 4-reel game three in a row and then a miss pays the pair's flat figure, not the filled line's, and a paytable for a wider machine adds a rung per new length rather than being read off three positions. Every line the definition lists is read the same way and every win is paid, so a game with more lines pays their sum (`SpinResult.win`).
+A run that reaches every reel is a filled payline and pays on its symbol. Anything short of that pays flat, whatever the symbol, at the longest length `definition.payouts.partial` lists that the run covers — so a run shorter than the shortest listed pays nothing, and a longer run can never pay less than a shorter one. This is what makes the width of the machine config rather than an assumption: a paytable for a wider machine adds a rung per new length rather than being read off a fixed number of positions, and a run with no rung of its own drops to the longest one under it — four in a row and then a miss, on a machine that only prices pairs, pays the pair's flat figure. A filled line is the exception that never drops: it always reads its symbol. Every line the definition lists is read the same way and every win is paid, so a game with more lines pays their sum (`SpinResult.win`).
 
 A filled payline pays on the symbol it filled up with:
 
-| Symbol | Pays     |
-| ------ | -------- |
-| `H1`   | bet x 30 |
-| `H2`   | bet x 18 |
-| `H3`   | bet x 12 |
-| `H4`   | bet x 10 |
-| `H5`   | bet x 9  |
+| Symbol | Pays      |
+| ------ | --------- |
+| `H1`   | bet x 400 |
+| `H2`   | bet x 250 |
+| `H3`   | bet x 180 |
+| `H4`   | bet x 130 |
+| `H5`   | bet x 110 |
 
 - One matching symbol on its own pays nothing.
-- A win has to start on the first reel, so a pair only counts on reels 1 and 2. A pair on reels 2 and 3 pays nothing, and neither does a first-and-third match.
+- A win has to start on the first reel, so a run is only ever counted from reel 1. Matching symbols on reels 2 and 3 pay nothing, and neither does a match with a different symbol between.
 - Only one win is paid per line: a run pays at its own length instead of, not in addition to, the shorter ones inside it.
 - The win amount scales with the bet.
 - A run short of the whole line pays the same whatever symbol it is; only a filled payline reads the symbol.
 - The payouts live in `src/config/game.definition.ts` with the strips and the lines they price.
-- Any single row is as likely to land one symbol as another (see [Symbols](#symbols)), so on this 3x3 the payline fills up on 1 spin in 25 and leaves a pair on 4 in 25. Between them the table pays back about 95% of what is staked over time, so a balance drifts down rather than either way. The return is not walked out by hand any more: `pnpm sim [spins]` (`scripts/simulate.ts`) spins the definition headlessly and reads back the return, the hit rate and what each rung landed and paid.
+- Any single row is as likely to land one symbol as another (see [Symbols](#symbols)), so on this 5x4 the payline opens on a run of two 1 spin in 5 and fills all the way across 1 in 625. The rungs the run stops on carry the return between them — a pair 4 spins in 25, three 1 in 31, four 1 in 156 — and the table pays back 95.04% of what is staked over time, so a balance drifts down rather than either way. The return is not walked out by hand any more: `pnpm sim [spins]` (`scripts/simulate.ts`) spins the definition headlessly and reads back the return, the hit rate and what each rung landed and paid. A filled line is rare enough and pays enough that a million spins still reads the return a percentage point either side of the priced one; ten million settles it.
 
 ## Showing a win
 
@@ -121,6 +123,6 @@ A filled payline pays on the symbol it filled up with:
 - `Shader` turns the burn over the background off and on (`src/layout/components/BG.ts`): a machine that cannot spare the pass plays the same game without it, and nothing of the shader runs while it is off.
 - The balance is let down inside the menu on the entry that names it (see [Balance](#balance)); the balance on the bar opens the menu straight onto it, and running out opens it by itself.
 - `Game rules` opens the rules the player is told (`src/ui/Rules.tsx`), which are their own document — `assets/rules{copy}{mIgnore}/rules.md`, filed with the art the game is dressed in, so a reskin brings its own rules along with its own sprites. It is copied out with the art but kept off the manifest, which is the list of what Pixi loads onto the reels: this document is only ever read by the DOM, so the sheet fetches it itself as its module is loaded and nothing about markdown reaches the game's loader. This file is the same game written out for whoever works on it, down to the setting and the source file each rule lives in, which is not what somebody who only wants to know what a symbol pays came to read.
-- The figures are the one thing that document does not spell out for itself: the paytable and the pair are filled in from `src/config/game.definition.ts` and the two ends of the slider from `src/config/game.settings.ts`, so what the player is told a symbol pays is read off the same definition the win is worked out from and cannot drift from it. The return in it is prose, and is the one figure a change to the payouts has to be walked back to by hand — `pnpm sim` is where the fresh figure comes from.
+- The figures are the one thing that document does not spell out for itself: the paytable and the rung each run length pays are filled in from `src/config/game.definition.ts` and the two ends of the slider from `src/config/game.settings.ts`, so what the player is told a symbol pays is read off the same definition the win is worked out from and cannot drift from it. The return in it is prose, and is the one figure a change to the payouts has to be walked back to by hand — `pnpm sim` is where the fresh figure comes from.
 - The symbols are shown rather than named. The document writes a symbol as the `H1` the settings and the reels know it by, and every one of them is swapped for the face the game is dressed in as the sheet is rendered — cut out of the loaded spritesheet through `renderer.extract`, so a reskin's paytable is filled with its own art and neither the document nor `src/ui/Rules.tsx` is touched for it. This runs after the figures, so the paytable's own column of names is swapped along with anything written by hand. The sprites are packed trimmed and turned on their side, so a face is drawn through a sprite rather than lifted out of the sheet by its frame: that puts it back the way up it is played and back inside the square all of them are cut from, and they come out one size down the table.
 - It is the one thing the overlay opens over the machine rather than out of the bar, and the one sheet not cut to the reels: the drawer is as wide as they are, which is too narrow a column to read a document down, so the rules are given all but the last per cent of the screen both ways and scroll what even that cannot show. The drawer is shut as the sheet goes up rather than left standing behind it. The document inside is held to a measure of eighty characters and stood down the middle of the sheet, at a size that grows with the screen — the width is there so the paytable is read at a glance, not so a sentence is dragged the length of a monitor.

@@ -21,7 +21,7 @@
     left: 50%;
     transform: translateX(-50%);
     box-sizing: border-box;
-    width: min(92vw, 560px);
+    width: min(92vw, 720px);
     padding: 14px 18px;
     pointer-events: auto;
     color: #fff;
@@ -77,7 +77,7 @@
     top: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: min(92vw, 560px);
+    width: min(92vw, 720px);
 }
 
 .topbar {
