@@ -44,8 +44,7 @@
 /* What the keyboard is on, in the game's gold rather than in the browser's own
    blue, which is the one colour on the page from nowhere in the art. */
 .press:focus-visible,
-.volume-range:focus-visible,
-.balance-field:focus-visible {
+.volume-range:focus-visible {
     outline: 1px solid var(--gold);
     outline-offset: 2px;
 }
@@ -523,6 +522,12 @@
     background: var(--pannel-bottom);
     border: 1px solid var(--frame);
     border-radius: 8px;
+}
+
+/* The field opens with its figure selected, and that lit selection is mark
+   enough of where the keyboard is: no ring drawn around it on top. */
+.balance-field:focus {
+    outline: none;
 }
 
 /* The section opens with the figure taken, ready to be typed over, so this is the
