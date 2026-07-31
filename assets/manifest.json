@@ -65,8 +65,8 @@
             "anticipation"
           ],
           "src": [
-            "sounds/anticipation-we56JQ.ogg",
-            "sounds/anticipation-uU34.mp3"
+            "sounds/anticipation-uU34.mp3",
+            "sounds/anticipation-lVNkQw.ogg"
           ],
           "data": {
             "tags": {
@@ -83,7 +83,7 @@
           ],
           "src": [
             "sounds/click-l2UE0w.mp3",
-            "sounds/click-IoWSEA.ogg"
+            "sounds/click-ifBM9w.ogg"
           ],
           "data": {
             "tags": {
@@ -100,7 +100,7 @@
           ],
           "src": [
             "sounds/coin-xglSTQ.mp3",
-            "sounds/coin-MMDQGA.ogg"
+            "sounds/coin-OSV5LA.ogg"
           ],
           "data": {
             "tags": {
@@ -117,7 +117,7 @@
           ],
           "src": [
             "sounds/music-pfcj1Q.mp3",
-            "sounds/music-3qLAew.ogg"
+            "sounds/music-lsRbHg.ogg"
           ],
           "data": {
             "tags": {
@@ -134,7 +134,7 @@
           ],
           "src": [
             "sounds/reelSpin-U8raPQ.mp3",
-            "sounds/reelSpin-2LfSbA.ogg"
+            "sounds/reelSpin-OaRddQ.ogg"
           ],
           "data": {
             "tags": {
@@ -151,7 +151,7 @@
           ],
           "src": [
             "sounds/reelStop-pGDz8Q.mp3",
-            "sounds/reelStop-KRqMWA.ogg"
+            "sounds/reelStop-cmfD.ogg"
           ],
           "data": {
             "tags": {
@@ -167,7 +167,7 @@
             "win"
           ],
           "src": [
-            "sounds/win-9aUG5A.ogg",
+            "sounds/win-vHsEDA.ogg",
             "sounds/win-_j5mlQ.mp3"
           ],
           "data": {
