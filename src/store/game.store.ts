@@ -35,7 +35,6 @@ export const gameStore = createStore<GameStore>()(
         }),
         {
             name: `${gameName}.player`,
-            // The state is not kept: a spin cut off by a reload is over.
             partialize: ({ balance, bet, win, symbols }) => ({
                 balance,
                 bet,
