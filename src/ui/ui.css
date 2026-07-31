@@ -87,16 +87,76 @@
 }
 
 /* Three bars: 2px of gold every 8px down a button the height of the text it
-   stands beside. */
+   stands beside. The middle one is the button's own background and the outer two
+   are laid over it, so each of the three is its own line and can be moved on its
+   own — which is what folds them into the cross that shuts the drop again. */
 .topbar-menu {
+    position: relative;
     width: 24px;
     height: 18px;
-    background: repeating-linear-gradient(
-        180deg,
-        var(--gold) 0 2px,
-        transparent 2px 8px
-    );
+    background: linear-gradient(var(--gold), var(--gold)) center / 100% 2px
+        no-repeat;
     filter: drop-shadow(0 1px 1px var(--outline));
+    /* The middle line is drawn back in from the middle out, and only once the
+       cross has come apart again. */
+    transition:
+        background-size 130ms ease-out 120ms,
+        filter 150ms ease-out;
+}
+
+.topbar-menu::before,
+.topbar-menu::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--gold);
+    /* Moved and then turned rather than both at once, which is what a pair of
+       bars folding into a cross reads as: they come onto the middle line first
+       and turn on it after. Shutting is the same the other way about — the cross
+       unfolds where it stands and the bars go back to their own lines after,
+       since the state being moved to is the one carrying the timing. */
+    transition:
+        translate 150ms ease-in-out 130ms,
+        rotate 150ms ease-in-out;
+}
+
+.topbar-menu::before {
+    top: 0;
+}
+
+.topbar-menu::after {
+    bottom: 0;
+}
+
+/* Lit while the drawer is down, and folded into the cross that shuts it: the bars
+   are the handle the menu is held open by, so they say as much (see
+   `TopBar.tsx`). The middle line goes as the other two come in on it — three
+   bars laid over one another would only read as a thick one. */
+.topbar-menu[aria-expanded='true'] {
+    background-size: 0% 2px;
+    filter: drop-shadow(0 1px 1px var(--outline))
+        drop-shadow(0 0 5px var(--gold));
+    transition:
+        background-size 120ms ease-out,
+        filter 150ms ease-out;
+}
+
+/* 8px is half the 16px between the outer two, so both land on the middle line,
+   and they turn opposite ways on it. */
+.topbar-menu[aria-expanded='true']::before,
+.topbar-menu[aria-expanded='true']::after {
+    translate: 0 8px;
+    rotate: 45deg;
+    transition:
+        translate 150ms ease-in-out,
+        rotate 160ms ease-in-out 140ms;
+}
+
+.topbar-menu[aria-expanded='true']::after {
+    translate: 0 -8px;
+    rotate: -45deg;
 }
 
 .topbar-stat {
@@ -148,79 +208,96 @@
     filter: drop-shadow(0 1px 1px var(--outline));
 }
 
-/* What a pop up is shown over: the game is dimmed and blurred behind it, and
-   the veil takes the pointers the overlay otherwise passes through, so the
-   reels cannot be played from behind a dialog and a click off it closes it.
-   Everything on the sheet inherits that click back along with it. */
-.backdrop {
+/* What is laid over the game while the menu is down: it takes back the pointers
+   the overlay otherwise passes through, so the reels cannot be played from behind
+   the drop and a click anywhere off it shuts it instead. Clear, so the game is
+   left lit behind a drawer that is only hanging off the bar, and the one thing the
+   keys are held off the machine by while it is open (see
+   `keyboard.controller.ts`). */
+.veil {
     position: fixed;
     inset: 0;
-    display: grid;
-    place-items: center;
     pointer-events: auto;
-    background: var(--shadow);
-    backdrop-filter: blur(3px);
-    animation: backdrop-fade 150ms ease-out both;
 }
 
-/* Dressed as one of the game's pannels: the same half-lit interior behind the
-   same gold frame. It is cut to the reels — whoever opens it measures them and
-   hands the figure down (see `TopBar.tsx`) — so a pop up covers the machine
-   squarely and reads as the same block of it, at the width the bar along the
-   top is already drawn at. The 300 below is only what a sheet falls back to
-   when it is opened by something that has not measured anything, and what a
-   sheet sizing itself here overrides, which is the rules. */
-.dialog {
+/* The menu is not a sheet over the game but a drawer out of the bar: hung off the
+   bar's bottom edge and cut to the bar itself, whatever the bar is sized at. It is
+   laid inside the bar (see `TopBar.tsx`), and the bar is what an absolute box
+   inside it measures against, so nothing here has to be told how wide the machine
+   was drawn.
+
+   Everything the overlay shows that is not a reading off the machine is on this
+   one drawer: the rules and the balance are let down inside it (see
+   `.menu-section`) rather than opened over the game. */
+.menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    /* Squared up with the bar and cut to it, rather than to anything on it or to
+       a width of its own: both edges are held to the bar's, and the 1px pulls the
+       drop's own frame out over it, so the two read as the one line down each side
+       of the machine. Its padding is the bar's as well, so what it stands down is
+       lettered under what opens it. */
+    left: -1px;
+    right: -1px;
     box-sizing: border-box;
-    width: 300px;
-    max-width: calc(100vw - 32px);
     display: grid;
-    /* The head, then everything else: a sheet given a height to fill hands all
-       of it to its body rather than spreading it down the head as well, which
-       would walk the title away from the rule under it. */
-    grid-template-rows: auto 1fr;
     gap: 18px;
-    padding: 16px 22px 22px;
+    padding: 16px 14px 18px;
+    pointer-events: auto;
+    /* The bar's own dressing at the bar's own transparency, so the drop reads as
+       a piece of the same machine and the game is still seen through it. The blur
+       the bar lays over what it covers is not to be had here: the bar is put in
+       place with a transform, and a backdrop filter anywhere inside one of those
+       has nothing left to filter. */
     background: linear-gradient(
         180deg,
         var(--pannel-top),
         var(--pannel-bottom)
     );
     border: 1px solid var(--frame);
-    border-radius: 14px;
+    border-radius: 12px;
     box-shadow:
-        0 8px 28px var(--shadow),
+        0 10px 26px var(--shadow),
         inset 0 1px 0 var(--frame-glow);
-    animation: dialog-rise 200ms ease-out both;
+    /* Slid down out of the bar: the drawer sits above where it will come to rest
+       and is clipped to the slot it comes out of, so what has yet to be let down
+       is not drawn over the bar on its way past. The top of that clip travels
+       with it, which holds the drop's own top edge still on screen while the
+       rest of it runs down — the game is uncovered from the bar downwards rather
+       than a whole sheet sliding into place.
+
+       Shut, it is hidden as well as clear, which takes it off the keyboard and
+       out of what is read out along with it. `visibility` cannot be part-way
+       between the two, so it turns at the near end of whichever move it is in:
+       on at once as the drawer comes down, off only once it is back up.
+
+       The clip is let out past every edge once the drop is down, since the frame
+       is what the box ends at and the shadow it throws is outside that. */
+    transform: translateY(-14px);
+    clip-path: inset(14px -40px 100% -40px);
+    opacity: 0;
+    visibility: hidden;
+    /* A state carries the move onto it, so this is the shutting: quicker than the
+       opening, and out of the way rather than dwelt on. */
+    transition:
+        transform 140ms ease-in,
+        clip-path 140ms ease-in,
+        opacity 140ms ease-in,
+        visibility 140ms;
 }
 
-.dialog-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--frame);
-}
-
-.dialog-title {
-    font-size: 19px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-}
-
-.dialog-close {
-    font-size: 26px;
-    line-height: 1;
-}
-
-/* The menu is as tall as the reels as well as as wide, so what it stands down
-   is spread over the whole of the machine rather than gathered at the top of a
-   sheet the size of it. */
-.menu {
-    display: grid;
-    gap: 20px;
-    align-content: space-between;
+/* The opening, which is the longer of the two: it runs out quickly and settles
+   over the last of it, the way a drawer let down under its own weight does. */
+.menu-open {
+    transform: none;
+    clip-path: inset(-40px -40px -40px -40px);
+    opacity: 1;
+    visibility: visible;
+    transition:
+        transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+        clip-path 320ms cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 160ms ease-out,
+        visibility 0s;
 }
 
 .menu-row,
@@ -235,6 +312,62 @@
 /* The size the chevron is read at; the label sets its own. */
 .menu-entry {
     font-size: 21px;
+}
+
+/* An entry and the section it stands down, as the one row of the menu: the gap
+   the drop spaces its rows by is between the two folds and not inside one, so a
+   section that is shut leaves no room behind it. */
+.menu-fold {
+    display: grid;
+}
+
+/* Lying on its side while the section is shut, and turned down onto it once it is
+   open: the one glyph says both which way the section goes and which way it is
+   standing at the moment. */
+.menu-chevron {
+    /* A span is not turned about its middle until it is a box of its own. */
+    display: inline-block;
+    transition: rotate 200ms ease-out;
+}
+
+.menu-entry[aria-expanded='true'] .menu-chevron {
+    rotate: 90deg;
+}
+
+/* Shut to nothing and let out to its own height: what moves is the row the section
+   is laid in, from none of its content's height to all of it. Hidden while it is
+   shut, so a section nobody has asked for is off the keyboard and out of what is
+   read out, the way the shut drop itself is. */
+.menu-section {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition:
+        grid-template-rows 260ms ease,
+        visibility 260ms;
+}
+
+.menu-section-open {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition:
+        grid-template-rows 260ms ease,
+        visibility 0s;
+}
+
+/* The section is clipped to the row rather than sizing it, which is what lets the
+   row shut past what is on it: a box that hides its own overflow can be given less
+   room than its content needs, and a box that does not cannot — the row would stop
+   at the height of whatever is standing in it. */
+.menu-section-body {
+    overflow: hidden;
+}
+
+/* What holds the content clear of the entry it hangs off, from inside the clip
+   rather than around it: the space is let down and taken back up with the section,
+   so a section shut leaves nothing behind, not even the room it was held off by. */
+.menu-section-body > * {
+    margin-top: 14px;
 }
 
 .menu-label {
@@ -289,12 +422,10 @@
 /* The volume sliders, in the DOM: hot metal run along a groove as far as the
    handle, and the handle itself a coin on its edge. */
 .volume-range {
-    /* The coin, and the groove it is run along. The track the two are laid on
-       is as tall as the coin rather than as the groove, and the groove is
-       painted down the middle of that track: with the coin and the track the
-       same height, the coin sits on the line whether the browser hangs it off
-       the top of the track or centres it on the track, which the engines do not
-       agree on and which is what walks a handle off its groove. */
+    /* The coin, and the groove it is run along: the track itself is the groove,
+       cut only as deep as one and rounded off at both ends, and the coin is laid
+       over it. The control keeps the coin's height whatever the groove is cut to,
+       so the row is as tall as the handle and the whole of it can be dragged. */
     --coin: 22px;
     --groove: 6px;
     /* Where the gold gives out: under the middle of the coin. The coin's middle
@@ -319,33 +450,36 @@
    whole list over the prefix it does not know, so grouping them would leave
    both of them with a plain track. */
 .volume-range::-webkit-slider-runnable-track {
-    height: var(--coin);
+    height: var(--groove);
+    border-radius: 999px;
     background: linear-gradient(
-            90deg,
-            var(--gold) var(--gold-to),
-            var(--outline) var(--gold-to)
-        )
-        center / 100% var(--groove) no-repeat;
+        90deg,
+        var(--gold) var(--gold-to),
+        var(--outline) var(--gold-to)
+    );
 }
 
 .volume-range::-moz-range-track {
-    height: var(--coin);
+    height: var(--groove);
+    border-radius: 999px;
     background: linear-gradient(
-            90deg,
-            var(--gold) var(--gold-to),
-            var(--outline) var(--gold-to)
-        )
-        center / 100% var(--groove) no-repeat;
+        90deg,
+        var(--gold) var(--gold-to),
+        var(--outline) var(--gold-to)
+    );
 }
 
 /* Sized to the border rather than inside it, so the coin measures the `--coin`
-   it is laid on and lands on the middle of the groove exactly. */
+   it is laid on. Webkit hangs the coin off the top of the groove, so half the
+   difference between the two is taken back off it and the coin is left sitting on
+   the middle of the line; Firefox centres its own on the track and is left to. */
 .volume-range::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     box-sizing: border-box;
     width: var(--coin);
     height: var(--coin);
+    margin-top: calc((var(--groove) - var(--coin)) / 2);
     border: 2px solid var(--outline);
     border-radius: 50%;
     background: var(--gold);
@@ -360,10 +494,14 @@
     background: var(--gold);
 }
 
+/* The figure and the button that hands it over, side by side and no wider than a
+   figure needs: the section is as wide as the bar, and a field run all the way
+   across one would be a lot of room for four digits. */
 .balance {
     display: grid;
-    gap: 16px;
-    align-content: center;
+    grid-template-columns: minmax(0, 200px) auto;
+    justify-content: start;
+    gap: 12px;
 }
 
 /* Typed into rather than dragged, so it is the one thing on the overlay dressed
@@ -387,8 +525,8 @@
     border-radius: 8px;
 }
 
-/* The field opens with its figure taken, ready to be typed over, so this is the
-   first thing the pop up shows: the last of the browser's blue, out. */
+/* The section opens with the figure taken, ready to be typed over, so this is the
+   first thing it shows: the last of the browser's blue, out. */
 .balance-field::selection {
     color: var(--gold-light);
     background: var(--gold-dark);
@@ -415,21 +553,13 @@
     border-radius: 8px;
 }
 
-/* The rules are the one thing the overlay shows that is read at length rather
-   than set. Every other sheet is cut to the reels and fits inside them; this one
-   holds more than it can show, so it is given the screen in both directions
-   instead — the full width it will go to, and as much height as it can have —
-   and the document is scrolled inside what is left. It is the one sheet opened
-   without a width handed down to it, so nothing measured off the machine is
-   holding it in (see `Rules.tsx`). The head stays put while the body moves: the
-   sheet is a head over a body it hands the rest of its height to (see
-   `grid-template-rows` above), and this is the body. */
-.rules {
-    width: calc(100vw - 32px);
-    max-height: calc(100vh - 32px);
-}
-
+/* The rules are the one thing the overlay shows that is read at length rather than
+   set, and the one thing on the drop with more on it than there is room for: the
+   section is held to a share of the screen and the document is scrolled inside
+   what it is given, so letting it down can never run the drawer off the bottom of
+   the game. */
 .rules-body {
+    max-height: 42vh;
     overflow-y: auto;
     /* Off the scrollbar, which is laid over the text rather than beside it. */
     padding-right: 12px;
@@ -516,27 +646,6 @@
     }
 }
 
-@keyframes backdrop-fade {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-/* Up out of the bar it was opened from. */
-@keyframes dialog-rise {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: none;
-    }
-}
-
 /* The name is the first thing to go once the screen is narrow enough for the bar
    to run out of room: the balance and the clocks are read while the game is
    played, and the game the player opened is not something they need telling. The
@@ -553,9 +662,24 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .topbar,
-    .backdrop,
-    .dialog {
+    .topbar {
         animation: none;
+    }
+
+    /* Everything is still shut or open, hidden or shown — it is only the moving
+       between the two that goes: the drawer's run down, the bars folding into the
+       cross, and the sections letting themselves out. The button and its bars are
+       matched on the attribute rather than on the value of it, since the state
+       they are turned by is written the same way (see `.topbar-menu`). */
+    .menu,
+    .menu-open,
+    .menu-chevron,
+    .menu-section,
+    .menu-section-open,
+    .topbar-menu[aria-expanded],
+    .topbar-menu[aria-expanded]::before,
+    .topbar-menu[aria-expanded]::after {
+        transform: none;
+        transition: none;
     }
 }

@@ -61,14 +61,14 @@ class KeyboardController {
 
     // Whether the keys are the game's to answer. Anything on the overlay that
     // holds the focus is being worked from the keyboard itself — a button that
-    // has been pressed, a field being typed into — and a pop up takes them
-    // whole: its veil keeps pointers off the reels, and the keys are kept off
-    // with them rather than playing the machine from behind the sheet that is
-    // covering it (see `Dialog.tsx`).
+    // has been pressed, a field being typed into — and the menu takes them whole:
+    // it lays a veil over the game that keeps pointers off the reels, and the keys
+    // are kept off with it rather than playing the machine from behind the drawer
+    // that is standing open over it (see `.veil` in `ui.css`).
     private get free() {
         return (
             document.activeElement === document.body &&
-            !document.querySelector('[role="dialog"]')
+            !document.querySelector('.veil')
         );
     }
 }
