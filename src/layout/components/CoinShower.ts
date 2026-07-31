@@ -1,22 +1,8 @@
 import { Container, Sprite, Texture, Ticker, type PointData } from 'pixi.js';
+import { visuals } from 'config/visual.settings';
 
-// How a coin leaves the figure it came off: thrown up, off to one side or the
-// other of straight up by up to this much in radians, at this many pixels a
-// second at the least and twice that at the most.
-const SPREAD = 0.8;
-const SPEED = 420;
-// What pulls it back down, in pixels a second, a second.
-const GRAVITY = 2000;
-// How big a coin is drawn, at the least, and twice it at the most, so the
-// shower has coins nearer the player than others.
-const SIZE = 0.9;
-// Turns a coin flips through in a second, at the least and half again at most.
-const SPIN = 1.5;
-// How long a coin is in the air, and how much of the end of that it spends
-// fading out, in seconds. Kept short enough that the shower stays about the
-// figure it came off rather than reaching the corners of the screen.
-const LIFE = 1.1;
-const FADE = 0.4;
+// How a coin flies, as configured: the throw, the fall and the flip of it.
+const physics = visuals.coins;
 
 // A coin in the air: what is drawn, where it is going, how big it is drawn and
 // how far through its flip and its flight it is.
@@ -31,8 +17,8 @@ type Coin = {
 };
 
 // The coins a big win throws off the figure it is counting up to. Nothing is
-// pooled or capped: a coin is only ever in the air for LIFE, so the shower can
-// only be as thick as the count that drops them is fast.
+// pooled or capped: a coin is only ever in the air for its life, so the shower
+// can only be as thick as the count that drops them is fast.
 export class CoinShower extends Container {
     #coins: Coin[] = [];
 
@@ -40,15 +26,15 @@ export class CoinShower extends Container {
     // choose: the win drops one for every figure it climbs through, so the
     // shower comes out of the number wherever it is being read.
     drop({ x, y }: PointData) {
-        const size = SIZE * (1 + Math.random());
+        const size = physics.size * (1 + Math.random());
         const sprite = new Sprite({
             texture: Texture.from('coin'),
             anchor: 0.5,
             x,
             y,
         });
-        const angle = -Math.PI / 2 + (Math.random() * 2 - 1) * SPREAD;
-        const speed = SPEED * (1 + Math.random());
+        const angle = -Math.PI / 2 + (Math.random() * 2 - 1) * physics.spread;
+        const speed = physics.speed * (1 + Math.random());
 
         sprite.scale.set(size);
 
@@ -60,8 +46,8 @@ export class CoinShower extends Container {
             size,
             // Somewhere into the flip already, so no two coins turn together.
             flip: Math.random(),
-            spin: SPIN * (1 + Math.random() / 2),
-            life: LIFE,
+            spin: physics.spin * (1 + Math.random() / 2),
+            life: physics.life,
         });
 
         // The fall runs for as long as there is anything falling.
@@ -92,7 +78,7 @@ export class CoinShower extends Container {
                 return false;
             }
 
-            coin.vy += GRAVITY * seconds;
+            coin.vy += physics.gravity * seconds;
             coin.flip += coin.spin * seconds;
 
             sprite.x += coin.vx * seconds;
@@ -100,7 +86,7 @@ export class CoinShower extends Container {
             // A coin spins about its own upright rather than rolling over, so
             // its face turns away to an edge and comes back.
             sprite.scale.x = coin.size * Math.cos(coin.flip * Math.PI * 2);
-            sprite.alpha = Math.min(coin.life / FADE, 1);
+            sprite.alpha = Math.min(coin.life / physics.fade, 1);
 
             return true;
         });

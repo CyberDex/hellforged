@@ -1,42 +1,28 @@
 import '@pixi/layout';
 import { FancyButton } from '@pixi/ui';
 import { Ticker } from 'pixi.js';
+import { visuals } from 'config/visual.settings';
 import { sound } from 'controllers/sound.controller';
+
+const { hoverScale, tweenDuration, rotateDuration } = visuals.spinButton;
 
 export class SpinButton extends FancyButton {
     constructor() {
+        // Out under the pointer and back to size as it leaves or presses, so
+        // the three states are the one movement, taken at the one pace.
+        const lean = (scale: number) => ({
+            props: { scale: { x: scale, y: scale } },
+            duration: tweenDuration,
+        });
+
         super({
             defaultView: 'spinButton',
             disabledView: 'spinButtonDisabled',
             anchor: 0.5,
             animations: {
-                hover: {
-                    props: {
-                        scale: {
-                            x: 1.1,
-                            y: 1.1,
-                        },
-                    },
-                    duration: 100,
-                },
-                default: {
-                    props: {
-                        scale: {
-                            x: 1,
-                            y: 1,
-                        },
-                    },
-                    duration: 100,
-                },
-                pressed: {
-                    props: {
-                        scale: {
-                            x: 1,
-                            y: 1,
-                        },
-                    },
-                    duration: 100,
-                },
+                hover: lean(hoverScale),
+                default: lean(1),
+                pressed: lean(1),
             },
         });
 
@@ -54,10 +40,9 @@ export class SpinButton extends FancyButton {
 
     rotate() {
         const fullTurn = Math.PI * 2;
-        const duration = 200;
 
         const tick = ({ deltaMS }: Ticker) => {
-            this.rotation += (fullTurn * deltaMS) / duration;
+            this.rotation += (fullTurn * deltaMS) / rotateDuration;
             if (this.rotation < fullTurn) return;
 
             this.rotation = 0;

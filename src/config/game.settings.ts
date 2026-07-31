@@ -9,6 +9,16 @@ const three: Record<string, number> = {
     H5: 9,
 };
 
+// What a key is worth to the bet, in steps of the slider: up and down nudge it
+// one figure at a time, and left and right run it ten at a time (see
+// `keyboard.controller.ts`).
+const betSteps: Record<string, number> = {
+    ArrowUp: 1,
+    ArrowDown: -1,
+    ArrowRight: 10,
+    ArrowLeft: -10,
+};
+
 // What a win has to pay to be revealed as a big one, in stages: a win falls
 // into the last stage its amount reaches, and is held for that many times the
 // usual reveal, so the more it pays the longer it is read out over. Each stage
@@ -31,6 +41,12 @@ export const settings = {
     // and at most.
     minBet: 1,
     maxBet: 1000000,
+    // How the bet is set from the keyboard: what each arrow moves it by, and
+    // what holding command multiplies whichever arrow by, so the same four keys
+    // also run it a hundred and a thousand figures at a time. A bet that runs
+    // to a million is a long way up in ones.
+    betSteps,
+    betStepCommand: 100,
     // Bet multipliers for the payline: a single symbol pays nothing, a pair pays
     // flat whatever symbol it is, and three of a kind pays on its symbol.
     // Symbols land uniformly, so 1 spin in 25 fills the payline and 4 in 25
@@ -39,9 +55,12 @@ export const settings = {
     // How fast the reel strip travels, in symbols per second.
     spinSpeed: 20,
     // How far a landing reel dips past the row grid, in symbols, and how long
-    // it takes to dip and come back. Keep the distance under one symbol.
+    // it takes to dip and come back. Keep the distance under one symbol. The
+    // share of that time spent travelling down is the last of the three: the
+    // rest eases back up, so the return is the slower half.
     bounceDistance: 0.15,
     bounceDuration: 220,
+    bounceDown: 0.4,
     spinDuration: 500,
     reelStopDelay: 550,
     // A spin whose payline can still fill up holds its last reel back for this

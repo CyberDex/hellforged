@@ -1,5 +1,6 @@
 import '@pixi/layout';
 import { Sprite, Texture } from 'pixi.js';
+import { visuals } from 'config/visual.settings';
 import { BurnFilter } from 'filters/burn.filter';
 import { graphicsStore } from 'store/graphics.store';
 
@@ -25,7 +26,7 @@ export class BG extends Sprite {
             return;
         }
 
-        this.#burn ??= new BurnFilter(1.5);
+        this.#burn ??= new BurnFilter(visuals.burn);
         this.filters = [this.#burn];
     }
 }

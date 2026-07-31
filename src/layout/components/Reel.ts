@@ -3,20 +3,19 @@ import { settings } from 'config/game.settings';
 import { getRandomSymbol } from 'utils/getRandomSymbol';
 import { Symbol } from './Symbol';
 
-// Share of the bounce spent travelling down; the rest eases back up, so the
-// return is the slower half.
-const BOUNCE_DOWN = 0.4;
-
 // 0 -> 1 -> 0. Down with the momentum the reel landed with, decelerating into
-// the dip, then eased off the dip and onto the grid.
+// the dip, then eased off the dip and onto the grid, over the share of the
+// bounce each is configured to have.
 function dip(progress: number): number {
-    if (progress < BOUNCE_DOWN) {
-        const down = progress / BOUNCE_DOWN;
+    const { bounceDown } = settings;
+
+    if (progress < bounceDown) {
+        const down = progress / bounceDown;
 
         return down * (2 - down);
     }
 
-    const back = (progress - BOUNCE_DOWN) / (1 - BOUNCE_DOWN);
+    const back = (progress - bounceDown) / (1 - bounceDown);
 
     return (1 + Math.cos(back * Math.PI)) / 2;
 }

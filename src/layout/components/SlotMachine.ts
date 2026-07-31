@@ -1,9 +1,8 @@
 import { Container, Rectangle, type Sprite } from 'pixi.js';
+import { visuals } from 'config/visual.settings';
 import type { Reels } from './Reels';
 
-// The window in the cabinet art sits this far below the middle of it, so the
-// art is lifted by it to line its window up with the grid.
-const CABINET_OFFSET = 32;
+const { cabinetOffset } = visuals.machine;
 
 export class SlotMachine extends Container {
     constructor(cabinet: Sprite, reels: Reels, mask: Sprite) {
@@ -14,7 +13,7 @@ export class SlotMachine extends Container {
         const { width, height } = reels;
 
         cabinet.anchor.set(0.5);
-        cabinet.position.set(width / 2, height / 2 - CABINET_OFFSET);
+        cabinet.position.set(width / 2, height / 2 - cabinetOffset);
 
         mask.anchor.set(0.5);
         mask.position.set(width / 2, height / 2);

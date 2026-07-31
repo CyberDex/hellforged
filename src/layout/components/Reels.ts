@@ -1,7 +1,8 @@
 import { Container, Rectangle } from 'pixi.js';
+import { visuals } from 'config/visual.settings';
 import { Reel } from './Reel';
 
-const GAP = 30;
+const { reelGap } = visuals.machine;
 
 export class Reels extends Container {
     #reels: Reel[] = [];
@@ -12,7 +13,7 @@ export class Reels extends Container {
         for (let i = 0; i < reels; i++) {
             const reel = new Reel(rows);
 
-            reel.x = i * (reel.width + GAP);
+            reel.x = i * (reel.width + reelGap);
 
             // Landing is what ends a spin, so it goes up to the controller
             // with the index of the reel that came to rest.
@@ -30,7 +31,7 @@ export class Reels extends Container {
         this.boundsArea = new Rectangle(
             0,
             0,
-            reels * width + (reels - 1) * GAP,
+            reels * width + (reels - 1) * reelGap,
             height,
         );
     }

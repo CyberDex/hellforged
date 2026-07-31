@@ -1,20 +1,11 @@
+import { settings } from 'config/game.settings';
 import { game } from './game.controller';
 import type { RootLayout } from 'layout/Root.layout';
 
-// What a key is worth to the bet, in steps of the slider: up and down nudge it
-// one figure at a time, and left and right run it ten at a time.
-const betSteps: Record<string, number> = {
-    ArrowUp: 1,
-    ArrowDown: -1,
-    ArrowRight: 10,
-    ArrowLeft: -10,
-};
-
-// What holding command is worth: a hundred of whatever the arrow already moves,
-// so the same four keys also set the bet a hundred and a thousand at a time.
-// A bet that runs to a million is a long way up in ones, and this is the way up
-// it without the pointer.
-const COMMAND = 100;
+// What the arrows are worth to the bet, and what holding command multiplies
+// them by, both as configured: this is the way up a bet that runs to a million
+// without the pointer.
+const { betSteps, betStepCommand } = settings;
 
 // The machine played from the keyboard: the space bar takes a spin, and the
 // arrows set what it is staked at. None of this is a control of its own — the
@@ -56,7 +47,7 @@ class KeyboardController {
         // left to work the history as well.
         event.preventDefault();
 
-        layout.betSlider.nudge(metaKey ? steps * COMMAND : steps);
+        layout.betSlider.nudge(metaKey ? steps * betStepCommand : steps);
     }
 
     // Whether the keys are the game's to answer. Anything on the overlay that

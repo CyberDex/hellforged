@@ -1,18 +1,14 @@
 import { Slider } from '@pixi/ui';
 import { Graphics } from 'pixi.js';
 import { settings } from 'config/game.settings';
+import { visuals } from 'config/visual.settings';
 import { sound } from 'controllers/sound.controller';
 
-// The track is drawn to the width of the pannel it sits under, and the handle
-// runs from one end of it to the other.
-const WIDTH = 120;
-const HEIGHT = 3;
-const RADIUS = HEIGHT / 2;
-const HANDLE = 9;
-
-// The pit the bet is dragged along, and the hot metal marking how far it is up.
-const PIT = '#7a2f10';
-const METAL = '#ffca50';
+// How the track and the handle on it are drawn, as configured.
+const { width, height, handle, pit, metal, outline, outlineWidth } =
+    visuals.betSlider;
+// Fully rounded ends, whatever the track is drawn at.
+const radius = height / 2;
 
 // The bet is dragged rather than typed: the handle runs the whole range in one
 // sweep, and the amount it lands on is read off the pannel above it.
@@ -22,16 +18,16 @@ export class BetSlider extends Slider {
             // Stroked in its own colour, which reads as a slightly thicker
             // track rather than as an edge around it.
             bg: new Graphics()
-                .roundRect(0, 0, WIDTH, HEIGHT, RADIUS)
-                .fill(PIT)
-                .stroke({ color: PIT, width: 2 }),
+                .roundRect(0, 0, width, height, radius)
+                .fill(pit)
+                .stroke({ color: pit, width: outlineWidth }),
             fill: new Graphics()
-                .roundRect(0, 0, WIDTH, HEIGHT, RADIUS)
-                .fill(METAL),
+                .roundRect(0, 0, width, height, radius)
+                .fill(metal),
             slider: new Graphics()
-                .circle(0, 0, HANDLE)
-                .fill(METAL)
-                .stroke({ color: '#000000', width: 2 }),
+                .circle(0, 0, handle)
+                .fill(metal)
+                .stroke({ color: outline, width: outlineWidth }),
             // The top end is only the widest the slider ever opens: the game
             // brings it down to the balance whenever that no longer covers a
             // bet staked this high.
@@ -45,8 +41,8 @@ export class BetSlider extends Slider {
         // widest of it down, so a resize always lays the track out in the same
         // place rather than shifting it under the pannel.
         const bounds = new Graphics()
-            .rect(-HANDLE, 0, WIDTH + HANDLE * 2, HEIGHT)
-            .fill({ color: '#000000', alpha: 0 });
+            .rect(-handle, 0, width + handle * 2, height)
+            .fill({ color: outline, alpha: 0 });
 
         bounds.eventMode = 'none';
         this.addChildAt(bounds, 0);
