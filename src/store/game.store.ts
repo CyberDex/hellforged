@@ -2,8 +2,14 @@ import { createStore } from 'zustand/vanilla';
 import { persist } from 'zustand/middleware';
 import { gmeSettings } from 'config/game.settings';
 import { gameName } from 'config/game.name';
+import type { StateCreator } from 'zustand/vanilla';
 
 export type GameState = 'idle' | 'spin' | 'reveal';
+
+export interface PendingSpin {
+    bet: number;
+    result: { symbols: string[][]; win: number } | null;
+}
 
 export interface GameStore {
     state: GameState;
@@ -11,36 +17,61 @@ export interface GameStore {
     bet: number;
     win: number;
     symbols: string[][] | null;
+    pending: PendingSpin | null;
     setState: (state: GameState) => void;
     setBalance: (balance: number) => void;
     setBet: (bet: number) => void;
-    // The symbols and the win are written together, so what comes back from
-    // storage always adds up.
-    setResult: (symbols: string[][] | null, win: number) => void;
+    startSpin: (bet: number) => void;
+    setSpinResult: (symbols: string[][], win: number) => void;
+    settleSpin: () => void;
 }
 
-export const gameStore = createStore<GameStore>()(
-    persist(
-        (set) => ({
-            state: 'idle',
-            balance: gmeSettings.defaultBalance,
-            bet: gmeSettings.defaultBet,
+export const gameState: StateCreator<GameStore> = (set) => ({
+    state: 'idle',
+    balance: gmeSettings.defaultBalance,
+    bet: gmeSettings.defaultBet,
+    win: 0,
+    symbols: null,
+    pending: null,
+
+    setState: (state) => set({ state }),
+    setBalance: (balance) => set({ balance }),
+    setBet: (bet) => set({ bet }),
+    startSpin: (bet) =>
+        set(({ balance }) => ({
+            balance: balance - bet,
             win: 0,
             symbols: null,
+            pending: { bet, result: null },
+        })),
+    setSpinResult: (symbols, win) =>
+        set(({ pending }) => ({
+            pending: pending ? { ...pending, result: { symbols, win } } : null,
+        })),
+    settleSpin: () =>
+        set(({ balance, pending }) => {
+            if (!pending) return {};
 
-            setState: (state) => set({ state }),
-            setBalance: (balance) => set({ balance }),
-            setBet: (bet) => set({ bet }),
-            setResult: (symbols, win) => set({ symbols, win }),
+            const { result } = pending;
+
+            return {
+                balance: balance + (result?.win ?? pending.bet),
+                win: result?.win ?? 0,
+                symbols: result?.symbols ?? null,
+                pending: null,
+            };
         }),
-        {
-            name: `${gameName}.player`,
-            partialize: ({ balance, bet, win, symbols }) => ({
-                balance,
-                bet,
-                win,
-                symbols,
-            }),
-        },
-    ),
+});
+
+export const gameStore = createStore<GameStore>()(
+    persist(gameState, {
+        name: `${gameName}.player`,
+        partialize: ({ balance, bet, win, symbols, pending }) => ({
+            balance,
+            bet,
+            win,
+            symbols,
+            pending,
+        }),
+    }),
 );

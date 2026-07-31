@@ -16,7 +16,6 @@ class GameController {
     #landed = 0;
     // The API's outcome, held until the reels finish landing on it.
     #win = 0;
-    #symbols: string[][] = [];
     #positions: Position[] = [];
     #anticipation: SpinResult['anticipation'];
     #unsubscribe?: () => void;
@@ -26,6 +25,13 @@ class GameController {
 
         this.#layout = layout;
         this.#reels = reels;
+
+        // A result already received is paid; a request cut off before its
+        // answer gives its stake back. Either settlement clears the pending
+        // spin in the same persisted write, so another reload cannot repeat it.
+        const restored = gameStore.getState();
+
+        if (restored.pending) restored.settleSpin();
 
         // Before the slider is listened to, so restoring the handle is not
         // read back as a new bet.
@@ -60,18 +66,40 @@ class GameController {
     async spin() {
         if (this.state !== 'idle') return;
 
-        const { balance, bet, setBalance, setResult } = gameStore.getState();
+        const { balance, bet, startSpin, setSpinResult } = gameStore.getState();
 
         if (balance < bet) return;
 
-        setBalance(balance - bet);
-        setResult(null, 0);
-
         this.setState('spin');
+        startSpin(bet);
         this.#reels?.spin();
 
+        this.#win = 0;
+        this.#positions = [];
+        this.#landed = 0;
+        this.#anticipation = undefined;
+
         const asked = performance.now();
-        const outcome = await API.spin(bet);
+        let outcome: SpinResult;
+
+        try {
+            outcome = await API.spin(bet);
+        } catch (error) {
+            console.error('Unable to complete spin.', error);
+
+            // Land promptly on strip faces. Their stopped events finish the
+            // unresolved transaction through the normal last-reel path.
+            for (let index = 0; index < gameDefinition.strips.length; index++) {
+                this.#reels?.stop(index, []);
+            }
+
+            return;
+        }
+
+        // From here a reload can settle the result instead of refunding the
+        // stake, even though the reels have not shown it yet.
+        setSpinResult(outcome.grid, outcome.win);
+
         // Stops are anchored to the press: a slow answer stops the first reel
         // at once and keeps the others their delay apart behind it.
         const elapsed = Math.min(
@@ -80,9 +108,7 @@ class GameController {
         );
 
         this.#win = outcome.win;
-        this.#symbols = outcome.grid;
         this.#positions = outcome.wins.flatMap(({ positions }) => positions);
-        this.#landed = 0;
         this.#anticipation = outcome.anticipation;
 
         // On the game's own clock, not the wall's: a backgrounded spin holds
@@ -248,10 +274,7 @@ class GameController {
 
         if (this.#landed < gameDefinition.strips.length) return;
 
-        const { balance, setBalance, setResult } = gameStore.getState();
-
-        setBalance(balance + this.#win);
-        setResult(this.#symbols, this.#win);
+        gameStore.getState().settleSpin();
 
         if (this.#win <= 0) return this.setState('idle');
 
