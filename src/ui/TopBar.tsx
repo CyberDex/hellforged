@@ -103,51 +103,64 @@ export function TopBar({ layout }: { layout: RootLayout }) {
                 drop are both still over it and both still take their own
                 clicks. */}
             {open && <div className="veil" onClick={close} />}
-            <div className="topbar" style={{ width }}>
-                <div className="topbar-left">
-                    {/* The three bars are drawn in CSS, so the button carries
-                        no glyph the game font would have to have. They fold into
-                        the cross that shuts the drop again while it is down (see
-                        `.topbar-menu` in `ui.css`). */}
-                    <Button
-                        className="topbar-menu"
-                        aria-label="Menu"
-                        aria-expanded={open !== undefined}
-                        // The one control that shuts what it opens: the bars are
-                        // the menu's handle rather than a way in to it.
-                        onClick={() =>
-                            setOpen((was) => (was ? undefined : 'menu'))
-                        }
-                    />
-                    <Menu
-                        open={open !== undefined}
-                        // The drawer on its own is no section, and either of the
-                        // other two is that section standing open on it.
-                        section={open === 'menu' ? undefined : open}
-                        // Asked for again, a section that is already open shuts
-                        // and leaves the drawer standing.
-                        onSection={(section) =>
-                            setOpen((was) =>
-                                was === section ? 'menu' : section,
-                            )
-                        }
-                        onClose={close}
-                    />
-                    {/* The balance is the way in to setting it, so the figure
-                        the player wants to change is itself the control: it puts
-                        the drawer down on the section that sets it. */}
-                    <Button onClick={() => setOpen('balance')}>
-                        <Stat label="Balance" value={formatAmount(counted)} />
-                    </Button>
+            {/* The bar and the drawer under it, side by side on the one mount at
+                the machine's own width: the drawer hangs off this rather than off
+                the bar, so what is behind it to be blurred is the game and not the
+                bar's own glass (see `.glass` and `.hud` in `ui.css`). On screen it
+                is the same drawer out of the same bar either way — the mount is the
+                bar's width and nothing else. */}
+            <div className="hud" style={{ width }}>
+                <div className="topbar glass">
+                    <div className="topbar-left">
+                        {/* The three bars are drawn in CSS, so the button carries
+                            no glyph the game font would have to have. They fold
+                            into the cross that shuts the drop again while it is
+                            down (see `.topbar-menu` in `ui.css`). */}
+                        <Button
+                            className="topbar-menu"
+                            aria-label="Menu"
+                            aria-expanded={open !== undefined}
+                            // The drawer is no longer the next thing along from
+                            // its own handle, so the handle is told what it opens
+                            // rather than leaving it to be found.
+                            aria-controls="menu"
+                            // The one control that shuts what it opens: the bars
+                            // are the menu's handle rather than a way in to it.
+                            onClick={() =>
+                                setOpen((was) => (was ? undefined : 'menu'))
+                            }
+                        />
+                        {/* The balance is the way in to setting it, so the figure
+                            the player wants to change is itself the control: it
+                            puts the drawer down on the section that sets it. */}
+                        <Button onClick={() => setOpen('balance')}>
+                            <Stat
+                                label="Balance"
+                                value={formatAmount(counted)}
+                            />
+                        </Button>
+                    </div>
+                    <span className="topbar-title gold">{gameTitle}</span>
+                    <div className="topbar-clocks">
+                        <Stat label="Time" value={clock(now)} />
+                        <Stat
+                            label="Session"
+                            value={elapsed(now.getTime() - SESSION_START)}
+                        />
+                    </div>
                 </div>
-                <span className="topbar-title gold">{gameTitle}</span>
-                <div className="topbar-clocks">
-                    <Stat label="Time" value={clock(now)} />
-                    <Stat
-                        label="Session"
-                        value={elapsed(now.getTime() - SESSION_START)}
-                    />
-                </div>
+                <Menu
+                    open={open !== undefined}
+                    // The drawer on its own is no section, and either of the
+                    // other two is that section standing open on it.
+                    section={open === 'menu' ? undefined : open}
+                    // Asked for again, a section that is already open shuts and
+                    // leaves the drawer standing.
+                    onSection={(section) =>
+                        setOpen((was) => (was === section ? 'menu' : section))
+                    }
+                    onClose={close}
+                />
             </div>
         </>
     );

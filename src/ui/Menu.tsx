@@ -18,7 +18,9 @@ export type Section = 'rules' | 'balance';
 // the entry that names it.
 //
 // It drops out of the bar rather than covering the machine: it is cut to the bar,
-// so it reads as the machine turned round rather than a sheet put over it. It
+// so it reads as the machine turned round rather than a sheet put over it. Hung
+// off the mount the bar itself hangs off rather than off the bar (see `TopBar.tsx`),
+// which is what leaves the game behind it to be blurred through its glass. It
 // stays in the DOM shut as well as open, so the one class animates it both down
 // and back up (see `ui.css`) — hidden while it is away, which takes it off the
 // keyboard along with the screen.
@@ -51,7 +53,7 @@ export function Menu({
     }, [open, onClose]);
 
     return (
-        <div className={`menu${open ? ' menu-open' : ''}`}>
+        <div id="menu" className={`menu glass${open ? ' menu-open' : ''}`}>
             <div className="menu-row">
                 <span className="menu-label">Sound</span>
                 <Button

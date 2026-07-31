@@ -5,8 +5,10 @@
     "gold-dim": "rgba(214, 168, 92, 0.7)",
     "frame": "rgba(198, 150, 60, 0.45)",
     "frame-glow": "rgba(255, 202, 80, 0.15)",
-    "pannel-top": "rgba(60, 32, 15, 0.62)",
-    "pannel-bottom": "rgba(28, 13, 5, 0.5)",
+    "pannel-top": "rgba(60, 32, 15, 0.45)",
+    "pannel-bottom": "rgba(28, 13, 5, 0.35)",
+    "glass-sheen": "rgba(255, 238, 205, 0.16)",
+    "glass-rim": "rgba(255, 240, 214, 0.4)",
     "shadow": "rgba(0, 0, 0, 0.5)",
     "outline": "rgba(0, 0, 0, 0.9)"
 }

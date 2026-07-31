@@ -49,31 +49,76 @@
     outline-offset: 2px;
 }
 
-/* Hung off the top edge, in the middle, at the width the reels measure. */
-.topbar {
+/* The pane every surface the overlay lays over the game is cut from: what is
+   behind it is taken out of focus and its colour lifted, so the game is still
+   seen through the UI as its light and its movement rather than as its detail.
+   The tint and the gloss are laid over that, and all three are coloured from the
+   art's own palette like everything else here.
+
+   Only what is behind a pane is blurred, and what is behind a pane laid inside
+   another one is that one's own paint — a pane within a pane comes out flat, with
+   the game showing through it as sharp as it ever was. So nothing wearing this
+   sits inside anything else wearing it: the bar and the drawer under it are both
+   hung off `.hud` instead, and each blurs the game rather than the other.
+
+   It is worth what it costs: every frame the reels move is a frame the compositor
+   blurs whatever the panes cover, so this is two of them and not one per figure
+   read off the machine. */
+.glass {
+    /* Enough blur that a symbol behind the bar is the light off a symbol rather
+       than a symbol, with the colour the blur washes out put back and the whole of
+       it taken down: blurred alone reads as fog over the game, the lift is what
+       makes it glass in front of it, and the darkening is what the gold and the
+       paragraphs on top are legible against — the game runs from near black to a
+       lit fire, and a tint heavy enough to cover the fire on its own would have
+       nothing left of the glass. */
+    --pane: blur(20px) saturate(180%) brightness(0.6);
+    background:
+        /* The gloss: light wiped off the top corner and given out before the
+           middle, so it reads as a highlight across the pane rather than as a
+           lighter pane. */
+        linear-gradient(150deg, var(--glass-sheen), transparent 55%),
+        /* The tint under it: the same dark interior the machine's own pannels
+           are filled with, so a pane reads as a piece of the cabinet. */
+        linear-gradient(180deg, var(--pannel-top), var(--pannel-bottom));
+    border: 1px solid var(--frame);
+    /* What gives the pane its thickness: the light caught along the top edge, the
+       shade along the bottom one, and the shadow the whole of it is stood off the
+       game by. */
+    box-shadow:
+        0 6px 22px var(--shadow),
+        inset 0 1px 0 var(--glass-rim),
+        inset 0 -1px 0 var(--frame-glow);
+    /* Safari only dropped the prefix in 16.4, and a phone older than that is
+       still a phone the game is played on. */
+    -webkit-backdrop-filter: var(--pane);
+    backdrop-filter: var(--pane);
+}
+
+/* What the bar and the drawer under it are both hung off: the width the reels
+   measure, in the middle of the top edge. The drawer hangs off this rather than
+   off the bar, so the game is behind it to be blurred and not the bar's own glass
+   (see `.glass`); it is still the bar's own width, since the bar is the whole of
+   what this mount holds up. Measured and written on as the game is laid out (see
+   `TopBar.tsx`). */
+.hud {
     position: absolute;
     top: 0;
     left: 50%;
     transform: translateX(-50%);
+}
+
+/* The bar itself, across the whole of what it is hung off. */
+.topbar {
     box-sizing: border-box;
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     gap: 12px;
     padding: 7px 14px 9px;
-    /* Half transparent, so the game is still read through the bar. */
-    background: linear-gradient(
-        180deg,
-        var(--pannel-top),
-        var(--pannel-bottom)
-    );
-    border: 1px solid var(--frame);
+    /* Hung off the top edge, so it has no top edge of its own to draw. */
     border-top: none;
     border-radius: 0 0 12px 12px;
-    box-shadow:
-        0 2px 14px var(--shadow),
-        inset 0 -1px 0 var(--frame-glow);
-    backdrop-filter: blur(2px);
     animation: topbar-drop 400ms ease-out both;
 }
 
@@ -221,9 +266,9 @@
 
 /* The menu is not a sheet over the game but a drawer out of the bar: hung off the
    bar's bottom edge and cut to the bar itself, whatever the bar is sized at. It is
-   laid inside the bar (see `TopBar.tsx`), and the bar is what an absolute box
-   inside it measures against, so nothing here has to be told how wide the machine
-   was drawn.
+   laid beside the bar rather than inside it, on the mount the two of them share
+   (see `.hud`), and that mount is what an absolute box inside it measures against,
+   so nothing here has to be told how wide the machine was drawn.
 
    Everything the overlay shows that is not a reading off the machine is on this
    one drawer: the rules and the balance are let down inside it (see
@@ -243,21 +288,11 @@
     gap: 18px;
     padding: 16px 14px 18px;
     pointer-events: auto;
-    /* The bar's own dressing at the bar's own transparency, so the drop reads as
-       a piece of the same machine and the game is still seen through it. The blur
-       the bar lays over what it covers is not to be had here: the bar is put in
-       place with a transform, and a backdrop filter anywhere inside one of those
-       has nothing left to filter. */
-    background: linear-gradient(
-        180deg,
-        var(--pannel-top),
-        var(--pannel-bottom)
-    );
-    border: 1px solid var(--frame);
+    /* Cut from the same pane as the bar (see `.glass`), so the drop reads as a
+       piece of the same machine: the game is blurred behind the whole of it, and
+       the reels go on turning under the drawer as light on it. Rounded on all four
+       corners, where the bar is only rounded where it leaves the top edge. */
     border-radius: 12px;
-    box-shadow:
-        0 10px 26px var(--shadow),
-        inset 0 1px 0 var(--frame-glow);
     /* Slid down out of the bar: the drawer sits above where it will come to rest
        and is clipped to the slot it comes out of, so what has yet to be let down
        is not drawn over the bar on its way past. The top of that clip travels
@@ -639,15 +674,18 @@
     border-bottom: 1px solid var(--frame-glow);
 }
 
-/* Comes down with the canvas, which fades in as it is added to the page. */
+/* Comes down with the canvas, which fades in as it is added to the page. The drop
+   and nothing else: the bar is centred by the mount it hangs off rather than by a
+   transform of its own (see `.hud`), so there is nothing here to hold in place on
+   the way down and nothing left standing on the bar once it has landed. */
 @keyframes topbar-drop {
     from {
         opacity: 0;
-        transform: translate(-50%, -100%);
+        transform: translateY(-100%);
     }
     to {
         opacity: 1;
-        transform: translate(-50%, 0);
+        transform: none;
     }
 }
 
@@ -663,6 +701,17 @@
 
     .topbar-title {
         display: none;
+    }
+}
+
+/* Asked for as little seen through as can be managed: the glass keeps its gloss
+   and its edges, so the UI is dressed the way the rest of the game is, but nothing
+   is read through it any more — the blur goes, and the darkest the palette has is
+   laid under the tint to shut the game out from behind it. */
+@media (prefers-reduced-transparency: reduce) {
+    .glass {
+        --pane: none;
+        background-color: var(--outline);
     }
 }
 
