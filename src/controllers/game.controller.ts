@@ -1,10 +1,10 @@
 import { settings } from 'config/game.settings';
 import { definition } from 'config/game.definition';
-import { backend } from './backend.controller';
+import { API } from './api.controller';
 import { sound } from './sound.controller';
 import { tween } from './tween.controller';
 import { gameStore } from 'store/game.store';
-import type { GameState } from 'store/game.store';
+import type { GameState, GameStore } from 'store/game.store';
 import type { Position, SpinResult } from 'engine/engine';
 import type { RootLayout } from 'layout/Root.layout';
 import type { Reels } from 'layout/components/Reels';
@@ -13,7 +13,7 @@ class GameController {
     #layout?: RootLayout;
     #reels?: Reels;
     #landed = 0;
-    // The backend's outcome, held until the reels finish landing on it.
+    // The API's outcome, held until the reels finish landing on it.
     #win = 0;
     #symbols: string[][] = [];
     #positions: Position[] = [];
@@ -60,7 +60,7 @@ class GameController {
     cheat(grid: string[][]) {
         if (!this.canSpin) return;
 
-        backend.force(grid);
+        API.force(grid);
         this.spin();
     }
 
@@ -71,59 +71,63 @@ class GameController {
     }
 
     private listen(layout: RootLayout) {
-        const {
-            spinButton,
-            betSlider,
-            reels,
-            betPannel,
-            winPannel,
-            winLayout,
-        } = layout;
+        const { spinButton, betSlider, reels, winPannel, winLayout } = layout;
 
         spinButton.onPress.connect(() => this.spin());
         betSlider.onUpdate.connect((bet) => gameStore.getState().setBet(bet));
 
-        reels.on('stopped', () => this.reelStopped());
+        reels.on('stopped', () => this.onReelStopped());
 
         winLayout.on('revealed', (win: number) => (winPannel.value = win));
 
-        gameStore.subscribe((current, previous) => {
-            const { state, bet, win } = current;
+        gameStore.subscribe((current, previous) =>
+            this.reflect(current, previous),
+        );
+    }
 
-            if (bet !== previous.bet) betPannel.value = bet;
+    // Writes each store change back out to the screen: values into the
+    // pannels, the state into the controls and sound.
+    private reflect(current: GameStore, previous: GameStore) {
+        const layout = this.#layout;
 
-            if (win !== previous.win) {
-                if (win > 0) {
-                    winLayout.show(win, this.countDuration);
-                    sound.play('win');
-                } else {
-                    winPannel.value = win;
-                }
-            }
+        if (!layout) return;
 
-            if (state === previous.state) return;
+        const { spinButton, reels, betPannel, winPannel, winLayout } = layout;
+        const { state, bet, win } = current;
 
-            if (state !== 'idle') this.lockControls();
+        if (bet !== previous.bet) betPannel.value = bet;
 
-            if (state === 'spin') {
-                spinButton.rotate();
-                sound.play('reelSpin');
-            } else if (previous.state === 'spin') {
-                sound.stop('reelSpin');
-            }
-
-            if (state === 'idle') {
-                winLayout.hide();
-                reels.highlight(null);
-
-                // The announcement is what reveals the figure; the pannel is
-                // what keeps it beside the reels.
+        if (win !== previous.win) {
+            if (win > 0) {
+                winLayout.show(win, this.countDuration);
+                sound.play('win');
+            } else {
                 winPannel.value = win;
-
-                if (layout.unzoom()) sound.play('reelStop');
-                this.settle();
             }
-        });
+        }
+
+        if (state === previous.state) return;
+
+        if (state !== 'idle') this.lockControls();
+
+        if (state === 'spin') {
+            spinButton.rotate();
+            sound.play('reelSpin');
+        } else if (previous.state === 'spin') {
+            sound.stop('reelSpin');
+        }
+
+        if (state === 'idle') {
+            winLayout.hide();
+            reels.highlight(null);
+
+            // The announcement is what reveals the figure; the pannel is
+            // what keeps it beside the reels.
+            winPannel.value = win;
+
+            if (layout.unzoom()) sound.play('reelStop');
+            this.settle();
+        }
     }
 
     private settle() {
@@ -187,7 +191,7 @@ class GameController {
         this.#reels?.spin();
 
         const asked = performance.now();
-        const outcome = await backend.spin(bet);
+        const outcome = await API.spin(bet);
         // Stops are anchored to the press: a slow answer stops the first reel
         // at once and keeps the others their delay apart behind it.
         const elapsed = Math.min(
@@ -218,7 +222,7 @@ class GameController {
         return held ? delay * settings.anticipationSpins : delay;
     }
 
-    private reelStopped() {
+    private onReelStopped() {
         if (this.state !== 'spin') return;
 
         sound.play('reelStop');

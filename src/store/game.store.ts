@@ -5,7 +5,7 @@ import { gameName } from 'config/game.name';
 
 export type GameState = 'idle' | 'spin' | 'reveal';
 
-interface GameStore {
+export interface GameStore {
     state: GameState;
     balance: number;
     bet: number;

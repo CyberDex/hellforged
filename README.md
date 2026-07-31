@@ -19,7 +19,7 @@ pnpm build            # lint + typecheck run on pre-push
         │
         ▼
  ┌─────────────────┐  spin(bet)  ┌──────────────────────────────────────┐
- │ game.controller │────────────▶│ backend.controller — server stand-in │
+ │ game.controller │────────────▶│ api.controller — server stand-in     │
  │ idle→spin→reveal│◀────────────│ answers a responseTime later, from   │
  └───────┬─────────┘ SpinResult, │ engine/engine.ts: pure maths over    │
          │ writes    while the   │ game.definition.ts (strips · rows ·  │
@@ -57,7 +57,7 @@ pnpm build            # lint + typecheck run on pre-push
 ## Data flow?
 
 1. A press reaches `game.controller`; only `idle` takes it, so spamming cannot re-enter a spin.
-2. The stake comes off the balance and the reels start turning at once; the spin goes out to `backend.controller` — a server stand-in that answers a `responseTime` round trip later with the whole outcome as data.
+2. The stake comes off the balance and the reels start turning at once; the spin goes out to `api.controller` — a server stand-in that answers a `responseTime` round trip later with the whole outcome as data.
 3. The reels only ever stop on an answer in hand — each is handed its column and lands exactly on it, left to right; the reels a win still hangs on are held out longer.
 4. The last reel landing credits the win and stores the result; wins reveal over the reels with the cells they were paid for lit.
 5. Everything on screen is written from the store — the controller's one subscription drives the Pixi side, React reads the same store — so no figure exists twice.

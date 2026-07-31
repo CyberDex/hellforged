@@ -1,6 +1,6 @@
 // The maths of the game, whole: pure functions over a `GameDefinition`, with
 // nothing of Pixi or the DOM in them, so the same code decides a spin under
-// the game, under the stand-in backend, and under `scripts/simulate.ts`.
+// the game, under the stand-in API, and under `scripts/simulate.ts`.
 
 export interface GameDefinition {
     // One strip per reel; how often a symbol is strung on weights the maths.

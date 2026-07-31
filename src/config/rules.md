@@ -21,7 +21,7 @@ Each reel is strung with a strip (`definition.strips`), and a spin is one stop p
 
 ## Outcome
 
-The spin is decided by `src/engine/engine.ts` under `src/controllers/backend.controller.ts` — the latter stands in for the server: it is asked the moment the button is pressed and answers `settings.responseTime` later (currently 300ms), with what a real one would send back. That answer is a `SpinResult`: the grid, the wins read off it with the cells each was paid for, what they pay between them, and whether the spin is worth drawing out (see [Anticipation](#anticipation)). The reels are already turning while the server thinks and only ever stop on its answer. Each reel is handed its symbols when it is asked to stop and lands on exactly those, so nothing about the result depends on the animation — the outcome is in hand before a reel has stopped, never before one has moved.
+The spin is decided by `src/engine/engine.ts` under `src/controllers/api.controller.ts` — the latter stands in for the server: it is asked the moment the button is pressed and answers `settings.responseTime` later (currently 300ms), with what a real one would send back. That answer is a `SpinResult`: the grid, the wins read off it with the cells each was paid for, what they pay between them, and whether the spin is worth drawing out (see [Anticipation](#anticipation)). The reels are already turning while the server thinks and only ever stop on its answer. Each reel is handed its symbols when it is asked to stop and lands on exactly those, so nothing about the result depends on the animation — the outcome is in hand before a reel has stopped, never before one has moved.
 
 ## Balance
 

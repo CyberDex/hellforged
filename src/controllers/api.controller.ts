@@ -5,7 +5,7 @@ import type { SpinResult } from 'engine/engine';
 
 // Stands in for the server: the seam a real backend would sit behind,
 // answering with the same `SpinResult`. The deciding itself is the engine's.
-class BackendController {
+class ApiController {
     #forced: string[][] | null = null;
 
     // Spent by the spin that follows: one press of a cheat is one spin.
@@ -28,4 +28,4 @@ class BackendController {
     }
 }
 
-export const backend = new BackendController();
+export const API = new ApiController();
