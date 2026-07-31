@@ -13,15 +13,12 @@ export const layout = new RootLayout();
 app.stage.addChild(layout);
 
 game.init(layout);
-// After the game, which is what the keys go through: they only press what is
-// already wired up and answering.
+// After the game: the keys only press what is already wired up.
 keyboard.init(layout);
 
 await mountUI(layout);
 
-// The dev panel is only there while the game is being worked on, and is loaded
-// that way too: the branch is compiled out of a build, so Tweakpane is never
-// bundled for, or shipped to, the player.
+// Compiled out of a build, so Tweakpane is never shipped to the player.
 if (import.meta.env.DEV) {
     const { devTools } = await import('controllers/devTools.controller');
 

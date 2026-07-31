@@ -9,8 +9,6 @@ export class Reels extends Container {
     #reels: Reel[] = [];
     #rowHeight: number;
 
-    // One reel per strip: the strip is what the reel shows passing while it
-    // spins, so the grid is as wide as the definition strings it.
     constructor(strips: string[][], rows: number) {
         super();
 
@@ -19,8 +17,6 @@ export class Reels extends Container {
 
             reel.x = i * (reel.width + reelGap);
 
-            // Landing is what ends a spin, so it goes up to the controller
-            // with the index of the reel that came to rest.
             reel.on('stopped', () => this.emit('stopped', i));
 
             this.#reels.push(reel);
@@ -31,9 +27,8 @@ export class Reels extends Container {
 
         this.#rowHeight = height / rows;
 
-        // Fixed bounds, so the grid still measures its rows once the window is
-        // masking it — otherwise the machine around it is sized by whatever the
-        // mask happens to leave showing.
+        // Fixed bounds, so the grid still measures its rows once the window
+        // is masking it.
         this.boundsArea = new Rectangle(
             0,
             0,
@@ -42,20 +37,14 @@ export class Reels extends Container {
         );
     }
 
-    // How tall one row of the grid stands, which is the least the window over
-    // it can be cropped to — see `SlotMachine`.
     get rowHeight() {
         return this.#rowHeight;
     }
 
-    // The reels always start together; the controller stops them one by one.
     spin() {
         for (const reel of this.#reels) reel.spin();
     }
 
-    // The cells wins were paid for are left at full face and the rest of the
-    // grid steps back behind them, so the reels themselves say where the money
-    // came from. `null` brings every face forward again.
     highlight(positions: Position[] | null) {
         this.#reels.forEach((reel, index) => {
             reel.highlight(
@@ -67,14 +56,12 @@ export class Reels extends Container {
         });
     }
 
-    // Each reel is handed the column of the outcome it has to land on.
     stop(index: number, symbols: string[]) {
         this.#reels[index]?.stop(symbols);
     }
 
-    // The grid put straight onto an outcome, with no spin: each reel is handed
-    // the column it is to show. Columns the grid no longer has are left out of
-    // it, so an outcome saved by a game with other reels is not half applied.
+    // Columns the grid no longer has are left out, so an outcome saved by a
+    // game with other reels is not half applied.
     set symbols(symbols: string[][]) {
         this.#reels.forEach((reel, index) => {
             const column = symbols[index];

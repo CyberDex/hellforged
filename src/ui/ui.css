@@ -1,31 +1,18 @@
-/* The sheet the React overlay is styled from. It lays the UI out but names no
-   colour of its own: every `--` below is filed with the art, in
-   `assets/theme{copy}{mIgnore}/theme.json`, and written onto `#ui` as the
-   overlay is mounted (see `ui.controller.tsx`). They are the pannel's own colours —
-   the dark interior it is filled with, the gold of its frame, and the gold of
-   the texture every piece of text in the game is filled with — so a new set of
-   sprites brings its own palette along with it. */
+/* Lays the UI out but names no colour of its own: every `--` below is filed
+   with the art in `assets/theme{copy}{mIgnore}/theme.json` and written onto
+   `#ui` as the overlay is mounted (see `ui.controller.tsx`). */
 
-/* The overlay React renders on: it covers the canvas, so the UI is drawn over
-   the game, and passes every pointer straight through it, so the reels, the
-   button and the slider are all still Pixi's to handle. Anything on here that
-   wants a click has to ask for one back with `pointer-events: auto`. */
+/* Covers the canvas and passes every pointer straight through it; anything on
+   here that wants a click has to ask for one back with `pointer-events: auto`. */
 #ui {
     position: fixed;
     inset: 0;
     z-index: 1;
     pointer-events: none;
-    /* The overlay is read rather than looked at — figures, labels and rules —
-       so it is set in the plainest face there is and legibility wins over the
-       dressing. The game's own face is kept for the one piece of text that is
-       the game rather than about it: its name (see `.topbar-title`). */
     font-family: Arial, Helvetica, sans-serif;
     user-select: none;
 }
 
-/* Every control the overlay lays over the game: they are the pointers it asks
-   back, and none of them carry the browser's own dressing — the game's UI is
-   the game's, down to the buttons. */
 .press {
     pointer-events: auto;
     padding: 0;
@@ -37,54 +24,25 @@
 }
 
 .press:active {
-    /* Pressed in, which is all the travel the game's own buttons have. */
     transform: translateY(1px);
 }
 
-/* What the keyboard is on, in the game's gold rather than in the browser's own
-   blue, which is the one colour on the page from nowhere in the art. */
 .press:focus-visible,
 .volume-range:focus-visible {
     outline: 1px solid var(--gold);
     outline-offset: 2px;
 }
 
-/* The pane every surface the overlay lays over the game is cut from: what is
-   behind it is taken out of focus and its colour lifted, so the game is still
-   seen through the UI as its light and its movement rather than as its detail.
-   The tint and the gloss are laid over that, and all three are coloured from the
-   art's own palette like everything else here.
-
-   Only what is behind a pane is blurred, and what is behind a pane laid inside
-   another one is that one's own paint — a pane within a pane comes out flat, with
-   the game showing through it as sharp as it ever was. So nothing wearing this
-   sits inside anything else wearing it: the bar and the drawer under it are both
-   hung off `.hud` instead, and each blurs the game rather than the other.
-
-   It is worth what it costs: every frame the reels move is a frame the compositor
-   blurs whatever the panes cover, so this is two of them and not one per figure
-   read off the machine. */
+/* Only what is behind a pane is blurred, and what is behind a pane laid inside
+   another one is that one's own paint — a pane within a pane comes out flat.
+   So nothing wearing this sits inside anything else wearing it: the bar and
+   the drawer are both hung off `.hud`, and each blurs the game. */
 .glass {
-    /* Enough blur that a symbol behind the bar is the light off a symbol rather
-       than a symbol, with the colour the blur washes out put back and the whole of
-       it taken down: blurred alone reads as fog over the game, the lift is what
-       makes it glass in front of it, and the darkening is what the gold and the
-       paragraphs on top are legible against — the game runs from near black to a
-       lit fire, and a tint heavy enough to cover the fire on its own would have
-       nothing left of the glass. */
     --pane: blur(20px) saturate(180%) brightness(0.6);
     background:
-        /* The gloss: light wiped off the top corner and given out before the
-           middle, so it reads as a highlight across the pane rather than as a
-           lighter pane. */
         linear-gradient(150deg, var(--glass-sheen), transparent 55%),
-        /* The tint under it: the same dark interior the machine's own pannels
-           are filled with, so a pane reads as a piece of the cabinet. */
         linear-gradient(180deg, var(--pannel-top), var(--pannel-bottom));
     border: 1px solid var(--frame);
-    /* What gives the pane its thickness: the light caught along the top edge, the
-       shade along the bottom one, and the shadow the whole of it is stood off the
-       game by. */
     box-shadow:
         0 6px 22px var(--shadow),
         inset 0 1px 0 var(--glass-rim),
@@ -95,12 +53,8 @@
     backdrop-filter: var(--pane);
 }
 
-/* What the bar and the drawer under it are both hung off: the width the reels
-   measure, in the middle of the top edge. The drawer hangs off this rather than
-   off the bar, so the game is behind it to be blurred and not the bar's own glass
-   (see `.glass`); it is still the bar's own width, since the bar is the whole of
-   what this mount holds up. Measured and written on as the game is laid out (see
-   `TopBar.tsx`). */
+/* The mount the bar and the drawer both hang off, at the width the reels
+   measure — written on as the game is laid out (see `TopBar.tsx`). */
 .hud {
     position: absolute;
     top: 0;
@@ -108,7 +62,6 @@
     transform: translateX(-50%);
 }
 
-/* The bar itself, across the whole of what it is hung off. */
 .topbar {
     box-sizing: border-box;
     display: grid;
@@ -116,24 +69,20 @@
     align-items: center;
     gap: 12px;
     padding: 7px 14px 9px;
-    /* Hung off the top edge, so it has no top edge of its own to draw. */
     border-top: none;
     border-radius: 0 0 12px 12px;
     animation: topbar-drop 400ms ease-out both;
 }
 
-/* What the bar is pressed at, on the end the reading of it starts from: the way
-   into the menu, then the balance. */
 .topbar-left {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-/* Three bars: 2px of gold every 8px down a button the height of the text it
-   stands beside. The middle one is the button's own background and the outer two
-   are laid over it, so each of the three is its own line and can be moved on its
-   own — which is what folds them into the cross that shuts the drop again. */
+/* Three bars: the middle one is the button's own background and the outer two
+   are pseudo-elements laid over it, so each can move on its own — which is
+   what folds them into the cross that shuts the drop again. */
 .topbar-menu {
     position: relative;
     width: 24px;
@@ -141,8 +90,6 @@
     background: linear-gradient(var(--gold), var(--gold)) center / 100% 2px
         no-repeat;
     filter: drop-shadow(0 1px 1px var(--outline));
-    /* The middle line is drawn back in from the middle out, and only once the
-       cross has come apart again. */
     transition:
         background-size 130ms ease-out 120ms,
         filter 150ms ease-out;
@@ -156,11 +103,9 @@
     right: 0;
     height: 2px;
     background: var(--gold);
-    /* Moved and then turned rather than both at once, which is what a pair of
-       bars folding into a cross reads as: they come onto the middle line first
-       and turn on it after. Shutting is the same the other way about — the cross
-       unfolds where it stands and the bars go back to their own lines after,
-       since the state being moved to is the one carrying the timing. */
+    /* Onto the middle line first and turned on it after; shutting runs the
+       same the other way about, since the state being moved to is the one
+       carrying the timing. */
     transition:
         translate 150ms ease-in-out 130ms,
         rotate 150ms ease-in-out;
@@ -174,10 +119,6 @@
     bottom: 0;
 }
 
-/* Lit while the drawer is down, and folded into the cross that shuts it: the bars
-   are the handle the menu is held open by, so they say as much (see
-   `TopBar.tsx`). The middle line goes as the other two come in on it — three
-   bars laid over one another would only read as a thick one. */
 .topbar-menu[aria-expanded='true'] {
     background-size: 0% 2px;
     filter: drop-shadow(0 1px 1px var(--outline))
@@ -187,8 +128,7 @@
         filter 150ms ease-out;
 }
 
-/* 8px is half the 16px between the outer two, so both land on the middle line,
-   and they turn opposite ways on it. */
+/* 8px is half the 16px between the outer two, so both land on the middle line. */
 .topbar-menu[aria-expanded='true']::before,
 .topbar-menu[aria-expanded='true']::after {
     translate: 0 8px;
@@ -226,9 +166,6 @@
     font-size: 15px;
 }
 
-/* The one place the overlay wears the game's own face, which is loaded with the
-   art and named on `#ui` as the overlay is mounted (see `ui.controller.tsx`):
-   the name is the machine's lettering rather than a reading off it. */
 .topbar-title {
     font-family: var(--game-font), serif;
     font-size: 24px;
@@ -236,10 +173,8 @@
     text-transform: uppercase;
 }
 
-/* The gold the game's text is filled with, as a gradient rather than the
-   texture itself: a flat fill would be the one thing on screen that is not
-   metal. The shadow is a filter rather than a text shadow, which would show
-   through the glyphs the gradient is clipped to. */
+/* The shadow is a filter rather than a text shadow, which would show through
+   the glyphs the gradient is clipped to. */
 .gold {
     background: linear-gradient(
         180deg,
@@ -252,37 +187,20 @@
     filter: drop-shadow(0 1px 1px var(--outline));
 }
 
-/* What is laid over the game while the menu is down: it takes back the pointers
-   the overlay otherwise passes through, so the reels cannot be played from behind
-   the drop and a click anywhere off it shuts it instead. Clear, so the game is
-   left lit behind a drawer that is only hanging off the bar, and the one thing the
-   keys are held off the machine by while it is open (see
-   `keyboard.controller.ts`). */
+/* Takes back the pointers the overlay passes through, so a click anywhere off
+   what is open shuts it instead of playing the reels. Also what holds the
+   keys off the machine (see `keyboard.controller.ts`). */
 .veil {
     position: fixed;
     inset: 0;
     pointer-events: auto;
 }
 
-/* The menu is not a sheet over the game but a drawer out of the bar: hung off the
-   bar's bottom edge and cut to the bar itself, whatever the bar is sized at. It is
-   laid beside the bar rather than inside it, on the mount the two of them share
-   (see `.hud`), and that mount is what an absolute box inside it measures against,
-   so nothing here has to be told how wide the machine was drawn.
-
-   What the drawer holds is what is set rather than what is read: the sound, the way
-   the game is drawn, and the balance let down inside it (see `.menu-section`). The
-   rules are the one thing off it — they are read at length, and a drawer as narrow
-   as the reels is no place for that, so they are opened over the game on a sheet of
-   their own (see `.rules`). */
 .menu {
     position: absolute;
     top: calc(100% + 8px);
-    /* Squared up with the bar and cut to it, rather than to anything on it or to
-       a width of its own: both edges are held to the bar's, and the 1px pulls the
-       drop's own frame out over it, so the two read as the one line down each side
-       of the machine. Its padding is the bar's as well, so what it stands down is
-       lettered under what opens it. */
+    /* Held to the bar's edges; the 1px pulls the drop's frame out over the
+       bar's, so the two read as one line down each side. */
     left: -1px;
     right: -1px;
     box-sizing: border-box;
@@ -290,31 +208,18 @@
     gap: 18px;
     padding: 16px 14px 18px;
     pointer-events: auto;
-    /* Cut from the same pane as the bar (see `.glass`), so the drop reads as a
-       piece of the same machine: the game is blurred behind the whole of it, and
-       the reels go on turning under the drawer as light on it. Rounded on all four
-       corners, where the bar is only rounded where it leaves the top edge. */
     border-radius: 12px;
-    /* Slid down out of the bar: the drawer sits above where it will come to rest
-       and is clipped to the slot it comes out of, so what has yet to be let down
-       is not drawn over the bar on its way past. The top of that clip travels
-       with it, which holds the drop's own top edge still on screen while the
-       rest of it runs down — the game is uncovered from the bar downwards rather
-       than a whole sheet sliding into place.
-
-       Shut, it is hidden as well as clear, which takes it off the keyboard and
-       out of what is read out along with it. `visibility` cannot be part-way
-       between the two, so it turns at the near end of whichever move it is in:
-       on at once as the drawer comes down, off only once it is back up.
-
-       The clip is let out past every edge once the drop is down, since the frame
-       is what the box ends at and the shadow it throws is outside that. */
+    /* Slid down out of the bar, clipped to the slot it comes out of, so what
+       has yet to be let down is not drawn over the bar on its way past. Shut,
+       it is hidden as well as clear, which takes it off the keyboard;
+       `visibility` cannot be part-way, so it turns at the near end of
+       whichever move it is in. The clip is let out past every edge once down,
+       since the shadow falls outside the frame. */
     transform: translateY(-14px);
     clip-path: inset(14px -40px 100% -40px);
     opacity: 0;
     visibility: hidden;
-    /* A state carries the move onto it, so this is the shutting: quicker than the
-       opening, and out of the way rather than dwelt on. */
+    /* The state carries the move: shutting is the quicker of the two. */
     transition:
         transform 140ms ease-in,
         clip-path 140ms ease-in,
@@ -322,8 +227,6 @@
         visibility 140ms;
 }
 
-/* The opening, which is the longer of the two: it runs out quickly and settles
-   over the last of it, the way a drawer let down under its own weight does. */
 .menu-open {
     transform: none;
     clip-path: inset(-40px -40px -40px -40px);
@@ -345,21 +248,14 @@
     width: 100%;
 }
 
-/* The size the chevron is read at; the label sets its own. */
 .menu-entry {
     font-size: 21px;
 }
 
-/* An entry and the section it stands down, as the one row of the menu: the gap
-   the drop spaces its rows by is around the fold and not inside it, so a section
-   that is shut leaves no room behind it. */
 .menu-fold {
     display: grid;
 }
 
-/* Lying on its side while the section is shut, and turned down onto it once it is
-   open: the one glyph says both which way the section goes and which way it is
-   standing at the moment. */
 .menu-chevron {
     /* A span is not turned about its middle until it is a box of its own. */
     display: inline-block;
@@ -370,10 +266,8 @@
     rotate: 90deg;
 }
 
-/* Shut to nothing and let out to its own height: what moves is the row the section
-   is laid in, from none of its content's height to all of it. Hidden while it is
-   shut, so a section nobody has asked for is off the keyboard and out of what is
-   read out, the way the shut drop itself is. */
+/* Shut to nothing and let out to its own height. Hidden while shut, so a
+   section nobody asked for is off the keyboard. */
 .menu-section {
     display: grid;
     grid-template-rows: 0fr;
@@ -391,17 +285,13 @@
         visibility 0s;
 }
 
-/* The section is clipped to the row rather than sizing it, which is what lets the
-   row shut past what is on it: a box that hides its own overflow can be given less
-   room than its content needs, and a box that does not cannot — the row would stop
-   at the height of whatever is standing in it. */
+/* The clip is what lets the row shut past its content: a box that hides its
+   own overflow can be given less room than its content needs. */
 .menu-section-body {
     overflow: hidden;
 }
 
-/* What holds the content clear of the entry it hangs off, from inside the clip
-   rather than around it: the space is let down and taken back up with the section,
-   so a section shut leaves nothing behind, not even the room it was held off by. */
+/* Inside the clip, so a shut section leaves no room behind. */
 .menu-section-body > * {
     margin-top: 14px;
 }
@@ -413,8 +303,6 @@
     color: var(--gold-dim);
 }
 
-/* Reads out where the sound stands rather than what pressing does, the way a
-   switch on the cabinet would be lettered. */
 .menu-switch {
     min-width: 56px;
     padding: 5px 14px;
@@ -424,7 +312,6 @@
     border-radius: 999px;
 }
 
-/* Off reads as off: the metal goes out of the word. */
 .menu-switch[aria-checked='false'] {
     background: none;
     color: var(--gold-dim);
@@ -443,8 +330,6 @@
 
 .volume {
     display: grid;
-    /* The label column holds the longest of them (`Effects`) at the size and
-       tracking below, and the figure column `100%`; the groove takes the rest. */
     grid-template-columns: 66px 1fr 42px;
     align-items: center;
     gap: 14px;
@@ -455,21 +340,13 @@
     text-align: right;
 }
 
-/* The volume sliders, in the DOM: hot metal run along a groove as far as the
-   handle, and the handle itself a coin on its edge. */
 .volume-range {
-    /* The coin, and the groove it is run along: the track itself is the groove,
-       cut only as deep as one and rounded off at both ends, and the coin is laid
-       over it. The control keeps the coin's height whatever the groove is cut to,
-       so the row is as tall as the handle and the whole of it can be dragged. */
     --coin: 22px;
     --groove: 6px;
-    /* Where the gold gives out: under the middle of the coin. The coin's middle
-       only travels from half a coin in to half a coin off the far end, so a
-       straight percentage of the groove would run ahead of the handle at one
-       end and trail it at the other. `--filled` is the share of the way along,
-       written on by the component, since a track has no way of reading the
-       value it belongs to. */
+    /* The coin's middle only travels from half a coin in to half a coin off
+       the far end, so a straight percentage of the groove would run ahead of
+       the handle at one end and trail it at the other. `--filled` is written
+       on by the component, since a track cannot read the value it belongs to. */
     --gold-to: calc(var(--filled, 0) * (100% - var(--coin)) + var(--coin) / 2);
     -webkit-appearance: none;
     appearance: none;
@@ -482,9 +359,8 @@
     cursor: pointer;
 }
 
-/* One rule each, and never the two in a selector list: a browser drops the
-   whole list over the prefix it does not know, so grouping them would leave
-   both of them with a plain track. */
+/* One rule each, never the two in a selector list: a browser drops the whole
+   list over the prefix it does not know. */
 .volume-range::-webkit-slider-runnable-track {
     height: var(--groove);
     border-radius: 999px;
@@ -505,10 +381,8 @@
     );
 }
 
-/* Sized to the border rather than inside it, so the coin measures the `--coin`
-   it is laid on. Webkit hangs the coin off the top of the groove, so half the
-   difference between the two is taken back off it and the coin is left sitting on
-   the middle of the line; Firefox centres its own on the track and is left to. */
+/* Webkit hangs the thumb off the top of the groove, so half the difference is
+   taken back off it; Firefox centres its own and is left to. */
 .volume-range::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
@@ -530,9 +404,6 @@
     background: var(--gold);
 }
 
-/* The figure and the button that hands it over, side by side and no wider than a
-   figure needs: the section is as wide as the bar, and a field run all the way
-   across one would be a lot of room for four digits. */
 .balance {
     display: grid;
     grid-template-columns: minmax(0, 200px) auto;
@@ -540,9 +411,6 @@
     gap: 12px;
 }
 
-/* Typed into rather than dragged, so it is the one thing on the overlay dressed
-   as a field: the pit the slider runs in, opened out to hold a figure. The
-   arrows a number field comes with are the browser's own and are taken off. */
 .balance-field {
     -webkit-appearance: textfield;
     appearance: textfield;
@@ -561,14 +429,11 @@
     border-radius: 8px;
 }
 
-/* The field opens with its figure selected, and that lit selection is mark
-   enough of where the keyboard is: no ring drawn around it on top. */
+/* The opening selection is mark enough of where the keyboard is. */
 .balance-field:focus {
     outline: none;
 }
 
-/* The section opens with the figure taken, ready to be typed over, so this is the
-   first thing it shows: the last of the browser's blue, out. */
 .balance-field::selection {
     color: var(--gold-light);
     background: var(--gold-dark);
@@ -579,8 +444,6 @@
     appearance: none;
 }
 
-/* The one control on the overlay that does something rather than set something,
-   so it is the one dressed as a pannel of its own. */
 .balance-apply {
     padding: 12px 16px;
     font-size: 17px;
@@ -595,38 +458,21 @@
     border-radius: 8px;
 }
 
-/* The rules on a sheet of their own, over the game rather than let down inside the
-   drawer: they are the one thing the overlay shows that is read at length rather
-   than set, and the drawer is cut to the reels, which is too narrow a column to
-   read a document down. So this is the one thing the overlay opens over the
-   machine, and it is given all but the last per cent of the screen both ways.
-
-   Fixed to the screen and laid beside the mount the bar and its drawer hang off
-   rather than on it (see `.hud`): that mount is the width the reels measure, and
-   this is the one sheet in the game not cut to them. Cut from the same pane as the
-   two of them all the same (see `.glass`), so it reads as a piece of the same
-   machine: the game is blurred behind the whole of it and goes on turning under the
-   rules as light on them.
-
-   `dvh` and `dvw` rather than `vh` and `vw`: a phone's address bar comes and goes,
-   and the sheet is held to the screen the game is actually being shown on rather
-   than to the tallest that screen ever gets. */
+/* The one sheet the overlay opens over the machine, given all but the last
+   per cent of the screen both ways. `dvh`/`dvw` rather than `vh`/`vw`: a
+   phone's address bar comes and goes. */
 .rules {
     position: fixed;
-    /* The last per cent of the screen, left at either edge: 98% each way. */
     inset: 1dvh 1dvw;
     box-sizing: border-box;
     display: grid;
-    /* The head, then the document under it: the title and the way out keep their
-       own height and the body is handed the whole of what is left. Never less than
-       none of it — the body is what scrolls, and a row that cannot shrink past its
-       content would push the bottom of the sheet off the screen instead. */
+    /* The body is what scrolls; a row that cannot shrink past its content
+       would push the bottom of the sheet off the screen instead. */
     grid-template-rows: auto minmax(0, 1fr);
     gap: 18px;
     padding: 16px 22px 22px;
     pointer-events: auto;
     border-radius: 14px;
-    /* Up off the bar it was opened from. */
     animation: rules-rise 200ms ease-out both;
 }
 
@@ -650,44 +496,25 @@
     line-height: 1;
 }
 
-/* The document itself, scrolled inside whatever height the head leaves it: the
-   sheet is as tall as the screen, and there is still more to read than that holds.
-
-   Held to a measure and stood down the middle of the sheet rather than run the
-   width of it: the screen is given to the sheet so that the paytable and its
-   symbols are read at a glance instead of a line at a time, not so that a sentence
-   is dragged the length of a monitor — a line much past eighty characters loses the
-   eye on its way back to the left edge. */
+/* Held to a measure down the middle of the sheet: a line much past eighty
+   characters loses the eye on its way back to the left edge. */
 .rules-body {
     justify-self: center;
     box-sizing: border-box;
     width: 100%;
     max-width: 80ch;
     overflow-y: auto;
-    /* Off the scrollbar, which is laid over the text rather than beside it. */
     padding-right: 12px;
-    /* The one place the overlay steps out of the game's palette. Everywhere else
-       a figure is glanced at in gold; this is paragraphs read through, so it is
-       set in the plainest white there is.
-
-       Read at the size the sheet is opened at: the measure above is counted in
-       characters, so the type and the column it is set in grow together and the
-       document is a page of the sheet at any screen rather than the same small
-       print in the middle of a bigger and bigger one. The floor is what it was
-       read at on the drawer, for a phone, and the ceiling is as large as running
-       text wants to be. */
+    /* The measure is in characters, so type and column grow together. */
     font-size: clamp(15px, 0.55dvw + 8px, 19px);
     line-height: 1.6;
     color: #fff;
-    /* The overlay is not for selecting, but a rule being quoted to somebody is
-       the one thing on it worth copying. */
     user-select: text;
     scrollbar-width: thin;
     scrollbar-color: var(--frame) transparent;
 }
 
-/* The sheet is already titled `Game rules`, so the document's own first heading
-   would be the same words twice over. */
+/* The sheet is already titled; the document's first heading would repeat it. */
 .rules-body h1 {
     display: none;
 }
@@ -710,18 +537,12 @@
     color: var(--gold);
 }
 
-/* A symbol wherever the document names one: the sheet cuts its face out of the
-   art the reels are drawn from and stands it in the name's place (see
-   `Rules.tsx`). Sized off the text it is set in rather than in pixels, so it
-   holds its place in the line whatever the document is read at. */
+/* Sized off the text, so it keeps its place at any reading size. */
 .rules-body .symbol {
     height: 3.6em;
     vertical-align: middle;
 }
 
-/* The paytable and the payline, dressed as the pannels the same figures are
-   read off on the machine: a gold rule under the heading row, and nothing
-   boxing the figures in. */
 .rules-body table {
     width: 100%;
     margin: 0 0 12px;
@@ -744,10 +565,6 @@
     border-bottom: 1px solid var(--frame-glow);
 }
 
-/* Comes down with the canvas, which fades in as it is added to the page. The drop
-   and nothing else: the bar is centred by the mount it hangs off rather than by a
-   transform of its own (see `.hud`), so there is nothing here to hold in place on
-   the way down and nothing left standing on the bar once it has landed. */
 @keyframes topbar-drop {
     from {
         opacity: 0;
@@ -759,9 +576,6 @@
     }
 }
 
-/* Up off the bar the sheet was opened from, and only the last of the way: it is all
-   but the whole screen, and a sheet that size sliding any distance reads as the page
-   moving rather than as a sheet coming up over it. */
 @keyframes rules-rise {
     from {
         opacity: 0;
@@ -773,11 +587,7 @@
     }
 }
 
-/* The name is the first thing to go once the screen is narrow enough for the bar
-   to run out of room: the balance and the clocks are read while the game is
-   played, and the game the player opened is not something they need telling. The
-   middle column goes with it, so the clocks keep the right edge rather than
-   being left sitting in the middle of the bar. */
+/* The name goes first; its column with it, so the clocks keep the right edge. */
 @media (width < 500px) {
     .topbar {
         grid-template-columns: 1fr auto;
@@ -788,10 +598,7 @@
     }
 }
 
-/* Asked for as little seen through as can be managed: the glass keeps its gloss
-   and its edges, so the UI is dressed the way the rest of the game is, but nothing
-   is read through it any more — the blur goes, and the darkest the palette has is
-   laid under the tint to shut the game out from behind it. */
+/* The blur goes; the darkest of the palette shuts the game out behind it. */
 @media (prefers-reduced-transparency: reduce) {
     .glass {
         --pane: none;
@@ -805,11 +612,7 @@
         animation: none;
     }
 
-    /* Everything is still shut or open, hidden or shown — it is only the moving
-       between the two that goes: the drawer's run down, the bars folding into the
-       cross, and the sections letting themselves out. The button and its bars are
-       matched on the attribute rather than on the value of it, since the state
-       they are turned by is written the same way (see `.topbar-menu`). */
+    /* Matched on the attribute, since both states write it. */
     .menu,
     .menu-open,
     .menu-chevron,

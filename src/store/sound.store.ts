@@ -10,9 +10,7 @@ interface SoundStore {
     setVolume: (channel: SoundChannel, volume: number) => void;
 }
 
-// What the player has done to the sound, which everything is played through
-// (see `sound.controller.ts`). Kept between sessions like the money is: a game
-// turned down opens turned down rather than blaring again.
+// Kept between sessions: a game turned down opens turned down.
 export const soundStore = createStore<SoundStore>()(
     persist(
         (set) => ({

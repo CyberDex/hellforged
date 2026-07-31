@@ -14,11 +14,9 @@ export class BG extends Sprite {
         this.shade();
     }
 
-    // The burn is a pass over the whole of the background on every frame, and the
-    // one thing the game draws that a machine can be spared without losing
-    // anything it is played with. Off means the filter is taken away rather than
-    // turned down: nothing of the shader is run. Built the first time it is asked
-    // for, so a game opened with it off never even compiles it.
+    // Off takes the filter away rather than turning it down: nothing of the
+    // shader runs, and it is built on first ask, so a game opened with it off
+    // never even compiles it.
     private shade() {
         if (!graphicsStore.getState().shader) {
             this.filters = [];

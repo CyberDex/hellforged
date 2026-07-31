@@ -1,11 +1,8 @@
 import { Container, Sprite, Texture, Ticker, type PointData } from 'pixi.js';
 import { visuals } from 'config/visual.settings';
 
-// How a coin flies, as configured: the throw, the fall and the flip of it.
 const physics = visuals.coins;
 
-// A coin in the air: what is drawn, where it is going, how big it is drawn and
-// how far through its flip and its flight it is.
 type Coin = {
     sprite: Sprite;
     vx: number;
@@ -16,15 +13,11 @@ type Coin = {
     life: number;
 };
 
-// The coins a big win throws off the figure it is counting up to. Nothing is
-// pooled or capped: a coin is only ever in the air for its life, so the shower
-// can only be as thick as the count that drops them is fast.
+// Nothing is pooled or capped: a coin is only ever in the air for its life,
+// so the shower can only be as thick as the count that drops them is fast.
 export class CoinShower extends Container {
     #coins: Coin[] = [];
 
-    // One coin thrown up out of the given point, which is the caller's to
-    // choose: the win drops one for every figure it climbs through, so the
-    // shower comes out of the number wherever it is being read.
     drop({ x, y }: PointData) {
         const size = physics.size * (1 + Math.random());
         const sprite = new Sprite({
@@ -50,12 +43,9 @@ export class CoinShower extends Container {
             life: physics.life,
         });
 
-        // The fall runs for as long as there is anything falling.
         if (this.#coins.length === 1) Ticker.shared.add(this.fall, this);
     }
 
-    // Whatever is still in the air when the win it belongs to comes down goes
-    // with it, rather than falling on over whatever is announced next.
     clear() {
         Ticker.shared.remove(this.fall, this);
 
@@ -83,8 +73,8 @@ export class CoinShower extends Container {
 
             sprite.x += coin.vx * seconds;
             sprite.y += coin.vy * seconds;
-            // A coin spins about its own upright rather than rolling over, so
-            // its face turns away to an edge and comes back.
+            // Spins about its own upright rather than rolling over, so the
+            // face turns away to an edge and comes back.
             sprite.scale.x = coin.size * Math.cos(coin.flip * Math.PI * 2);
             sprite.alpha = Math.min(coin.life / physics.fade, 1);
 

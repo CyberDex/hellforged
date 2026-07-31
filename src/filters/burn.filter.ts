@@ -31,8 +31,7 @@ float noise(vec2 p) {
     );
 }
 
-// Three octaves of noise, stretched vertically and scrolling up, so the
-// pattern reads as heat rising rather than as static grain.
+// Three octaves, stretched vertically and scrolling up: heat rising.
 float flame(vec2 uv, float scale, float speed) {
     vec2 p = vec2(uv.x * scale, uv.y * scale * 0.5 + uTime * speed);
 
@@ -49,7 +48,7 @@ void main(void) {
     // Everything builds towards the bottom, as if the fire were down there.
     float heat = mix(0.3, 1.0, uv.y);
 
-    // Melt: sag the picture along the noise instead of redrawing it.
+    // Melt: sag the picture along the noise.
     vec2 melt = vec2(slow - 0.5, fast - 0.5) * 0.012 * heat * uIntensity;
     vec2 coord = clamp(vTextureCoord + melt, uInputClamp.xy, uInputClamp.zw);
     vec4 color = texture(uTexture, coord);
@@ -57,7 +56,7 @@ void main(void) {
     // Char: soot where the noise thins out.
     color.rgb *= 1.0 - 0.35 * smoothstep(0.5, 0.15, fast) * heat * uIntensity;
 
-    // Embers: warm glow pooling low down, flickering as the noise drifts.
+    // Embers: warm glow pooling low down.
     float ember = smoothstep(0.35, 0.9, slow * fast * 2.6) * pow(uv.y, 1.5);
     float flicker = 0.8 + 0.2 * sin(uTime * 3.7 + slow * 20.0);
     vec3 fire = mix(vec3(0.9, 0.25, 0.05), vec3(1.0, 0.7, 0.25), ember);
@@ -68,11 +67,7 @@ void main(void) {
 }
 `;
 
-/**
- * Smouldering atmosphere: the image stays readable, it just wobbles like it is
- * melting and glows in patches like it is burning. Animates itself off the
- * shared ticker, so it only needs assigning to `filters`.
- */
+// Self-animating off the shared ticker; just assign it to `filters`.
 export class BurnFilter extends Filter {
     #uniforms: UniformGroup;
 
