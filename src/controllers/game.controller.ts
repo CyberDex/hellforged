@@ -55,13 +55,42 @@ class GameController {
         return state === 'idle' && balance >= settings.minBet;
     }
 
-    // Dev only: hands the next spin the grid it has to land on.
-    // TODO: wrap with conditional compiler check to exclude from production builds.
-    cheat(grid: string[][]) {
-        if (!this.canSpin) return;
+    async spin() {
+        if (this.state !== 'idle') return;
 
-        API.force(grid);
-        this.spin();
+        const { balance, bet, setBalance, setResult } = gameStore.getState();
+
+        if (balance < bet) return;
+
+        setBalance(balance - bet);
+        setResult(null, 0);
+
+        this.setState('spin');
+        this.#reels?.spin();
+
+        const asked = performance.now();
+        const outcome = await API.spin(bet);
+        // Stops are anchored to the press: a slow answer stops the first reel
+        // at once and keeps the others their delay apart behind it.
+        const elapsed = Math.min(
+            performance.now() - asked,
+            settings.spinDuration,
+        );
+
+        this.#win = outcome.win;
+        this.#symbols = outcome.grid;
+        this.#positions = outcome.wins.flatMap(({ positions }) => positions);
+        this.#landed = 0;
+        this.#anticipation = outcome.anticipation;
+
+        // On the game's own clock, not the wall's: a backgrounded spin holds
+        // with the frames and lands its reels apart, not in a heap on return.
+        for (let index = 0; index < definition.strips.length; index++) {
+            tween.run({
+                duration: this.stopDelay(index) - elapsed,
+                onComplete: () => this.#reels?.stop(index, outcome.grid[index]),
+            });
+        }
     }
 
     updateBalance(balance: number) {
@@ -175,44 +204,6 @@ class GameController {
         );
 
         if (bet > betSlider.max) betSlider.value = betSlider.max;
-    }
-
-    private async spin() {
-        if (this.state !== 'idle') return;
-
-        const { balance, bet, setBalance, setResult } = gameStore.getState();
-
-        if (balance < bet) return;
-
-        setBalance(balance - bet);
-        setResult(null, 0);
-
-        this.setState('spin');
-        this.#reels?.spin();
-
-        const asked = performance.now();
-        const outcome = await API.spin(bet);
-        // Stops are anchored to the press: a slow answer stops the first reel
-        // at once and keeps the others their delay apart behind it.
-        const elapsed = Math.min(
-            performance.now() - asked,
-            settings.spinDuration,
-        );
-
-        this.#win = outcome.win;
-        this.#symbols = outcome.grid;
-        this.#positions = outcome.wins.flatMap(({ positions }) => positions);
-        this.#landed = 0;
-        this.#anticipation = outcome.anticipation;
-
-        // On the game's own clock, not the wall's: a backgrounded spin holds
-        // with the frames and lands its reels apart, not in a heap on return.
-        for (let index = 0; index < definition.strips.length; index++) {
-            tween.run({
-                duration: this.stopDelay(index) - elapsed,
-                onComplete: () => this.#reels?.stop(index, outcome.grid[index]),
-            });
-        }
     }
 
     private stopDelay(index: number) {

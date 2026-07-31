@@ -4,6 +4,7 @@ import { gameName } from 'config/game.name';
 import { definition, symbols } from 'config/game.definition';
 import { rollGrid } from 'engine/engine';
 import { gameStore } from 'store/game.store';
+import { API } from './api.controller';
 import { app } from './app.controller';
 import { game } from './game.controller';
 
@@ -116,7 +117,7 @@ class DevToolsController {
             for (const { count, payout } of this.wins(symbol)) {
                 folder
                     .addButton({ title: `${symbol} ${count} ×${payout}` })
-                    .on('click', () => game.cheat(this.grid(symbol, count)));
+                    .on('click', () => this.cheat(this.grid(symbol, count)));
             }
         }
 
@@ -124,6 +125,15 @@ class DevToolsController {
 
         follow();
         gameStore.subscribe(follow);
+    }
+
+    // Hands the next spin the grid it has to land on. Guarded, or a press
+    // the game cannot take would leave the grid queued for an honest spin.
+    private cheat(grid: string[][]) {
+        if (!game.canSpin) return;
+
+        API.force(grid);
+        game.spin();
     }
 
     // Shortest first; lengths the machine has no reels for are left off.
