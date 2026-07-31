@@ -6,19 +6,21 @@ import { UPDATE_PRIORITY } from 'pixi.js';
 // call the returned sampler after the render — behind UPDATE_PRIORITY.LOW —
 // and `work` is the CPU time of the frame just gone, `frame` the wall clock
 // since the one before.
-export const timeFrames = (ticker: Ticker) => {
+export function timeFrames(ticker: Ticker) {
     let start = performance.now();
 
     ticker.add(
-        () => {
+        function startFrame() {
             start = performance.now();
         },
         undefined,
         UPDATE_PRIORITY.INTERACTION,
     );
 
-    return () => ({
-        work: performance.now() - start,
-        frame: ticker.elapsedMS,
-    });
-};
+    return function sampleFrame() {
+        return {
+            work: performance.now() - start,
+            frame: ticker.elapsedMS,
+        };
+    };
+}
