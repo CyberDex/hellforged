@@ -1,4 +1,5 @@
 import { definition } from 'config/game.definition';
+import { settings } from 'config/game.settings';
 import { spin } from 'engine/engine';
 import type { SpinResult } from 'engine/engine';
 
@@ -12,10 +13,16 @@ class BackendController {
         this.#forced = grid;
     }
 
-    spin(bet: number): SpinResult {
+    async spin(bet: number): Promise<SpinResult> {
         const forced = this.#forced;
 
         this.#forced = null;
+
+        // The round trip a real server would take: the reels are already
+        // turning before the outcome is known.
+        await new Promise((resolve) =>
+            setTimeout(resolve, settings.responseTime),
+        );
 
         return spin(definition, bet, forced ?? undefined);
     }

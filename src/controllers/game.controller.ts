@@ -2,6 +2,7 @@ import { settings } from 'config/game.settings';
 import { definition } from 'config/game.definition';
 import { backend } from './backend.controller';
 import { sound } from './sound.controller';
+import { tween } from './tween.controller';
 import { gameStore } from 'store/game.store';
 import type { GameState } from 'store/game.store';
 import type { Position, SpinResult } from 'engine/engine';
@@ -165,7 +166,7 @@ class GameController {
         if (bet > betSlider.max) betSlider.value = betSlider.max;
     }
 
-    private spin() {
+    private async spin() {
         if (this.state !== 'idle') return;
 
         const { balance, bet, setBalance, setResult } = gameStore.getState();
@@ -175,23 +176,31 @@ class GameController {
         setBalance(balance - bet);
         setResult(null, 0);
 
-        // The spin is decided in full before a reel has moved; the reels are
-        // only asked to play the outcome back.
-        const outcome = backend.spin(bet);
+        this.setState('spin');
+        this.#reels?.spin();
+
+        const asked = performance.now();
+        const outcome = await backend.spin(bet);
+        // Stops are anchored to the press: a slow answer stops the first reel
+        // at once and keeps the others their delay apart behind it.
+        const elapsed = Math.min(
+            performance.now() - asked,
+            settings.spinDuration,
+        );
 
         this.#win = outcome.win;
         this.#symbols = outcome.grid;
         this.#positions = outcome.wins.flatMap(({ positions }) => positions);
         this.#landed = 0;
         this.#anticipation = outcome.anticipation;
-        this.setState('spin');
-        this.#reels?.spin();
 
+        // On the game's own clock, not the wall's: a backgrounded spin holds
+        // with the frames and lands its reels apart, not in a heap on return.
         for (let index = 0; index < definition.strips.length; index++) {
-            setTimeout(
-                () => this.#reels?.stop(index, outcome.grid[index]),
-                this.stopDelay(index),
-            );
+            tween.run({
+                duration: this.stopDelay(index) - elapsed,
+                onComplete: () => this.#reels?.stop(index, outcome.grid[index]),
+            });
         }
     }
 
@@ -239,7 +248,12 @@ class GameController {
         this.#reels?.highlight(this.#positions);
         this.setState('reveal');
 
-        setTimeout(() => this.setState('idle'), this.revealDuration);
+        // On the game's clock like the stops, so a backgrounded reveal waits
+        // to be watched rather than timing out unseen.
+        tween.run({
+            duration: this.revealDuration,
+            onComplete: () => this.setState('idle'),
+        });
     }
 
     // The win decides the stage, not the symbols.

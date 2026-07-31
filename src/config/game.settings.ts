@@ -29,6 +29,8 @@ export const settings = {
     bounceDistance: 0.15,
     bounceDuration: 220,
     bounceDown: 0.4,
+    // Stand-in server latency, ms; the reels already turn while it thinks.
+    responseTime: 300,
     spinDuration: 500,
     reelStopDelay: 550,
     // A payline that can still fill holds its last reel this many times

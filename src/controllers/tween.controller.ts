@@ -7,7 +7,7 @@ export type Tween = {
 
 export type Tweening = {
     duration: number;
-    onUpdate: (value: number) => void;
+    onUpdate?: (value: number) => void;
     from?: number;
     to?: number;
     ease?: (progress: number) => number;
@@ -20,7 +20,7 @@ type Running = {
     from: number;
     to: number;
     ease: (progress: number) => number;
-    onUpdate: (value: number) => void;
+    onUpdate?: (value: number) => void;
     onComplete?: () => void;
     elapsed: number;
     stopped: boolean;
@@ -85,7 +85,7 @@ class TweenController {
 
             const progress = Math.min(running.elapsed / running.duration, 1);
 
-            running.onUpdate(from + (to - from) * running.ease(progress));
+            running.onUpdate?.(from + (to - from) * running.ease(progress));
 
             if (progress < 1) continue;
 
