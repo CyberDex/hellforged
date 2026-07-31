@@ -1,5 +1,5 @@
 import { createStore } from 'zustand/vanilla';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { gmeSettings } from 'config/game.settings';
 import { gameState } from './game.store';
 import type { GameStore } from './game.store';
@@ -60,5 +60,26 @@ describe('game spin transactions', () => {
         settleSpin();
 
         expect(store.getState().balance).toBe(550);
+    });
+
+    it('refunds an unresolved stake onto a balance updated during the spin', () => {
+        const store = createTestStore();
+        const { startSpin, settleSpin, setBalance } = store.getState();
+
+        startSpin(100);
+        setBalance(500);
+        settleSpin();
+
+        expect(store.getState().balance).toBe(600);
+    });
+
+    it('does not update the store when there is no pending spin', () => {
+        const store = createTestStore();
+        const listener = vi.fn();
+
+        store.subscribe(listener);
+        store.getState().settleSpin();
+
+        expect(listener).not.toHaveBeenCalled();
     });
 });
