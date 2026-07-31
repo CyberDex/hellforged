@@ -28,7 +28,11 @@ export default tseslint.config(
                 // The stragglers tsconfig.json's `include` leaves out still
                 // get type information, from a default project of their own.
                 projectService: {
-                    allowDefaultProject: ['scripts/*.ts', 'vite.config.ts'],
+                    allowDefaultProject: [
+                        'scripts/*.ts',
+                        'vite.config.ts',
+                        'vitest.config.ts',
+                    ],
                 },
                 tsconfigRootDir: import.meta.dirname,
             },
