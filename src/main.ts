@@ -45,8 +45,8 @@ await mountUI({
     tween,
 });
 
-// Compiled out of a build, so Tweakpane is never shipped to the player.
-// TODO: this is available for git pages, uncomment lines before go to prod!!!
+// Kept in the GitHub Pages preview; restore this guard for a production build
+// so Tweakpane is not shipped to players.
 // if (import.meta.env.DEV) {
 const [
     { CheatsController },

@@ -51,6 +51,7 @@ const hints = {
 export class DevToolsController {
     readonly #cheats: CheatsController;
     readonly #renderingPerformance: RenderingPerformanceController;
+    readonly #hidePopup = () => this.hide();
     #popup?: HTMLDivElement;
 
     constructor(
@@ -62,6 +63,8 @@ export class DevToolsController {
     }
 
     init() {
+        if (this.#popup) return;
+
         this.#popup = document.createElement('div');
 
         const container = this.container();
@@ -194,7 +197,7 @@ export class DevToolsController {
         container.appendChild(popup);
 
         // A press anywhere else shuts it — the pane's own title bar too.
-        window.addEventListener('pointerdown', () => this.hide());
+        window.addEventListener('pointerdown', this.#hidePopup);
     }
 
     private hide() {
