@@ -1,7 +1,7 @@
 import { Container, Rectangle } from 'pixi.js';
 import { visuals } from 'config/visual.settings';
 import { Reel } from './Reel';
-import type { Position } from 'engine/engine';
+import type { Position } from 'math/definition';
 
 const { reelGap } = visuals.machine;
 

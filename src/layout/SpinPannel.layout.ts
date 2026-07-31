@@ -1,7 +1,7 @@
 import '@pixi/layout';
 import { Layout } from '@pixi/layout';
 import { Sprite } from 'pixi.js';
-import { SpinButton } from './SpinButton';
+import { SpinButton } from './components/SpinButton';
 
 export class SpinPannel extends Layout {
     readonly button: SpinButton;

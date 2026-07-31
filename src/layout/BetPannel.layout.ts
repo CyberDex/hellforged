@@ -1,6 +1,6 @@
 import '@pixi/layout';
-import { BetSlider } from './BetSlider';
-import { Pannel } from './Pannel';
+import { BetSlider } from './components/BetSlider';
+import { Pannel } from './Pannel.layout';
 
 export class BetPannel extends Pannel {
     readonly slider: BetSlider;

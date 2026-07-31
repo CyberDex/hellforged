@@ -2,7 +2,7 @@ import '@pixi/layout';
 import { Layout } from '@pixi/layout';
 import { Container, Rectangle, Sprite } from 'pixi.js';
 import { visuals } from 'config/visual.settings';
-import type { Reels } from './Reels';
+import type { Reels } from './components/Reels';
 
 const { cabinetWindow, windowOverhang, windowCrop } = visuals.machine;
 
