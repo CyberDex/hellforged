@@ -2,12 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from 'zustand';
 import { gameTitle } from 'config/game.name';
 import { gmeSettings } from 'config/game.settings';
-import { tween } from 'controllers/tween.controller';
-import { gameStore } from 'store/game.store';
 import { Button } from 'ui/Button';
 import { Menu } from 'ui/Menu';
 import { Rules } from 'ui/Rules';
+import { useRuntime } from 'ui/Runtime';
 import { formatAmount } from 'utils/formatAmount';
+import type { TweenRunner } from 'controllers/contracts';
 
 // Only one open at a time; the rules sheet takes the drawer's place.
 type Open = 'menu' | 'balance' | 'rules';
@@ -30,9 +30,14 @@ function elapsed(ms: number) {
 }
 
 export function TopBar() {
+    const { gameStore, tween } = useRuntime();
     const balance = useStore(gameStore, (state) => state.balance);
     // The reading of the balance, never what anything is played with.
-    const counted = useCountUp(balance, gmeSettings.balanceCountDuration);
+    const counted = useCountUp(
+        balance,
+        gmeSettings.balanceCountDuration,
+        tween,
+    );
     // Only between spins: a running spin has had its stake taken already.
     const outOfFunds = useStore(
         gameStore,
@@ -118,7 +123,7 @@ export function TopBar() {
 
 // Counted to rather than printed, on the game's own clock. Opens on whatever
 // it is first handed: a restored session has nothing to count from.
-function useCountUp(target: number, duration: number) {
+function useCountUp(target: number, duration: number, tween: TweenRunner) {
     const [counted, setCounted] = useState(target);
     // Read back every frame, so a change mid-count carries on from the
     // on-screen figure rather than restarting.
@@ -140,7 +145,7 @@ function useCountUp(target: number, duration: number) {
         });
 
         return () => count.stop();
-    }, [target, duration]);
+    }, [target, duration, tween]);
 
     return counted;
 }

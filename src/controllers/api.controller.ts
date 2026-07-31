@@ -7,7 +7,7 @@ import type { SpinResult } from 'math/spin';
 // answering with the same `SpinResult`. The deciding itself lives in `math/`.
 // TODO: rewrite this to be DI controller to accept a real backend,
 //  and make the backend controller a thin wrapper around it.
-class ApiController {
+export class ApiController {
     #forced: string[][] | null = null;
 
     // Spent by the spin that follows: one press of a cheat is one spin.
@@ -29,5 +29,3 @@ class ApiController {
         return spin(gameDefinition, bet, forced ?? undefined);
     }
 }
-
-export const API = new ApiController();

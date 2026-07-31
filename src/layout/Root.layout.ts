@@ -1,7 +1,8 @@
 import '@pixi/layout';
 import { Layout } from '@pixi/layout';
-import { tween } from 'controllers/tween.controller';
-import type { Tween } from 'controllers/tween.controller';
+import type { StoreApi } from 'zustand/vanilla';
+import type { SoundPlayer, Tween, TweenRunner } from 'controllers/contracts';
+import type { GraphicsStore } from 'store/graphics.store';
 import type { SpinButton } from 'layout/components/SpinButton';
 import type { BetSlider } from 'layout/components/BetSlider';
 import { SpinPannel } from 'layout/SpinPannel.layout';
@@ -16,6 +17,7 @@ import { WinLayout } from 'layout/Win.layout';
 import { setDefaultTextStyle } from 'config/font.settings';
 
 export class RootLayout extends Layout {
+    readonly #tween: TweenRunner;
     readonly bg: BG;
     readonly spinButton: SpinButton;
     readonly betSlider: BetSlider;
@@ -29,16 +31,28 @@ export class RootLayout extends Layout {
     #zoom = 1;
     #growing?: Tween;
 
-    constructor() {
+    constructor({
+        graphicsStore,
+        sound,
+        tween,
+    }: {
+        graphicsStore: StoreApi<GraphicsStore>;
+        sound: SoundPlayer;
+        tween: TweenRunner;
+    }) {
         setDefaultTextStyle();
 
-        const bg = new BG();
-        const buttonSpin = new SpinPannel();
-        const betPannel = new BetPannel();
+        const bg = new BG(graphicsStore);
+        const buttonSpin = new SpinPannel(sound, tween);
+        const betPannel = new BetPannel(sound);
         const winPannel = new WinPannel();
-        const reels = new Reels(gameDefinition.strips, gameDefinition.rows);
+        const reels = new Reels(
+            gameDefinition.strips,
+            gameDefinition.rows,
+            tween,
+        );
         const slotMachine = new SlotMachine(reels);
-        const winLayout = new WinLayout();
+        const winLayout = new WinLayout(sound, tween);
 
         super({
             content: {
@@ -77,6 +91,7 @@ export class RootLayout extends Layout {
         });
 
         this.bg = bg;
+        this.#tween = tween;
         this.spinButton = buttonSpin.button;
         this.betSlider = betPannel.slider;
         this.betPannel = betPannel;
@@ -95,7 +110,7 @@ export class RootLayout extends Layout {
 
     zoom(duration: number) {
         this.#growing?.stop();
-        this.#growing = tween.run({
+        this.#growing = this.#tween.run({
             duration,
             from: 1,
             to: gmeSettings.anticipationZoom,

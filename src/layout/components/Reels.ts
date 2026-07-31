@@ -1,6 +1,7 @@
 import { Container, Rectangle } from 'pixi.js';
 import { settingsVisual } from 'config/visual.settings';
 import { Reel } from './Reel';
+import type { TweenRunner } from 'controllers/contracts';
 import type { Position } from 'math/definition';
 
 const { reelGap } = settingsVisual.machine;
@@ -9,11 +10,11 @@ export class Reels extends Container {
     readonly #reels: Reel[] = [];
     readonly #rowHeight: number;
 
-    constructor(strips: string[][], rows: number) {
+    constructor(strips: string[][], rows: number, tween: TweenRunner) {
         super();
 
         strips.forEach((strip, i) => {
-            const reel = new Reel(rows, strip);
+            const reel = new Reel(rows, strip, tween);
 
             reel.x = i * (reel.width + reelGap);
 

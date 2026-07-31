@@ -5,16 +5,24 @@ import {
     type SoundName,
     type SoundSettings,
 } from 'config/sound.settings';
-import { soundStore } from 'store/sound.store';
+import type { StoreApi } from 'zustand/vanilla';
+import type { SoundStore } from 'store/sound.store';
 
-class SoundController {
+export class SoundController {
     readonly #howls: Map<SoundName, Howl> = new Map();
     readonly #played: Map<SoundName, number> = new Map();
-    readonly #unsubscribe: () => void;
+    readonly #store: StoreApi<SoundStore>;
+    #unsubscribe?: () => void;
 
-    constructor() {
+    constructor(store: StoreApi<SoundStore>) {
+        this.#store = store;
+    }
+
+    init() {
+        if (this.#unsubscribe) return;
+
         // Applied to what is already playing too, not only the next sound.
-        this.#unsubscribe = soundStore.subscribe(() => this.mix());
+        this.#unsubscribe = this.#store.subscribe(() => this.mix());
     }
 
     play(sound: SoundName) {
@@ -34,7 +42,8 @@ class SoundController {
     }
 
     destroy() {
-        this.#unsubscribe();
+        this.#unsubscribe?.();
+        this.#unsubscribe = undefined;
 
         for (const howl of this.#howls.values()) howl.unload();
 
@@ -44,7 +53,7 @@ class SoundController {
 
     // Muting silences rather than stops, so unmuting resumes in place.
     private mix() {
-        const { muted } = soundStore.getState();
+        const { muted } = this.#store.getState();
 
         for (const [name, howl] of this.#howls) {
             howl.mute(muted);
@@ -55,7 +64,7 @@ class SoundController {
     private volume(sound: SoundName) {
         const { channel, volume } = soundSettings[sound];
 
-        return volume * soundStore.getState().volumes[channel];
+        return volume * this.#store.getState().volumes[channel];
     }
 
     private load(sound: SoundName) {
@@ -71,7 +80,7 @@ class SoundController {
             }
 
             const { loop } = soundSettings[sound];
-            const { muted } = soundStore.getState();
+            const { muted } = this.#store.getState();
 
             howl = new Howl({
                 src: [src],
@@ -86,5 +95,3 @@ class SoundController {
         return howl;
     }
 }
-
-export const sound = new SoundController();

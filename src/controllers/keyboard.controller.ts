@@ -1,16 +1,22 @@
 import { gmeSettings } from 'config/game.settings';
-import { game } from './game.controller';
 import type { RootLayout } from 'layout/Root.layout';
-import { sound } from 'controllers/sound.controller';
+import type { GameActions, SoundPlayer } from './contracts';
 
 const { betSteps, betStepCommand } = gmeSettings;
 
 // The keys work the same button and slider the pointer does.
-class KeyboardController {
+export class KeyboardController {
     #layout?: RootLayout;
+    readonly #game: GameActions;
+    readonly #sound: SoundPlayer;
     // One reference for adding and removing, or the listener could never
     // come off the window again.
     readonly #press = (event: KeyboardEvent) => this.press(event);
+
+    constructor(game: GameActions, sound: SoundPlayer) {
+        this.#game = game;
+        this.#sound = sound;
+    }
 
     init(layout: RootLayout) {
         this.#layout = layout;
@@ -28,13 +34,13 @@ class KeyboardController {
         const layout = this.#layout;
 
         // A key reaches only as far as a press or a drag would.
-        if (!layout || !this.free || !game.canSpin) return;
+        if (!layout || !this.free || !this.#game.canSpin) return;
 
         // One spin per press, however long the bar is held down.
         if (key === ' ') {
             if (!repeat) {
-                sound.play('click');
-                game.spin();
+                this.#sound.play('click');
+                this.#game.spin();
             }
 
             return;
@@ -60,5 +66,3 @@ class KeyboardController {
         );
     }
 }
-
-export const keyboard = new KeyboardController();

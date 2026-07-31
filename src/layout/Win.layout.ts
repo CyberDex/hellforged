@@ -2,19 +2,19 @@ import '@pixi/layout';
 import { Layout } from '@pixi/layout';
 import { Text } from 'pixi.js';
 import { gmeSettings } from 'config/game.settings';
-import { sound } from 'controllers/sound.controller';
-import { tween } from 'controllers/tween.controller';
-import type { Tween } from 'controllers/tween.controller';
+import type { SoundPlayer, Tween, TweenRunner } from 'controllers/contracts';
 import { CoinShower } from 'layout/components/CoinShower';
 import { formatAmount } from 'utils/formatAmount';
 
 export class WinLayout extends Layout {
+    readonly #sound: SoundPlayer;
+    readonly #tween: TweenRunner;
     readonly #title: Text;
     readonly #amount: Text;
     readonly #coins: CoinShower;
     #count?: Tween;
 
-    constructor() {
+    constructor(sound: SoundPlayer, tween: TweenRunner) {
         const title = new Text({
             text: 'WIN',
             style: {
@@ -79,6 +79,8 @@ export class WinLayout extends Layout {
 
         this.#title = title;
         this.#amount = amount;
+        this.#sound = sound;
+        this.#tween = tween;
         this.#coins = new CoinShower();
         // Straight to the layout, not as content: content would be measured
         // and fitted as an often-empty box.
@@ -93,7 +95,7 @@ export class WinLayout extends Layout {
 
         this.announce('WIN', '0');
 
-        this.#count = tween.run({
+        this.#count = this.#tween.run({
             duration: countDuration,
             to: win,
             onUpdate: (climbing) => {
@@ -103,7 +105,7 @@ export class WinLayout extends Layout {
 
                 counted = amount;
                 this.#amount.text = formatAmount(amount);
-                sound.play('coin');
+                this.#sound.play('coin');
 
                 // The climbing number decides the announcement; a frame can
                 // pass several stages, and only the last is left up.

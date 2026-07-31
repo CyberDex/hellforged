@@ -1,15 +1,16 @@
-import type { WebGLRenderer } from 'pixi.js';
+import type { Application, WebGLRenderer } from 'pixi.js';
 import { UPDATE_PRIORITY } from 'pixi.js';
 import { countDrawCalls } from 'utils/countDrawCalls';
 import { timeFrames } from 'utils/timeFrames';
-import { app } from '../app.controller';
 
 // The numbers behind the dev tools' graphs, sampled once a frame; knows
 // nothing of the pane that draws them. `drawCalls` is the frame's batches,
 // `work` its CPU time — every ticker listener plus the encode and submit of
 // the render — and `fps` the wall clock between frames turned upside down:
 // low while `work` sits low points off the CPU (the GPU, GC, the page).
-class RenderingPerformanceController {
+export class RenderingPerformanceController {
+    readonly #app: Application;
+
     // Rewritten in place every frame, so the pane can bind to it once.
     readonly stats = { drawCalls: 0, work: 0, fps: 0 };
 
@@ -18,23 +19,27 @@ class RenderingPerformanceController {
     // Same swap for the frame clock.
     #time = () => ({ work: 0, frame: 0 });
 
+    constructor(app: Application) {
+        this.#app = app;
+    }
+
     // True when the renderer has draw calls to count — WebGPU has none.
     get countsDraws() {
-        return Boolean((app.renderer as WebGLRenderer).gl);
+        return Boolean((this.#app.renderer as WebGLRenderer).gl);
     }
 
     // The clock goes in first, the sampler last — behind the render (LOW),
     // so a sample is the whole frame just gone and whatever `onSample` does
     // with it stays off the clock.
     init(onSample: () => void) {
-        const { gl } = app.renderer as WebGLRenderer;
+        const { gl } = this.#app.renderer as WebGLRenderer;
 
         // Nothing to count on WebGPU; the timings still go up.
         if (gl) this.#drawCalls = countDrawCalls(gl);
 
-        this.#time = timeFrames(app.ticker);
+        this.#time = timeFrames(this.#app.ticker);
 
-        app.ticker.add(
+        this.#app.ticker.add(
             () => {
                 this.sample();
                 onSample();
@@ -52,5 +57,3 @@ class RenderingPerformanceController {
         this.stats.drawCalls = this.#drawCalls();
     }
 }
-
-export const renderingPerformance = new RenderingPerformanceController();

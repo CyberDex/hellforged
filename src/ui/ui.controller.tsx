@@ -1,6 +1,8 @@
 import { createRoot } from 'react-dom/client';
 import { FONT_FAMILY } from 'config/font.settings';
 import { TopBar } from 'ui/TopBar';
+import { RuntimeProvider } from 'ui/Runtime';
+import type { UIRuntime } from 'ui/Runtime';
 import 'ui/ui.css';
 
 // The colours are art: filed with the sprites in `assets/theme/theme.json`,
@@ -18,7 +20,7 @@ const loadPalette = () =>
 // React draws in the DOM over the canvas, never inside the Pixi scene, and
 // knows nothing of it: the overlay takes its measures from `ui.css` alone,
 // and lets every pointer through to the game (see `ui.css`).
-export async function mountUI() {
+export async function mountUI(runtime: UIRuntime) {
     const root = document.createElement('div');
 
     root.id = 'ui';
@@ -36,7 +38,11 @@ export async function mountUI() {
             root.style.setProperty(`--${name}`, colour);
         }
 
-        reactRoot.render(<TopBar />);
+        reactRoot.render(
+            <RuntimeProvider runtime={runtime}>
+                <TopBar />
+            </RuntimeProvider>,
+        );
     } catch (error) {
         console.error('Unable to mount the UI.', error);
         reactRoot.render(

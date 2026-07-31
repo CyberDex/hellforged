@@ -2,19 +2,22 @@ import '@pixi/layout';
 import { Sprite } from 'pixi.js';
 import { settingsVisual } from 'config/visual.settings';
 import { BurnFilter } from 'filters/burn.filter';
-import { graphicsStore } from 'store/graphics.store';
 import { Layout } from '@pixi/layout';
+import type { StoreApi } from 'zustand/vanilla';
+import type { GraphicsStore } from 'store/graphics.store';
 
 export class BG extends Layout {
+    readonly #store: StoreApi<GraphicsStore>;
     #burn?: BurnFilter;
 
-    constructor() {
+    constructor(store: StoreApi<GraphicsStore>) {
         super({
             content: Sprite.from('bg'),
             styles: { position: 'center' },
         });
 
-        graphicsStore.subscribe(() => this.shade());
+        this.#store = store;
+        this.#store.subscribe(() => this.shade());
         this.shade();
     }
 
@@ -22,7 +25,7 @@ export class BG extends Layout {
     // shader runs, and it is built on first ask, so a game opened with it off
     // never even compiles it.
     private shade() {
-        if (!graphicsStore.getState().shader) {
+        if (!this.#store.getState().shader) {
             this.filters = [];
             this.#burn?.destroy();
             this.#burn = undefined;

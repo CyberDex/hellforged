@@ -2,14 +2,16 @@ import { Slider } from '@pixi/ui';
 import { Graphics } from 'pixi.js';
 import { gmeSettings } from 'config/game.settings';
 import { settingsVisual } from 'config/visual.settings';
-import { sound } from 'controllers/sound.controller';
+import type { SoundPlayer } from 'controllers/contracts';
 
 const { width, height, handle, pit, metal, outline, outlineWidth } =
     settingsVisual.betSlider;
 const radius = height / 2;
 
 export class BetSlider extends Slider {
-    constructor() {
+    readonly #sound: SoundPlayer;
+
+    constructor(sound: SoundPlayer) {
         super({
             bg: new Graphics()
                 .roundRect(0, 0, width, height, radius)
@@ -27,6 +29,8 @@ export class BetSlider extends Slider {
             value: gmeSettings.defaultBet,
         });
 
+        this.#sound = sound;
+
         // The handle hangs off both ends, so measured width depends on where
         // it sits; pinning the widest keeps a resize from shifting the track.
         const bounds = new Graphics()
@@ -39,7 +43,7 @@ export class BetSlider extends Slider {
         // Only under the finger: `onUpdate` also fires when the game itself
         // places or caps the handle.
         this.onUpdate.connect(() => {
-            if (this.dragging) sound.play('coin');
+            if (this.dragging) this.#sound.play('coin');
         });
     }
 
@@ -49,7 +53,7 @@ export class BetSlider extends Slider {
         this.value += steps * this.step;
 
         // A handle already at the end it was sent to passed no figure.
-        if (this.value !== bet) sound.play('coin');
+        if (this.value !== bet) this.#sound.play('coin');
     }
 
     // Hidden rather than greyed, which also takes it out of hit testing.

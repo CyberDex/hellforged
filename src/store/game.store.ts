@@ -64,15 +64,16 @@ export const gameState: StateCreator<GameStore> = (set, get) => ({
     },
 });
 
-export const gameStore = createStore<GameStore>()(
-    persist(gameState, {
-        name: `${gameName}.player`,
-        partialize: ({ balance, bet, win, symbols, pending }) => ({
-            balance,
-            bet,
-            win,
-            symbols,
-            pending,
+export const createGameStore = () =>
+    createStore<GameStore>()(
+        persist(gameState, {
+            name: `${gameName}.player`,
+            partialize: ({ balance, bet, win, symbols, pending }) => ({
+                balance,
+                bet,
+                win,
+                symbols,
+                pending,
+            }),
         }),
-    }),
-);
+    );

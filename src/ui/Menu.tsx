@@ -1,11 +1,9 @@
 import { useEffect } from 'react';
 import { useStore } from 'zustand';
 import type { CSSProperties, ReactNode } from 'react';
-import { sound } from 'controllers/sound.controller';
-import { graphicsStore } from 'store/graphics.store';
-import { soundStore } from 'store/sound.store';
 import { Balance } from 'ui/Balance';
 import { Button } from 'ui/Button';
+import { useRuntime } from 'ui/Runtime';
 
 // Stays in the DOM shut as well as open, so the one class animates the
 // drawer both down and back up (see `ui.css`).
@@ -22,6 +20,7 @@ export function Menu({
     onRules: () => void;
     onClose: () => void;
 }) {
+    const { graphicsStore, sound, soundStore } = useRuntime();
     const { muted, volumes, setMuted, setVolume } = useStore(soundStore);
     const { shader, setShader } = useStore(graphicsStore);
 

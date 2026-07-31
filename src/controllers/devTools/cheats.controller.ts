@@ -1,20 +1,35 @@
 import { gameDefinition, symbols } from 'config/game.definition';
 import { rollGrid } from 'math/rollGrid';
-import { gameStore } from 'store/game.store';
-import { API } from '../api.controller';
-import { game } from '../game.controller';
+import type { StoreApi } from 'zustand/vanilla';
+import type { ApiController } from '../api.controller';
+import type { GameActions } from '../contracts';
+import type { GameStore } from 'store/game.store';
 
 // Forced wins for the dev tools: every payout the machine knows and the
 // rigged spin that lands it; knows nothing of the pane that lists them.
-class CheatsController {
+export class CheatsController {
+    readonly #api: Pick<ApiController, 'force'>;
+    readonly #game: GameActions;
+    readonly #store: StoreApi<GameStore>;
+
+    constructor(
+        game: GameActions,
+        api: Pick<ApiController, 'force'>,
+        store: StoreApi<GameStore>,
+    ) {
+        this.#api = api;
+        this.#game = game;
+        this.#store = store;
+    }
+
     get canSpin() {
-        return game.canSpin;
+        return this.#game.canSpin;
     }
 
     // The pane keeps its buttons in step with the game.
     follow(listener: () => void) {
         listener();
-        gameStore.subscribe(listener);
+        this.#store.subscribe(listener);
     }
 
     // Every win the machine can pay, symbol by symbol, shortest first.
@@ -27,10 +42,10 @@ class CheatsController {
     // Hands the next spin the grid it has to land on. Guarded, or a press
     // the game cannot take would leave the grid queued for an honest spin.
     spin(symbol: string, count: number) {
-        if (!game.canSpin) return;
+        if (!this.#game.canSpin) return;
 
-        API.force(this.grid(symbol, count));
-        game.spin();
+        this.#api.force(this.grid(symbol, count));
+        this.#game.spin();
     }
 
     // Shortest first; lengths the machine has no reels for are left off.
@@ -60,5 +75,3 @@ class CheatsController {
         return grid;
     }
 }
-
-export const cheats = new CheatsController();
