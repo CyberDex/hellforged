@@ -1,0 +1,182 @@
+{
+  "bundles": [
+    {
+      "name": "default",
+      "assets": [
+        {
+          "alias": [
+            "fonts/PirataOne.ttf",
+            "fonts/PirataOne",
+            "PirataOne.ttf",
+            "PirataOne"
+          ],
+          "src": [
+            "fonts/PirataOne-ZICIlw.woff2"
+          ],
+          "data": {
+            "tags": {
+              "wf": true
+            },
+            "family": "PirataOne"
+          }
+        },
+        {
+          "alias": [
+            "sprites"
+          ],
+          "src": [
+            "sprites/sprites-yxlMBw@0.5x.png.json",
+            "sprites/sprites-vKWr6w.png.json",
+            "sprites/sprites-0C5TYg.webp.json",
+            "sprites/sprites--9Vnvw@0.5x.webp.json"
+          ],
+          "data": {
+            "tags": {
+              "tps": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "textures/textTexture.png",
+            "textures/textTexture",
+            "textTexture.png",
+            "textTexture"
+          ],
+          "src": [
+            "textures/textTexture.png"
+          ],
+          "data": {
+            "tags": {
+              "copy": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "sounds",
+      "assets": [
+        {
+          "alias": [
+            "sounds/anticipation.wav",
+            "sounds/anticipation",
+            "anticipation.wav",
+            "anticipation"
+          ],
+          "src": [
+            "sounds/anticipation-uU34.mp3",
+            "sounds/anticipation-FP8j8g.ogg"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "sounds/click.wav",
+            "sounds/click",
+            "click.wav",
+            "click"
+          ],
+          "src": [
+            "sounds/click-l2UE0w.mp3",
+            "sounds/click-1IqD4g.ogg"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "sounds/coin.mp3",
+            "sounds/coin",
+            "coin.mp3",
+            "coin"
+          ],
+          "src": [
+            "sounds/coin-xglSTQ.mp3",
+            "sounds/coin-ij1RtQ.ogg"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "sounds/music.mp3",
+            "sounds/music",
+            "music.mp3",
+            "music"
+          ],
+          "src": [
+            "sounds/music-zZ9Okg.ogg",
+            "sounds/music-pfcj1Q.mp3"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "sounds/reelSpin.wav",
+            "sounds/reelSpin",
+            "reelSpin.wav",
+            "reelSpin"
+          ],
+          "src": [
+            "sounds/reelSpin-U8raPQ.mp3",
+            "sounds/reelSpin-TfnmBA.ogg"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "sounds/reelStop.wav",
+            "sounds/reelStop",
+            "reelStop.wav",
+            "reelStop"
+          ],
+          "src": [
+            "sounds/reelStop-V2kvTQ.ogg",
+            "sounds/reelStop-pGDz8Q.mp3"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "sounds/win.wav",
+            "sounds/win",
+            "win.wav",
+            "win"
+          ],
+          "src": [
+            "sounds/win-UrXm4Q.ogg",
+            "sounds/win-_j5mlQ.mp3"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
