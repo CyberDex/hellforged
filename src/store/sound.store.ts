@@ -23,6 +23,17 @@ export const soundStore = createStore<SoundStore>()(
                     volumes: { ...volumes, [channel]: volume },
                 })),
         }),
-        { name: `${gameName}.sound` },
+        {
+            name: `${gameName}.sound`,
+            merge: (persisted, current) => {
+                const stored = persisted as Partial<SoundStore>;
+
+                return {
+                    ...current,
+                    ...stored,
+                    volumes: { ...current.volumes, ...stored.volumes },
+                };
+            },
+        },
     ),
 );

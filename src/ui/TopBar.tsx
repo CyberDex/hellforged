@@ -41,9 +41,13 @@ export function TopBar() {
     );
     const [now, setNow] = useState(() => new Date());
     const [open, setOpen] = useState<Open>();
+    const menuButton = useRef<HTMLButtonElement>(null);
     const drawer = open === 'menu' || open === 'balance';
     // Held still: the drawer and the sheet both listen for the Escape.
-    const close = useCallback(() => setOpen(undefined), []);
+    const close = useCallback(() => {
+        setOpen(undefined);
+        menuButton.current?.focus();
+    }, []);
 
     // Beats every second so a minute turns over on time, though neither
     // clock shows seconds.
@@ -69,6 +73,7 @@ export function TopBar() {
                 <div className="topbar glass">
                     <div className="topbar-left">
                         <Button
+                            ref={menuButton}
                             className="topbar-menu"
                             aria-label="Menu"
                             aria-expanded={drawer}

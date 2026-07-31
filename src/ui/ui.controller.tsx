@@ -6,13 +6,14 @@ import 'ui/ui.css';
 // The colours are art: filed with the sprites in `assets/theme/theme.json`,
 // so a reskin is that one file. Fetched: a DOM-only palette has no business
 // on Pixi's manifest (`mIgnore` — see `vite.config.ts`).
-const palette = fetch('assets/theme/theme.json').then(async (response) => {
-    if (!response.ok) {
-        throw new Error(`Unable to load UI theme (${response.status}).`);
-    }
+const loadPalette = () =>
+    fetch('assets/theme/theme.json').then(async (response) => {
+        if (!response.ok) {
+            throw new Error(`Unable to load UI theme (${response.status}).`);
+        }
 
-    return response.json() as Promise<Record<string, string>>;
-});
+        return response.json() as Promise<Record<string, string>>;
+    });
 
 // React draws in the DOM over the canvas, never inside the Pixi scene, and
 // knows nothing of it: the overlay takes its measures from `ui.css` alone,
@@ -31,7 +32,7 @@ export async function mountUI() {
     try {
         // Each entry becomes the custom property `ui.css` reads. Dressed before
         // mounting, so nothing shows in the wrong colours.
-        for (const [name, colour] of Object.entries(await palette)) {
+        for (const [name, colour] of Object.entries(await loadPalette())) {
             root.style.setProperty(`--${name}`, colour);
         }
 

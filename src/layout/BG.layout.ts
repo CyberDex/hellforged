@@ -24,6 +24,8 @@ export class BG extends Layout {
     private shade() {
         if (!graphicsStore.getState().shader) {
             this.filters = [];
+            this.#burn?.destroy();
+            this.#burn = undefined;
 
             return;
         }
