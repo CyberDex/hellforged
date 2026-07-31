@@ -13,6 +13,23 @@
     user-select: none;
 }
 
+/* This is shown only when the art-owned palette itself cannot be loaded, so it
+   deliberately carries enough colour to remain readable without that palette. */
+.ui-error {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-sizing: border-box;
+    width: min(92vw, 560px);
+    padding: 14px 18px;
+    pointer-events: auto;
+    color: #fff;
+    background: #1c0d05;
+    border: 1px solid #c6963c;
+    border-radius: 10px;
+}
+
 .press {
     pointer-events: auto;
     padding: 0;

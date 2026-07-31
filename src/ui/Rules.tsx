@@ -1,4 +1,5 @@
-import { Suspense, use, useEffect } from 'react';
+import { Component, Suspense, use, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { marked } from 'marked';
 import { Sprite, Texture } from 'pixi.js';
 import { gmeSettings } from 'config/game.settings';
@@ -10,7 +11,13 @@ import { formatAmount } from 'utils/formatAmount';
 // The player's rules ship with the art, so a reskin brings its own;
 // `src/config/rules.md` is the working copy. Fetched: a DOM-only document has
 // no business on Pixi's manifest (`mIgnore` — see `vite.config.ts`).
-const copy = fetch('assets/rules/rules.md').then((response) => response.text());
+const copy = fetch('assets/rules/rules.md').then((response) => {
+    if (!response.ok) {
+        throw new Error(`Unable to load game rules (${response.status}).`);
+    }
+
+    return response.text();
+});
 
 // Filled from the settings the game is played on, so the paytable cannot
 // disagree with the reels. Written out whole: Prettier folds a placeholder
@@ -67,6 +74,31 @@ function Body() {
     );
 }
 
+class RulesErrorBoundary extends Component<
+    { children: ReactNode },
+    { failed: boolean }
+> {
+    state = { failed: false };
+
+    static getDerivedStateFromError() {
+        return { failed: true };
+    }
+
+    componentDidCatch(error: Error) {
+        console.error('Unable to render the game rules.', error);
+    }
+
+    render() {
+        return this.state.failed ? (
+            <div className="rules-body" role="alert">
+                Unable to load the game rules.
+            </div>
+        ) : (
+            this.props.children
+        );
+    }
+}
+
 export function Rules({ onClose }: { onClose: () => void }) {
     // The sheet takes the drawer's place, so Escape is only listened for once.
     useEffect(() => {
@@ -93,9 +125,17 @@ export function Rules({ onClose }: { onClose: () => void }) {
                         ×
                     </Button>
                 </div>
-                <Suspense fallback={<div className="rules-body" />}>
-                    <Body />
-                </Suspense>
+                <RulesErrorBoundary>
+                    <Suspense
+                        fallback={
+                            <div className="rules-body" role="status">
+                                Loading game rules…
+                            </div>
+                        }
+                    >
+                        <Body />
+                    </Suspense>
+                </RulesErrorBoundary>
             </div>
         </>
     );
