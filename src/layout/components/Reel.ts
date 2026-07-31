@@ -3,7 +3,7 @@ import { gmeSettings } from 'config/game.settings';
 import { settingsVisual } from 'config/visual.settings';
 import { tween } from 'controllers/tween.controller';
 import type { Tween } from 'controllers/tween.controller';
-import { dip } from 'utils/dip';
+import { createBounceEase } from 'utils/createBounceEase';
 import { Symbol } from './Symbol';
 
 export class Reel extends Container {
@@ -127,7 +127,7 @@ export class Reel extends Container {
         this.#bounce = tween.run({
             duration: gmeSettings.bounceDuration,
             to: gmeSettings.bounceDistance * this.#symbolHeight,
-            ease: dip(gmeSettings.bounceDown),
+            ease: createBounceEase(gmeSettings.bounceDown),
             // Absolute offset, so the strip returns exactly where it landed.
             onUpdate: (offset) => {
                 this.move(offset - this.#offset);
