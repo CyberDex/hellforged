@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+} from 'react';
 import { useStore } from 'zustand';
 import { gameTitle } from 'config/game.name';
 import { gmeSettings } from 'config/game.settings';
@@ -64,7 +70,7 @@ export function TopBar() {
         if (outOfFunds) setOpen('balance');
     }, [outOfFunds]);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         const { setOverlayOpen } = uiStore.getState();
 
         setOverlayOpen(Boolean(open));
