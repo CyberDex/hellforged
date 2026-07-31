@@ -1,10 +1,17 @@
 import { Howl } from 'howler';
 import { Assets } from 'pixi.js';
-import { sounds, type SoundName } from 'config/sound.settings';
+import {
+    sounds,
+    type SoundName,
+    type SoundSettings,
+} from 'config/sound.settings';
 import { soundStore } from 'store/sound.store';
 
 class SoundController {
     private howls: Map<SoundName, Howl> = new Map();
+    // When each sound was last let through, against which the repeat delay it
+    // asks for in the mix is measured.
+    private played: Map<SoundName, number> = new Map();
 
     constructor() {
         // The player's mix is applied to a sound as it is made and to every
@@ -13,7 +20,19 @@ class SoundController {
         soundStore.subscribe(() => this.mix());
     }
 
+    // A sound asked for again inside its repeat delay is dropped rather than
+    // queued: what is being counted out is the figures going past, and a coin
+    // held back for later would land after the count it belongs to has moved on.
     play(sound: SoundName) {
+        // Read as the settings rather than as the one entry, which without a
+        // delay of its own has no such key to read off it.
+        const { repeatDelay }: SoundSettings = sounds[sound];
+        const now = performance.now();
+        const played = this.played.get(sound) ?? -Infinity;
+
+        if (repeatDelay && now - played < repeatDelay) return;
+
+        this.played.set(sound, now);
         this.load(sound)?.play();
     }
 
