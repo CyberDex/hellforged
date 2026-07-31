@@ -21,7 +21,7 @@ await mountUI(layout);
 // Compiled out of a build, so Tweakpane is never shipped to the player.
 // TODO: this is available for git pages, uncomment lines before go to prod!!!
 // if (import.meta.env.DEV) {
-const { devTools } = await import('controllers/devTools.controller');
+const { devTools } = await import('controllers/devTools/devTools.controller');
 
 devTools.init();
 // }
