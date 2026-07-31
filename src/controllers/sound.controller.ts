@@ -17,8 +17,6 @@ class SoundController {
         this.#unsubscribe = soundStore.subscribe(() => this.mix());
     }
 
-    // Inside its repeat delay a sound is dropped, not queued: held back, it
-    // would land after the count it belongs to.
     play(sound: SoundName) {
         // Typed as the settings, since not every entry has a repeatDelay key.
         const { repeatDelay }: SoundSettings = sounds[sound];
@@ -35,8 +33,6 @@ class SoundController {
         this.#howls.get(sound)?.stop();
     }
 
-    // Unloading, not just dropping: Howler holds every Howl in a global
-    // registry, so a cleared map alone would keep the audio alive.
     destroy() {
         this.#unsubscribe();
 

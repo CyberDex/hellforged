@@ -100,8 +100,6 @@ class GameController {
         if (this.state === 'idle') this.settle();
     }
 
-    // The store outlives the game: left subscribed, it would keep the
-    // controller — and the layout it holds — reachable for good.
     destroy() {
         this.#unsubscribe?.();
         this.#layout = undefined;
