@@ -2,11 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from 'zustand';
 import { gameTitle } from 'config/game.name';
 import { gmeSettings } from 'config/game.settings';
-import { tween } from 'controllers/tween.controller';
 import { gameStore } from 'store/game.store';
+import { uiStore } from 'store/ui.store';
 import { Button } from 'ui/Button';
 import { Menu } from 'ui/Menu';
 import { Rules } from 'ui/Rules';
+import { useCountUp } from 'ui/useCountUp';
 import { formatAmount } from 'utils/formatAmount';
 
 // Only one open at a time; the rules sheet takes the drawer's place.
@@ -63,6 +64,14 @@ export function TopBar() {
         if (outOfFunds) setOpen('balance');
     }, [outOfFunds]);
 
+    useEffect(() => {
+        const { setOverlayOpen } = uiStore.getState();
+
+        setOverlayOpen(Boolean(open));
+
+        return () => setOverlayOpen(false);
+    }, [open]);
+
     return (
         <>
             {/* Before the bar, so the bar and the drop keep their own clicks. */}
@@ -114,35 +123,6 @@ export function TopBar() {
             {open === 'rules' && <Rules onClose={close} />}
         </>
     );
-}
-
-// Counted to rather than printed, on the game's own clock. Opens on whatever
-// it is first handed: a restored session has nothing to count from.
-function useCountUp(target: number, duration: number) {
-    const [counted, setCounted] = useState(target);
-    // Read back every frame, so a change mid-count carries on from the
-    // on-screen figure rather than restarting.
-    const reading = useRef(target);
-
-    useEffect(() => {
-        const from = reading.current;
-
-        if (target === from) return;
-
-        const count = tween.run({
-            duration,
-            from,
-            to: target,
-            onUpdate: (climbing) => {
-                reading.current = Math.round(climbing);
-                setCounted(reading.current);
-            },
-        });
-
-        return () => count.stop();
-    }, [target, duration]);
-
-    return counted;
 }
 
 function Stat({ label, value }: { label: string; value: string }) {

@@ -2,6 +2,7 @@ import { gmeSettings } from 'config/game.settings';
 import { game } from './game.controller';
 import type { RootLayout } from 'layout/Root.layout';
 import { sound } from 'controllers/sound.controller';
+import { uiStore } from 'store/ui.store';
 
 const { betSteps, betStepCommand } = gmeSettings;
 
@@ -51,12 +52,11 @@ class KeyboardController {
         layout.betSlider.nudge(metaKey ? steps * betStepCommand : steps);
     }
 
-    // Only while nothing on the overlay holds focus and nothing is standing
-    // open over the game (`.veil` in `ui.css`).
+    // Only while nothing on the overlay holds focus or stands over the game.
     private get free() {
         return (
             document.activeElement === document.body &&
-            !document.querySelector('.veil')
+            !uiStore.getState().overlayOpen
         );
     }
 }
