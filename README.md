@@ -26,7 +26,7 @@ pnpm build            # lint + typecheck run on pre-push
          ▼           reels turn  │ lines · paytable — all data)         │
  ┌──────────────────────────────┐└──────────────────────────────────────┘
  │ zustand stores: game         │      `pnpm sim` reads the same maths
- │ (persisted) · sound ·        │      with no browser: 95.2% measured RTP
+ │ (persisted) · sound ·        │      with no browser: 95.04% priced RTP
  │ graphics                     │
  └───────┬──────────────┬───────┘
          │ one          │ useStore

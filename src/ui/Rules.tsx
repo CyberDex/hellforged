@@ -30,7 +30,15 @@ const figures: Record<string, string> = {
             ([symbol, payout]) => `| ${symbol} | ${payout} x bet |`,
         ),
     ].join('\n'),
-    '%PAIR%': (gameDefinition.payouts.partial[2] ?? 0).toString(),
+    // A rung per run length the machine pays, the filled line last.
+    '%RUNS%': [
+        '| Matching from the left | Pays |',
+        '| ---------------------- | ---- |',
+        ...Object.entries(gameDefinition.payouts.partial).map(
+            ([count, payout]) => `| ${count} | ${payout} x your bet |`,
+        ),
+        `| ${gameDefinition.strips.length} | see the table below |`,
+    ].join('\n'),
     '%MINBET%': formatAmount(gmeSettings.minBet),
     '%MAXBET%': formatAmount(gmeSettings.maxBet),
 };

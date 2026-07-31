@@ -26,7 +26,7 @@ export class SpinPannel extends Layout {
             ],
             styles: {
                 position: 'center',
-                marginTop: 220,
+                marginTop: 286,
             },
         });
 

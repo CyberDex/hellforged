@@ -6,7 +6,7 @@ export class BetPannel extends Pannel {
     readonly slider: BetSlider;
 
     constructor() {
-        super('Bet', { position: 'center', marginTop: 210, marginLeft: -155 });
+        super('Bet', { position: 'center', marginTop: 276, marginLeft: -155 });
 
         this.slider = new BetSlider();
 

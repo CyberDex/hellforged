@@ -32,7 +32,9 @@ export const gmeSettings = {
     // Stand-in server latency, ms; the reels already turn while it thinks.
     responseTime: 300,
     spinDuration: 500,
-    reelStopDelay: 550,
+    // Five reels a stop apart: kept short enough that the spin does not drag,
+    // and clear of the (rows + 1) / spinSpeed a reel needs to land (250ms).
+    reelStopDelay: 400,
     // A payline that can still fill holds its last reel this many times
     // longer, zoomed to this scale.
     anticipationSpins: 2,
