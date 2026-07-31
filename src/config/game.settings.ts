@@ -9,17 +9,28 @@ const three: Record<string, number> = {
     H5: 9,
 };
 
+// What a win has to pay to be revealed as a big one, in stages: a win falls
+// into the last stage its amount reaches, and is held for that many times the
+// usual reveal, so the more it pays the longer it is read out over. Each stage
+// is announced by its own title as the count climbs through the figure it
+// starts at, so the news gets bigger along with the number under it.
+const bigWinStages = [
+    { from: 1000, reveals: 2, title: 'BIG WIN' },
+    { from: 10000, reveals: 3, title: 'MEGA WIN' },
+    { from: 100000, reveals: 4, title: 'EPIC WIN' },
+];
+
 export const settings = {
     reels: 3,
     rows: 3,
     symbols: Object.keys(three),
     // What the player starts with, and what every spin costs.
-    defaultBalance: 1000,
+    defaultBalance: 1000000,
     defaultBet: 1,
     // The two ends of the bet slider: what a spin can be staked at, at least
     // and at most.
     minBet: 1,
-    maxBet: 1000,
+    maxBet: 1000000,
     // Bet multipliers for the payline: a single symbol pays nothing, a pair pays
     // flat whatever symbol it is, and three of a kind pays on its symbol.
     // Symbols land uniformly, so 1 spin in 25 fills the payline and 4 in 25
@@ -42,7 +53,16 @@ export const settings = {
     // is held for this long, and its amount counts up over the first part.
     winDuration: 2500,
     winCountDuration: 800,
-    // Three of a kind keeps the zoom it was built up to and is held for this
-    // many times the usual reveal, its amount counting up over all of it.
-    bigWinReveals: 2,
+    // How long the top bar takes to count the balance to whatever it has
+    // changed to, in either direction, rather than printing the new figure.
+    balanceCountDuration: 600,
+    // A big win keeps the zoom it was built up to and is held for as long as
+    // its stage above says, its amount counting up over all but the last of it.
+    // The first stage is also what a win has to reach to be a big one at all:
+    // the announcement changes over to it as the count climbs through that
+    // figure, and coins shower off the number from there on.
+    bigWinStages,
+    // The end of a big win's reveal is spent standing on the figure the count
+    // arrived at, so the amount is read in full before the reels jump back.
+    bigWinHold: 1000,
 };

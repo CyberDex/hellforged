@@ -43,6 +43,15 @@ export class SpinButton extends FancyButton {
         this.onDown.connect(() => sound.play('click'));
     }
 
+    // Pressed by something that is not a pointer, which is the space bar (see
+    // `keyboard.controller.ts`). The click is sounded here, since `onDown` is a
+    // finger's alone, and the press itself goes out as the signal a click sends,
+    // so whatever answers it cannot tell the two apart.
+    press() {
+        sound.play('click');
+        this.onPress.emit();
+    }
+
     rotate() {
         const fullTurn = Math.PI * 2;
         const duration = 200;

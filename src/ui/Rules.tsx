@@ -3,7 +3,7 @@ import { marked } from 'marked';
 import { Sprite, Texture } from 'pixi.js';
 import { settings } from 'config/game.settings';
 import { app } from 'controllers/app.controller';
-import { Dialog } from 'ui/Dialog';
+import { formatAmount } from 'utils/formatAmount';
 
 // The rules as the player is told them: their own document, filed with the art
 // the game is dressed in, at `assets/rules{copy}{mIgnore}/rules.md` — so a
@@ -37,8 +37,8 @@ const figures: Record<string, string> = {
         ),
     ].join('\n'),
     '%PAIR%': settings.payouts.two.toString(),
-    '%MINBET%': settings.minBet.toLocaleString(),
-    '%MAXBET%': settings.maxBet.toLocaleString(),
+    '%MINBET%': formatAmount(settings.minBet),
+    '%MAXBET%': formatAmount(settings.maxBet),
 };
 
 // A symbol is a picture on the reels and only a name in the document: `H1` says
@@ -94,16 +94,14 @@ function Body() {
     );
 }
 
-export function Rules({ onClose }: { onClose: () => void }) {
+// Let down inside the menu rather than opened over the game, so the rules are
+// read off the same drawer they are asked for from (see `Menu.tsx`). It is the
+// one thing on that drawer with more on it than there is room for, so it scrolls
+// what it cannot show (see `.rules-body` in `ui.css`).
+export function Rules() {
     return (
-        // The one sheet not cut to the reels, and the one never given a height
-        // to fill: this is the pop up with more on it than fits, so it is handed
-        // no measurement of the machine at all and takes the whole screen
-        // instead, scrolling what it cannot show (see `.rules` in `ui.css`).
-        <Dialog className="rules" title="Game rules" onClose={onClose}>
-            <Suspense fallback={<div className="rules-body" />}>
-                <Body />
-            </Suspense>
-        </Dialog>
+        <Suspense fallback={<div className="rules-body" />}>
+            <Body />
+        </Suspense>
     );
 }
