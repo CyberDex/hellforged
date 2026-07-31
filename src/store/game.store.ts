@@ -26,7 +26,7 @@ export interface GameStore {
     settleSpin: () => void;
 }
 
-export const gameState: StateCreator<GameStore> = (set) => ({
+export const gameState: StateCreator<GameStore> = (set, get) => ({
     state: 'idle',
     balance: gmeSettings.defaultBalance,
     bet: gmeSettings.defaultBet,
@@ -48,19 +48,20 @@ export const gameState: StateCreator<GameStore> = (set) => ({
         set(({ pending }) => ({
             pending: pending ? { ...pending, result: { symbols, win } } : null,
         })),
-    settleSpin: () =>
-        set(({ balance, pending }) => {
-            if (!pending) return {};
+    settleSpin: () => {
+        const { balance, pending } = get();
 
-            const { result } = pending;
+        if (!pending) return;
 
-            return {
-                balance: balance + (result?.win ?? pending.bet),
-                win: result?.win ?? 0,
-                symbols: result?.symbols ?? null,
-                pending: null,
-            };
-        }),
+        const { result } = pending;
+
+        set({
+            balance: balance + (result?.win ?? pending.bet),
+            win: result?.win ?? 0,
+            symbols: result?.symbols ?? null,
+            pending: null,
+        });
+    },
 });
 
 export const gameStore = createStore<GameStore>()(
