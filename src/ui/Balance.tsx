@@ -22,7 +22,7 @@ export function Balance({
         if (!open) return;
 
         setAmount(gameStore.getState().balance.toString());
-        field.current?.focus();
+        field.current?.focus({ preventScroll: true });
     }, [open]);
 
     const submit = (event: FormEvent) => {
@@ -39,6 +39,7 @@ export function Balance({
             <input
                 ref={field}
                 className="balance-field"
+                aria-label="Balance"
                 type="number"
                 min={0}
                 step={1}
