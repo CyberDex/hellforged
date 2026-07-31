@@ -20,14 +20,7 @@ class GameController {
     #anticipation: SpinResult['anticipation'];
 
     init(layout: RootLayout) {
-        const {
-            spinButton,
-            betSlider,
-            reels,
-            betPannel,
-            winPannel,
-            winLayout,
-        } = layout;
+        const { betSlider, reels, betPannel, winPannel } = layout;
 
         this.#layout = layout;
         this.#reels = reels;
@@ -42,6 +35,50 @@ class GameController {
         if (symbols) reels.symbols = symbols;
 
         winPannel.value = win;
+
+        this.listen(layout);
+
+        // A restored balance may no longer cover the restored bet; after the
+        // subscribe, so the pannel follows the bet down.
+        this.settle();
+
+        sound.play('music');
+    }
+
+    get state() {
+        return gameStore.getState().state;
+    }
+
+    get canSpin() {
+        const { state, balance } = gameStore.getState();
+
+        return state === 'idle' && balance >= settings.minBet;
+    }
+
+    // Dev only: hands the next spin the grid it has to land on.
+    // TODO: wrap with conditional compiler check to exclude from production builds.
+    cheat(grid: string[][]) {
+        if (!this.canSpin) return;
+
+        backend.force(grid);
+        this.spin();
+    }
+
+    updateBalance(balance: number) {
+        gameStore.getState().setBalance(balance);
+
+        if (this.state === 'idle') this.settle();
+    }
+
+    private listen(layout: RootLayout) {
+        const {
+            spinButton,
+            betSlider,
+            reels,
+            betPannel,
+            winPannel,
+            winLayout,
+        } = layout;
 
         spinButton.onPress.connect(() => this.spin());
         betSlider.onUpdate.connect((bet) => gameStore.getState().setBet(bet));
@@ -87,36 +124,6 @@ class GameController {
                 this.settle();
             }
         });
-
-        // A restored balance may no longer cover the restored bet; after the
-        // subscribe, so the pannel follows the bet down.
-        this.settle();
-
-        sound.play('music');
-    }
-
-    get state() {
-        return gameStore.getState().state;
-    }
-
-    get canSpin() {
-        const { state, balance } = gameStore.getState();
-
-        return state === 'idle' && balance >= settings.minBet;
-    }
-
-    // Dev only: hands the next spin the grid it has to land on.
-    cheat(grid: string[][]) {
-        if (!this.canSpin) return;
-
-        backend.force(grid);
-        this.spin();
-    }
-
-    updateBalance(balance: number) {
-        gameStore.getState().setBalance(balance);
-
-        if (this.state === 'idle') this.settle();
     }
 
     private settle() {
