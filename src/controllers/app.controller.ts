@@ -1,12 +1,16 @@
 import type { ApplicationOptions, ArrayOr } from 'pixi.js';
 import { Application, Assets } from 'pixi.js';
+import {
+    getAssetResolutions,
+    getRenderResolution,
+} from 'utils/assetResolution';
 
 class AppController extends Application {
     async init(options?: Partial<ApplicationOptions>) {
         await super.init({
             resizeTo: window,
             antialias: true,
-            resolution: Math.min(window.devicePixelRatio, 2),
+            resolution: getRenderResolution(),
             autoDensity: true,
             ...options,
         });
@@ -16,6 +20,7 @@ class AppController extends Application {
         await Assets.init({
             manifest: 'manifest.json',
             basePath: 'assets',
+            texturePreference: { resolution: getAssetResolutions() },
         });
 
         await Assets.loadBundle(bundles);
