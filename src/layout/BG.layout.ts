@@ -1,7 +1,7 @@
 import '@pixi/layout';
 import { Sprite } from 'pixi.js';
 import { settingsVisual } from 'config/visual.settings';
-import { BurnFilter } from 'filters/burn/burn.filter';
+import { BurnFilter } from 'filters/burn.filter';
 import { graphicsStore } from 'store/graphics.store';
 import { Layout } from '@pixi/layout';
 
