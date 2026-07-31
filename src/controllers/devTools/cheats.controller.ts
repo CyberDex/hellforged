@@ -1,4 +1,4 @@
-import { definition, symbols } from 'config/game.definition';
+import { gameDefinition, symbols } from 'config/game.definition';
 import { rollGrid } from 'math/rollGrid';
 import { gameStore } from 'store/game.store';
 import { API } from '../api.controller';
@@ -35,8 +35,8 @@ class CheatsController {
 
     // Shortest first; lengths the machine has no reels for are left off.
     private wins(symbol: string) {
-        const { partial, full } = definition.payouts;
-        const reels = definition.strips.length;
+        const { partial, full } = gameDefinition.payouts;
+        const reels = gameDefinition.strips.length;
         const counts = Object.keys(partial)
             .map(Number)
             .filter((count) => count < reels)
@@ -50,10 +50,10 @@ class CheatsController {
 
     // The reel after the run must miss, or a shorter win lands as a longer one.
     private grid(symbol: string, count: number) {
-        const grid = rollGrid(definition);
+        const grid = rollGrid(gameDefinition);
         const miss = symbols[(symbols.indexOf(symbol) + 1) % symbols.length];
 
-        definition.lines[0].forEach((row, reel) => {
+        gameDefinition.lines[0].forEach((row, reel) => {
             grid[reel][row] = reel < count ? symbol : miss;
         });
 

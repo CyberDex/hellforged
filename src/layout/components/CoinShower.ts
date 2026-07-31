@@ -1,7 +1,7 @@
 import { Container, Sprite, Texture, Ticker, type PointData } from 'pixi.js';
-import { visuals } from 'config/visual.settings';
+import { settingsVisual } from 'config/visual.settings';
 
-const physics = visuals.coins;
+const physics = settingsVisual.coins;
 
 type Coin = {
     sprite: Sprite;

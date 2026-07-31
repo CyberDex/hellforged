@@ -33,7 +33,7 @@ const strips = [
      'H3', 'H2', 'H1', 'H4', 'H5', 'H3', 'H5', 'H2', 'H4', 'H1'],
 ];
 
-export const definition: GameDefinition = {
+export const gameDefinition: GameDefinition = {
     strips,
     rows: 3,
     // One payline, on the middle row of every reel.

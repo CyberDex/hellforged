@@ -1,7 +1,7 @@
 import { Howl } from 'howler';
 import { Assets } from 'pixi.js';
 import {
-    sounds,
+    soundSettings,
     type SoundName,
     type SoundSettings,
 } from 'config/sound.settings';
@@ -19,7 +19,7 @@ class SoundController {
 
     play(sound: SoundName) {
         // Typed as the settings, since not every entry has a repeatDelay key.
-        const { repeatDelay }: SoundSettings = sounds[sound];
+        const { repeatDelay }: SoundSettings = soundSettings[sound];
         const now = performance.now();
         const played = this.#played.get(sound) ?? -Infinity;
 
@@ -53,7 +53,7 @@ class SoundController {
     }
 
     private volume(sound: SoundName) {
-        const { channel, volume } = sounds[sound];
+        const { channel, volume } = soundSettings[sound];
 
         return volume * soundStore.getState().volumes[channel];
     }
@@ -70,7 +70,7 @@ class SoundController {
                 return undefined;
             }
 
-            const { loop } = sounds[sound];
+            const { loop } = soundSettings[sound];
             const { muted } = soundStore.getState();
 
             howl = new Howl({

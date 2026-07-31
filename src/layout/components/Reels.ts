@@ -1,9 +1,9 @@
 import { Container, Rectangle } from 'pixi.js';
-import { visuals } from 'config/visual.settings';
+import { settingsVisual } from 'config/visual.settings';
 import { Reel } from './Reel';
 import type { Position } from 'math/definition';
 
-const { reelGap } = visuals.machine;
+const { reelGap } = settingsVisual.machine;
 
 export class Reels extends Container {
     readonly #reels: Reel[] = [];

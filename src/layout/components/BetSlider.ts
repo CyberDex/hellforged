@@ -1,11 +1,11 @@
 import { Slider } from '@pixi/ui';
 import { Graphics } from 'pixi.js';
-import { settings } from 'config/game.settings';
-import { visuals } from 'config/visual.settings';
+import { gmeSettings } from 'config/game.settings';
+import { settingsVisual } from 'config/visual.settings';
 import { sound } from 'controllers/sound.controller';
 
 const { width, height, handle, pit, metal, outline, outlineWidth } =
-    visuals.betSlider;
+    settingsVisual.betSlider;
 const radius = height / 2;
 
 export class BetSlider extends Slider {
@@ -22,9 +22,9 @@ export class BetSlider extends Slider {
                 .circle(0, 0, handle)
                 .fill(metal)
                 .stroke({ color: outline, width: outlineWidth }),
-            min: settings.minBet,
-            max: settings.maxBet,
-            value: settings.defaultBet,
+            min: gmeSettings.minBet,
+            max: gmeSettings.maxBet,
+            value: gmeSettings.defaultBet,
         });
 
         // The handle hangs off both ends, so measured width depends on where

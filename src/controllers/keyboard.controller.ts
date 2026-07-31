@@ -1,9 +1,9 @@
-import { settings } from 'config/game.settings';
+import { gmeSettings } from 'config/game.settings';
 import { game } from './game.controller';
 import type { RootLayout } from 'layout/Root.layout';
 import { sound } from 'controllers/sound.controller';
 
-const { betSteps, betStepCommand } = settings;
+const { betSteps, betStepCommand } = gmeSettings;
 
 // The keys work the same button and slider the pointer does.
 class KeyboardController {

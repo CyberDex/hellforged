@@ -1,8 +1,8 @@
 import { Suspense, use, useEffect } from 'react';
 import { marked } from 'marked';
 import { Sprite, Texture } from 'pixi.js';
-import { settings } from 'config/game.settings';
-import { definition, symbols } from 'config/game.definition';
+import { gmeSettings } from 'config/game.settings';
+import { gameDefinition, symbols } from 'config/game.definition';
 import { app } from 'controllers/app.controller';
 import { Button } from 'ui/Button';
 import { formatAmount } from 'utils/formatAmount';
@@ -17,15 +17,15 @@ const copy = fetch('assets/rules/rules.md').then((response) => response.text());
 // standing in a table into a cell of its own.
 const figures: Record<string, string> = {
     '%PAYTABLE%': [
-        `| Symbol | ${definition.strips.length} of a kind |`,
+        `| Symbol | ${gameDefinition.strips.length} of a kind |`,
         '| ------ | --------------- |',
-        ...Object.entries(definition.payouts.full).map(
+        ...Object.entries(gameDefinition.payouts.full).map(
             ([symbol, payout]) => `| ${symbol} | ${payout} x bet |`,
         ),
     ].join('\n'),
-    '%PAIR%': (definition.payouts.partial[2] ?? 0).toString(),
-    '%MINBET%': formatAmount(settings.minBet),
-    '%MAXBET%': formatAmount(settings.maxBet),
+    '%PAIR%': (gameDefinition.payouts.partial[2] ?? 0).toString(),
+    '%MINBET%': formatAmount(gmeSettings.minBet),
+    '%MAXBET%': formatAmount(gmeSettings.maxBet),
 };
 
 // Symbol names in the document are swapped for the faces the game is dressed

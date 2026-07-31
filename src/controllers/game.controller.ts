@@ -1,5 +1,5 @@
-import { settings } from 'config/game.settings';
-import { definition } from 'config/game.definition';
+import { gmeSettings } from 'config/game.settings';
+import { gameDefinition } from 'config/game.definition';
 import { API } from './api.controller';
 import { sound } from './sound.controller';
 import { tween } from './tween.controller';
@@ -54,7 +54,7 @@ class GameController {
     get canSpin() {
         const { state, balance } = gameStore.getState();
 
-        return state === 'idle' && balance >= settings.minBet;
+        return state === 'idle' && balance >= gmeSettings.minBet;
     }
 
     async spin() {
@@ -76,7 +76,7 @@ class GameController {
         // at once and keeps the others their delay apart behind it.
         const elapsed = Math.min(
             performance.now() - asked,
-            settings.spinDuration,
+            gmeSettings.spinDuration,
         );
 
         this.#win = outcome.win;
@@ -87,7 +87,7 @@ class GameController {
 
         // On the game's own clock, not the wall's: a backgrounded spin holds
         // with the frames and lands its reels apart, not in a heap on return.
-        for (let index = 0; index < definition.strips.length; index++) {
+        for (let index = 0; index < gameDefinition.strips.length; index++) {
             tween.run({
                 duration: this.stopDelay(index) - elapsed,
                 onComplete: () => this.#reels?.stop(index, outcome.grid[index]),
@@ -169,7 +169,7 @@ class GameController {
     private settle() {
         const { balance, setBalance } = gameStore.getState();
 
-        if (balance > 0 && balance < settings.minBet) setBalance(0);
+        if (balance > 0 && balance < gmeSettings.minBet) setBalance(0);
 
         this.capBet();
         this.lockControls();
@@ -206,18 +206,19 @@ class GameController {
         const { balance, bet } = gameStore.getState();
 
         betSlider.max = Math.max(
-            Math.min(settings.maxBet, balance),
-            settings.minBet,
+            Math.min(gmeSettings.maxBet, balance),
+            gmeSettings.minBet,
         );
 
         if (bet > betSlider.max) betSlider.value = betSlider.max;
     }
 
     private stopDelay(index: number) {
-        const delay = settings.spinDuration + index * settings.reelStopDelay;
+        const delay =
+            gmeSettings.spinDuration + index * gmeSettings.reelStopDelay;
         const held = this.#anticipation && index >= this.#anticipation.fromReel;
 
-        return held ? delay * settings.anticipationSpins : delay;
+        return held ? delay * gmeSettings.anticipationSpins : delay;
     }
 
     private onReelStopped() {
@@ -238,14 +239,14 @@ class GameController {
                     this.stopDelay(fromReel) - this.stopDelay(fromReel - 1),
                 );
             } else if (
-                this.#landed === definition.strips.length &&
+                this.#landed === gameDefinition.strips.length &&
                 !this.bigWin
             ) {
                 this.#layout?.unzoom();
             }
         }
 
-        if (this.#landed < definition.strips.length) return;
+        if (this.#landed < gameDefinition.strips.length) return;
 
         const { balance, setBalance, setResult } = gameStore.getState();
 
@@ -267,19 +268,19 @@ class GameController {
 
     // The win decides the stage, not the symbols.
     private get bigWin() {
-        return settings.bigWinStages
+        return gmeSettings.bigWinStages
             .filter(({ from }) => this.#win >= from)
             .pop();
     }
 
     private get revealDuration() {
-        return settings.winDuration * (this.bigWin?.reveals ?? 1);
+        return gmeSettings.winDuration * (this.bigWin?.reveals ?? 1);
     }
 
     private get countDuration() {
         return this.bigWin
-            ? this.revealDuration - settings.bigWinHold
-            : settings.winCountDuration;
+            ? this.revealDuration - gmeSettings.bigWinHold
+            : gmeSettings.winCountDuration;
     }
 
     private setState(state: GameState) {

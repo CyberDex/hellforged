@@ -10,7 +10,7 @@ export type SoundSettings = {
     repeatDelay?: number;
 };
 
-export const sounds = {
+export const soundSettings = {
     music: { loop: true, volume: 0.3, channel: 'music' },
     click: { loop: false, volume: 1, channel: 'fx' },
     reelSpin: { loop: true, volume: 1, channel: 'fx' },
@@ -22,7 +22,7 @@ export const sounds = {
     coin: { loop: false, volume: 0.4, channel: 'fx', repeatDelay: 80 },
 } satisfies Record<string, SoundSettings>;
 
-export type SoundName = keyof typeof sounds;
+export type SoundName = keyof typeof soundSettings;
 
 export const defaultVolumes: Record<SoundChannel, number> = {
     music: 1,

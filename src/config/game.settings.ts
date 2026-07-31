@@ -14,7 +14,7 @@ const bigWinStages = [
 ];
 
 // How the game is played and paced; what it plays is `game.definition.ts`.
-export const settings = {
+export const gmeSettings = {
     defaultBalance: 1000000,
     defaultBet: 1,
     minBet: 1,

@@ -1,7 +1,7 @@
 // How the game is dressed rather than how it plays — see `game.settings.ts`
 // for what a spin is worth and how long it takes.
 
-export const visuals = {
+export const settingsVisual = {
     machine: {
         reelGap: 30,
         // The window as the cabinet art draws it: centred, its middle this

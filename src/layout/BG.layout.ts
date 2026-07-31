@@ -1,6 +1,6 @@
 import '@pixi/layout';
 import { Sprite } from 'pixi.js';
-import { visuals } from 'config/visual.settings';
+import { settingsVisual } from 'config/visual.settings';
 import { BurnFilter } from 'filters/burn.filter';
 import { graphicsStore } from 'store/graphics.store';
 import { Layout } from '@pixi/layout';
@@ -28,7 +28,7 @@ export class BG extends Layout {
             return;
         }
 
-        this.#burn ??= new BurnFilter(visuals.burn);
+        this.#burn ??= new BurnFilter(settingsVisual.burn);
         this.filters = [this.#burn];
     }
 }

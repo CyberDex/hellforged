@@ -1,6 +1,6 @@
 import { Container, Rectangle, Ticker } from 'pixi.js';
-import { settings } from 'config/game.settings';
-import { visuals } from 'config/visual.settings';
+import { gmeSettings } from 'config/game.settings';
+import { settingsVisual } from 'config/visual.settings';
 import { tween } from 'controllers/tween.controller';
 import type { Tween } from 'controllers/tween.controller';
 import { dip } from 'utils/dip';
@@ -36,7 +36,7 @@ export class Reel extends Container {
         this.#symbolHeight = this.#slots[0].height;
         this.#reelHeight = slots * this.#symbolHeight;
         // Symbols per second, as configured, in pixels per millisecond.
-        this.#speed = (this.#symbolHeight * settings.spinSpeed) / 1000;
+        this.#speed = (this.#symbolHeight * gmeSettings.spinSpeed) / 1000;
 
         // Fixed bounds keep the spare symbol out of layout measurement.
         this.boundsArea = new Rectangle(
@@ -65,7 +65,7 @@ export class Reel extends Container {
             slot.alpha =
                 !rows || rows.includes(index - 1)
                     ? 1
-                    : visuals.machine.dimmedFace;
+                    : settingsVisual.machine.dimmedFace;
         });
     }
 
@@ -125,9 +125,9 @@ export class Reel extends Container {
         this.emit('stopped');
 
         this.#bounce = tween.run({
-            duration: settings.bounceDuration,
-            to: settings.bounceDistance * this.#symbolHeight,
-            ease: dip(settings.bounceDown),
+            duration: gmeSettings.bounceDuration,
+            to: gmeSettings.bounceDistance * this.#symbolHeight,
+            ease: dip(gmeSettings.bounceDown),
             // Absolute offset, so the strip returns exactly where it landed.
             onUpdate: (offset) => {
                 this.move(offset - this.#offset);

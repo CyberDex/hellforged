@@ -9,6 +9,7 @@ export class BetPannel extends Pannel {
         super('Bet', { position: 'center', marginTop: 210, marginLeft: -155 });
 
         this.slider = new BetSlider();
+
         this.addContent({
             slider: {
                 content: this.slider,

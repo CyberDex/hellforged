@@ -1,5 +1,5 @@
-import { definition } from 'config/game.definition';
-import { settings } from 'config/game.settings';
+import { gameDefinition } from 'config/game.definition';
+import { gmeSettings } from 'config/game.settings';
 import { spin } from 'math/spin';
 import type { SpinResult } from 'math/spin';
 
@@ -23,10 +23,10 @@ class ApiController {
         // The round trip a real server would take: the reels are already
         // turning before the outcome is known.
         await new Promise((resolve) =>
-            setTimeout(resolve, settings.responseTime),
+            setTimeout(resolve, gmeSettings.responseTime),
         );
 
-        return spin(definition, bet, forced ?? undefined);
+        return spin(gameDefinition, bet, forced ?? undefined);
     }
 }
 

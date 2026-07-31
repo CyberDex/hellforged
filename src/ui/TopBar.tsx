@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from 'zustand';
 import { gameTitle } from 'config/game.name';
-import { settings } from 'config/game.settings';
+import { gmeSettings } from 'config/game.settings';
 import { tween } from 'controllers/tween.controller';
 import { gameStore } from 'store/game.store';
 import { Button } from 'ui/Button';
@@ -32,11 +32,12 @@ function elapsed(ms: number) {
 export function TopBar() {
     const balance = useStore(gameStore, (state) => state.balance);
     // The reading of the balance, never what anything is played with.
-    const counted = useCountUp(balance, settings.balanceCountDuration);
+    const counted = useCountUp(balance, gmeSettings.balanceCountDuration);
     // Only between spins: a running spin has had its stake taken already.
     const outOfFunds = useStore(
         gameStore,
-        ({ state, balance }) => state === 'idle' && balance < settings.minBet,
+        ({ state, balance }) =>
+            state === 'idle' && balance < gmeSettings.minBet,
     );
     const [now, setNow] = useState(() => new Date());
     const [open, setOpen] = useState<Open>();

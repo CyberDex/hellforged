@@ -9,8 +9,8 @@ import { BetPannel } from 'layout/BetPannel.layout';
 import { WinPannel } from 'layout/WinPannel.layout';
 import { Reels } from 'layout/components/Reels';
 import { SlotMachine } from 'layout/SlotMachine.layout';
-import { settings } from 'config/game.settings';
-import { definition } from 'config/game.definition';
+import { gmeSettings } from 'config/game.settings';
+import { gameDefinition } from 'config/game.definition';
 import { BG } from 'layout/BG.layout';
 import { WinLayout } from 'layout/Win.layout';
 import { setDefaultTextStyle } from 'config/font.settings';
@@ -25,8 +25,6 @@ export class RootLayout extends Layout {
     readonly slotMachine: SlotMachine;
     readonly winLayout: WinLayout;
 
-    // Everything but the background, zoomed as one.
-    readonly #ui: Layout;
     // Kept so a resize can put the zoom back.
     #zoom = 1;
     #growing?: Tween;
@@ -38,7 +36,7 @@ export class RootLayout extends Layout {
         const buttonSpin = new SpinPannel();
         const betPannel = new BetPannel();
         const winPannel = new WinPannel();
-        const reels = new Reels(definition.strips, definition.rows);
+        const reels = new Reels(gameDefinition.strips, gameDefinition.rows);
         const slotMachine = new SlotMachine(reels);
         const winLayout = new WinLayout();
 
@@ -86,21 +84,13 @@ export class RootLayout extends Layout {
         this.reels = reels;
         this.slotMachine = slotMachine;
         this.winLayout = winLayout;
-        this.#ui = this.getChildByID('ui') as Layout;
 
-        window.addEventListener('resize', () => this.onResize());
-        this.onResize();
-    }
-
-    // this is the only place whole layout needs to listen for resize,
-    // all the magic happends inside of it basing on configs
-    private onResize() {
+        // this is the only place where pixiLayout needs to listen for resize,
+        // all the magic happends inside of it basing on configs
+        window.addEventListener('resize', () =>
+            this.resize(window.innerWidth, window.innerHeight),
+        );
         this.resize(window.innerWidth, window.innerHeight);
-
-        // The layout writes its own scale as it lays out; the zoom goes back
-        // over the top of it.
-        this.#ui.origin.set(this.#ui.width / 2, this.#ui.height / 2);
-        this.#ui.scale.set(this.#zoom);
     }
 
     zoom(duration: number) {
@@ -108,10 +98,9 @@ export class RootLayout extends Layout {
         this.#growing = tween.run({
             duration,
             from: 1,
-            to: settings.anticipationZoom,
+            to: gmeSettings.anticipationZoom,
             onUpdate: (zoom) => {
                 this.#zoom = zoom;
-                this.#ui.scale.set(zoom);
             },
         });
     }
@@ -124,7 +113,6 @@ export class RootLayout extends Layout {
         const zoomed = this.#zoom !== 1;
 
         this.#zoom = 1;
-        this.#ui.scale.set(this.#zoom);
 
         return zoomed;
     }

@@ -1,6 +1,6 @@
 import { createStore } from 'zustand/vanilla';
 import { persist } from 'zustand/middleware';
-import { settings } from 'config/game.settings';
+import { gmeSettings } from 'config/game.settings';
 import { gameName } from 'config/game.name';
 
 export type GameState = 'idle' | 'spin' | 'reveal';
@@ -23,8 +23,8 @@ export const gameStore = createStore<GameStore>()(
     persist(
         (set) => ({
             state: 'idle',
-            balance: settings.defaultBalance,
-            bet: settings.defaultBet,
+            balance: gmeSettings.defaultBalance,
+            bet: gmeSettings.defaultBet,
             win: 0,
             symbols: null,
 

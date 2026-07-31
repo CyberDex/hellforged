@@ -1,10 +1,10 @@
 import '@pixi/layout';
 import { Layout } from '@pixi/layout';
 import { Container, Rectangle, Sprite } from 'pixi.js';
-import { visuals } from 'config/visual.settings';
+import { settingsVisual } from 'config/visual.settings';
 import type { Reels } from './components/Reels';
 
-const { cabinetWindow, windowOverhang, windowCrop } = visuals.machine;
+const { cabinetWindow, windowOverhang, windowCrop } = settingsVisual.machine;
 
 export class SlotMachine extends Layout {
     constructor(reels: Reels) {

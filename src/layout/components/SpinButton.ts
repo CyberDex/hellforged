@@ -1,11 +1,11 @@
 import '@pixi/layout';
 import { FancyButton } from '@pixi/ui';
-import { visuals } from 'config/visual.settings';
+import { settingsVisual } from 'config/visual.settings';
 import { sound } from 'controllers/sound.controller';
 import { tween } from 'controllers/tween.controller';
 import type { Tween } from 'controllers/tween.controller';
 
-const { hoverScale, tweenDuration, rotateDuration } = visuals.spinButton;
+const { hoverScale, tweenDuration, rotateDuration } = settingsVisual.spinButton;
 
 export class SpinButton extends FancyButton {
     // Held so a second spin picks the turn up rather than stacking another.
