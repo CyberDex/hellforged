@@ -13,6 +13,11 @@ const bigWinStages = [
     { from: 100000, reveals: 4, title: 'EPIC WIN' },
 ];
 
+export type BigWinStage = (typeof bigWinStages)[number];
+
+export const selectBigWinStages = (win: number): BigWinStage[] =>
+    bigWinStages.filter(({ from }) => win >= from);
+
 // How the game is played and paced; what it plays is `game.definition.ts`.
 export const gmeSettings = {
     defaultBalance: 1000000,
