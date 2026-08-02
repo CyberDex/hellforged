@@ -2,22 +2,25 @@ import { Component, Suspense, use, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { marked } from 'marked';
 import { Sprite, Texture } from 'pixi.js';
+import type { Application } from 'pixi.js';
 import { gmeSettings } from 'config/game.settings';
 import { gameDefinition, symbols } from 'config/game.definition';
-import { app } from 'controllers/app.controller';
 import { Button } from 'ui/Button';
+import { useRuntime } from 'ui/Runtime';
 import { formatAmount } from 'utils/formatAmount';
 
 // The player's rules ship with the art, so a reskin brings its own;
 // `src/config/rules.md` is the working copy. Fetched: a DOM-only document has
 // no business on Pixi's manifest (`mIgnore` — see `vite.config.ts`).
-const copy = fetch('assets/rules/rules.md').then((response) => {
-    if (!response.ok) {
-        throw new Error(`Unable to load game rules (${response.status}).`);
-    }
+let copy: Promise<string> | undefined;
+const loadCopy = () =>
+    (copy ??= fetch('assets/rules/rules.md').then((response) => {
+        if (!response.ok) {
+            throw new Error(`Unable to load game rules (${response.status}).`);
+        }
 
-    return response.text();
-});
+        return response.text();
+    }));
 
 // Filled from the settings the game is played on, so the paytable cannot
 // disagree with the reels. Written out whole: Prettier folds a placeholder
@@ -43,7 +46,7 @@ const names = new RegExp(`\\b(?:${symbols.join('|')})\\b`, 'g');
 // through a sprite to put it back upright inside its square.
 const faceUrls: string[] = [];
 
-const face = async (symbol: string) => {
+const face = async (symbol: string, app: Application) => {
     const sprite = new Sprite(Texture.from(symbol));
     const canvas = app.renderer.extract.canvas(sprite);
 
@@ -78,9 +81,11 @@ if (import.meta.hot) {
 // cut symbols from.
 let html: Promise<string> | undefined;
 
-const rendered = (source: string) =>
+const rendered = (source: string, app: Application) =>
     (html ??= Promise.all(
-        symbols.map(async (symbol) => [symbol, await face(symbol)] as const),
+        symbols.map(
+            async (symbol) => [symbol, await face(symbol, app)] as const,
+        ),
     ).then((entries) => {
         const faces = Object.fromEntries(entries);
 
@@ -94,13 +99,14 @@ const rendered = (source: string) =>
     }));
 
 function Body() {
-    const source = use(copy);
+    const { app } = useRuntime();
+    const source = use(loadCopy());
 
     return (
         // The document ships with the game's own assets; not player-written.
         <div
             className="rules-body"
-            dangerouslySetInnerHTML={{ __html: use(rendered(source)) }}
+            dangerouslySetInnerHTML={{ __html: use(rendered(source, app)) }}
         />
     );
 }

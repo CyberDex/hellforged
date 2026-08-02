@@ -2,12 +2,13 @@ import '@pixi/layout';
 import { Layout } from '@pixi/layout';
 import { Sprite } from 'pixi.js';
 import { SpinButton } from './components/SpinButton';
+import type { SoundPlayer, TweenRunner } from 'controllers/contracts';
 
 export class SpinPannel extends Layout {
     readonly button: SpinButton;
 
-    constructor() {
-        const button = new SpinButton();
+    constructor(sound: SoundPlayer, tween: TweenRunner) {
+        const button = new SpinButton(sound, tween);
 
         super({
             content: [

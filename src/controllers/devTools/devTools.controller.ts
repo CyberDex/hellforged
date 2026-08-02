@@ -1,7 +1,7 @@
 import { Pane } from 'tweakpane';
 import { gameName } from 'config/game.name';
-import { cheats } from './cheats.controller';
-import { renderingPerformance } from './renderingPerformance.controller';
+import type { CheatsController } from './cheats.controller';
+import type { RenderingPerformanceController } from './renderingPerformance.controller';
 
 // Fixed scales, so the same spike is always the same height.
 const maxDrawCalls = 50;
@@ -48,10 +48,25 @@ const hints = {
 // `renderingPerformance.stats`, buttons running `cheats` — the logic lives
 // in those two. Mounted only in dev — see `main.ts`.
 // https://tweakpane.github.io/docs/
-class DevToolsController {
-    readonly #popup = document.createElement('div');
+export class DevToolsController {
+    readonly #cheats: CheatsController;
+    readonly #renderingPerformance: RenderingPerformanceController;
+    readonly #hidePopup = () => this.hide();
+    #popup?: HTMLDivElement;
+
+    constructor(
+        cheats: CheatsController,
+        renderingPerformance: RenderingPerformanceController,
+    ) {
+        this.#cheats = cheats;
+        this.#renderingPerformance = renderingPerformance;
+    }
 
     init() {
+        if (this.#popup) return;
+
+        this.#popup = document.createElement('div');
+
         const container = this.container();
         const pane = new Pane({
             container,
@@ -91,7 +106,7 @@ class DevToolsController {
     }
 
     private graphs(pane: Pane) {
-        if (renderingPerformance.countsDraws) {
+        if (this.#renderingPerformance.countsDraws) {
             this.overlay(this.graph(pane, 'drawCalls', maxDrawCalls));
         }
 
@@ -99,7 +114,7 @@ class DevToolsController {
         this.overlay(this.graph(pane, 'fps', maxFps));
 
         // Repaints on the controller's beat: right after each frame's sample.
-        renderingPerformance.init(() => {
+        this.#renderingPerformance.init(() => {
             pane.refresh();
             this.retitle(pane);
         });
@@ -109,14 +124,18 @@ class DevToolsController {
     // width — `overlay` names it in place. interval: 0 leaves the sampling
     // to `renderingPerformance`.
     private graph(pane: Pane, stat: keyof typeof hints, max: number) {
-        const binding = pane.addBinding(renderingPerformance.stats, stat, {
-            readonly: true,
-            view: 'graph',
-            label: undefined,
-            min: 0,
-            max,
-            interval: 0,
-        });
+        const binding = pane.addBinding(
+            this.#renderingPerformance.stats,
+            stat,
+            {
+                readonly: true,
+                view: 'graph',
+                label: undefined,
+                min: 0,
+                max,
+                interval: 0,
+            },
+        );
 
         return { stat, element: binding.element };
     }
@@ -167,35 +186,37 @@ class DevToolsController {
     // One popup shared by all the ⓘs; each swaps its own text in. Above
     // the pane, so it never covers the graph it explains.
     private popup(container: HTMLElement) {
-        this.#popup.style.cssText =
+        const popup = this.popupElement;
+
+        popup.style.cssText =
             'display:none;position:absolute;bottom:100%;right:0;' +
             'margin-bottom:4px;width:220px;padding:8px 10px;' +
             'border-radius:6px;background:rgba(24,26,32,.95);color:#bbc;' +
             "font:10px/1.5 'Roboto Mono',Menlo,monospace";
 
-        container.appendChild(this.#popup);
+        container.appendChild(popup);
 
         // A press anywhere else shuts it — the pane's own title bar too.
-        window.addEventListener('pointerdown', () => this.hide());
+        window.addEventListener('pointerdown', this.#hidePopup);
     }
 
     private hide() {
-        this.#popup.style.display = 'none';
+        this.popupElement.style.display = 'none';
     }
 
     // The same ⓘ closes; another ⓘ swaps the story.
     private toggle(hint: string) {
+        const popup = this.popupElement;
         const shown =
-            this.#popup.style.display !== 'none' &&
-            this.#popup.textContent === hint;
+            popup.style.display !== 'none' && popup.textContent === hint;
 
-        this.#popup.textContent = hint;
-        this.#popup.style.display = shown ? 'none' : 'block';
+        popup.textContent = hint;
+        popup.style.display = shown ? 'none' : 'block';
     }
 
     // On the title bar, so the numbers read with the panel shut.
     private retitle(pane: Pane) {
-        const { drawCalls, fps, work } = renderingPerformance.stats;
+        const { drawCalls, fps, work } = this.#renderingPerformance.stats;
 
         pane.title = title(drawCalls, fps, work);
     }
@@ -208,13 +229,13 @@ class DevToolsController {
 
         folder.on('fold', ({ expanded }) => this.remember('cheats', expanded));
 
-        for (const { symbol, count, payout } of cheats.list()) {
+        for (const { symbol, count, payout } of this.#cheats.list()) {
             folder
                 .addButton({ title: `${symbol} ${count} ×${payout}` })
-                .on('click', () => cheats.spin(symbol, count));
+                .on('click', () => this.#cheats.spin(symbol, count));
         }
 
-        cheats.follow(() => (folder.disabled = !cheats.canSpin));
+        this.#cheats.follow(() => (folder.disabled = !this.#cheats.canSpin));
     }
 
     // On the page itself, so it sits over the React overlay (`ui.css`).
@@ -227,6 +248,11 @@ class DevToolsController {
 
         return container;
     }
-}
 
-export const devTools = new DevToolsController();
+    private get popupElement() {
+        if (!this.#popup)
+            throw new Error('Dev tools have not been initialized.');
+
+        return this.#popup;
+    }
+}

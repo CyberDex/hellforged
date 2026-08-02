@@ -1,17 +1,17 @@
 import '@pixi/layout';
 import { FancyButton } from '@pixi/ui';
 import { settingsVisual } from 'config/visual.settings';
-import { sound } from 'controllers/sound.controller';
-import { tween } from 'controllers/tween.controller';
-import type { Tween } from 'controllers/tween.controller';
+import type { SoundPlayer, Tween, TweenRunner } from 'controllers/contracts';
 
 const { hoverScale, tweenDuration, rotateDuration } = settingsVisual.spinButton;
 
 export class SpinButton extends FancyButton {
+    readonly #sound: SoundPlayer;
+    readonly #tween: TweenRunner;
     // Held so a second spin picks the turn up rather than stacking another.
     #turn?: Tween;
 
-    constructor() {
+    constructor(sound: SoundPlayer, tween: TweenRunner) {
         // `@pixi/ui`'s own animation shape, run by the view swapping.
         const lean = (scale: number) => ({
             props: { scale: { x: scale, y: scale } },
@@ -29,13 +29,16 @@ export class SpinButton extends FancyButton {
             },
         });
 
-        this.onDown.connect(() => sound.play('click'));
+        this.#sound = sound;
+        this.#tween = tween;
+
+        this.onDown.connect(() => this.#sound.play('click'));
         this.onPress.connect(() => this.rotate());
     }
 
     private rotate() {
         this.#turn?.stop();
-        this.#turn = tween.run({
+        this.#turn = this.#tween.run({
             duration: rotateDuration,
             to: Math.PI * 2,
             onUpdate: (rotation) => {

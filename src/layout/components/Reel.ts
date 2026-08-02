@@ -1,8 +1,7 @@
 import { Container, Rectangle, Ticker } from 'pixi.js';
 import { gmeSettings } from 'config/game.settings';
 import { settingsVisual } from 'config/visual.settings';
-import { tween } from 'controllers/tween.controller';
-import type { Tween } from 'controllers/tween.controller';
+import type { Tween, TweenRunner } from 'controllers/contracts';
 import { createBounceEase } from 'utils/createBounceEase';
 import { Symbol } from './Symbol';
 
@@ -11,6 +10,7 @@ export class Reel extends Container {
     readonly #symbolHeight: number;
     readonly #reelHeight: number;
     readonly #speed: number;
+    readonly #tween: TweenRunner;
     #spinning = false;
     #stopping = false;
     #queue: string[] = [];
@@ -18,10 +18,11 @@ export class Reel extends Container {
     #offset = 0;
     readonly #strip: string[];
 
-    constructor(slots: number, strip: string[]) {
+    constructor(slots: number, strip: string[], tween: TweenRunner) {
         super();
 
         this.#strip = strip;
+        this.#tween = tween;
 
         // One spare symbol above the reel fills the top row mid-slide.
         for (let i = -1; i < slots; i++) {
@@ -124,7 +125,7 @@ export class Reel extends Container {
 
         this.emit('stopped');
 
-        this.#bounce = tween.run({
+        this.#bounce = this.#tween.run({
             duration: gmeSettings.bounceDuration,
             to: gmeSettings.bounceDistance * this.#symbolHeight,
             ease: createBounceEase(gmeSettings.bounceDown),

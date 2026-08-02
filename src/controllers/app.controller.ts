@@ -5,7 +5,7 @@ import {
     getRenderResolution,
 } from 'utils/assetResolution';
 
-class AppController extends Application {
+export class AppController extends Application {
     async init(options?: Partial<ApplicationOptions>) {
         await super.init({
             resizeTo: window,
@@ -29,5 +29,3 @@ class AppController extends Application {
         document.body.appendChild(this.canvas);
     }
 }
-
-export const app = new AppController();

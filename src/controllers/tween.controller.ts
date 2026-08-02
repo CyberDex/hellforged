@@ -1,19 +1,5 @@
 import { Ticker } from 'pixi.js';
-
-// Stopping twice, or after arrival, is nothing.
-export type Tween = {
-    stop(): void;
-};
-
-export type Tweening = {
-    duration: number;
-    onUpdate?: (value: number) => void;
-    from?: number;
-    to?: number;
-    ease?: (progress: number) => number;
-    // Only called on arrival: a tween stopped on the way is never told.
-    onComplete?: () => void;
-};
+import type { Tween, Tweening } from './contracts';
 
 type Running = {
     duration: number;
@@ -28,10 +14,14 @@ type Running = {
 
 const linear = (progress: number) => progress;
 
-class TweenController {
+export class TweenController {
     #running: Running[] = [];
+    #initialized = false;
 
-    constructor() {
+    init() {
+        if (this.#initialized) return;
+
+        this.#initialized = true;
         // On the shared ticker until destroyed, never mid-tick: Pixi reads a
         // listener's next after calling it, so one that takes itself off
         // mid-tick ends the frame there and every listener behind it is
@@ -66,6 +56,9 @@ class TweenController {
     }
 
     destroy() {
+        if (!this.#initialized) return;
+
+        this.#initialized = false;
         Ticker.shared.remove(this.tick, this);
         this.#running = [];
     }
@@ -107,5 +100,3 @@ class TweenController {
         }
     }
 }
-
-export const tween = new TweenController();

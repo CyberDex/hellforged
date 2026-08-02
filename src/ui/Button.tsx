@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react';
-import { sound } from 'controllers/sound.controller';
+import { useRuntime } from 'ui/Runtime';
 
 // Every overlay button: `press` asks the pointer back off the overlay (see
 // `ui.css`), and the click sounds on the press, the way the spin button's does.
@@ -9,6 +9,8 @@ export function Button({
     onClick,
     ...props
 }: ComponentProps<'button'>) {
+    const { sound } = useRuntime();
+
     return (
         <button
             {...props}

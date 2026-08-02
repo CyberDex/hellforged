@@ -1,7 +1,7 @@
 // Spins the game headlessly at one bet a spin and counts what came back. Run
 // with `pnpm sim [spins]`. Plain node runs it, which is why the maths and
 // the definition keep clear of Pixi and of the bundler's path aliases.
-import { definition } from '../src/config/game.definition.ts';
+import { gameDefinition as definition } from '../src/config/game.definition.ts';
 import { spin } from '../src/math/spin.ts';
 
 const spins = Number(process.argv[2] ?? 1_000_000);

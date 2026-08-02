@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import { game } from 'controllers/game.controller';
-import { gameStore } from 'store/game.store';
 import { Button } from 'ui/Button';
+import { useRuntime } from 'ui/Runtime';
 
 // Handed to the game rather than to the store, so the machine settles around
 // what was typed (see `game.controller.ts`).
@@ -13,6 +12,7 @@ export function Balance({
     open: boolean;
     onClose: () => void;
 }) {
+    const { game, gameStore } = useRuntime();
     const [amount, setAmount] = useState('');
     const field = useRef<HTMLInputElement>(null);
 
@@ -23,7 +23,7 @@ export function Balance({
 
         setAmount(gameStore.getState().balance.toString());
         field.current?.focus({ preventScroll: true });
-    }, [open]);
+    }, [gameStore, open]);
 
     const submit = (event: FormEvent) => {
         event.preventDefault();

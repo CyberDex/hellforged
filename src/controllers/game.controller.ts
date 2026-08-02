@@ -1,16 +1,19 @@
 import { gmeSettings } from 'config/game.settings';
 import { gameDefinition } from 'config/game.definition';
-import { API } from './api.controller';
-import { sound } from './sound.controller';
-import { tween } from './tween.controller';
-import { gameStore } from 'store/game.store';
+import type { StoreApi } from 'zustand/vanilla';
+import type { ApiController } from './api.controller';
+import type { SoundPlayer, TweenRunner } from './contracts';
 import type { GameState, GameStore } from 'store/game.store';
 import type { Position } from 'math/definition';
 import type { SpinResult } from 'math/spin';
 import type { RootLayout } from 'layout/Root.layout';
 import type { Reels } from 'layout/components/Reels';
 
-class GameController {
+export class GameController {
+    readonly #api: Pick<ApiController, 'spin'>;
+    readonly #sound: SoundPlayer;
+    readonly #store: StoreApi<GameStore>;
+    readonly #tween: TweenRunner;
     #layout?: RootLayout;
     #reels?: Reels;
     #landed = 0;
@@ -19,6 +22,23 @@ class GameController {
     #positions: Position[] = [];
     #anticipation: SpinResult['anticipation'];
     #unsubscribe?: () => void;
+
+    constructor({
+        api,
+        sound,
+        store,
+        tween,
+    }: {
+        api: Pick<ApiController, 'spin'>;
+        sound: SoundPlayer;
+        store: StoreApi<GameStore>;
+        tween: TweenRunner;
+    }) {
+        this.#api = api;
+        this.#sound = sound;
+        this.#store = store;
+        this.#tween = tween;
+    }
 
     init(layout: RootLayout) {
         const { betSlider, reels, betPannel, winPannel } = layout;
@@ -29,13 +49,13 @@ class GameController {
         // A result already received is paid; a request cut off before its
         // answer gives its stake back. Either settlement clears the pending
         // spin in the same persisted write, so another reload cannot repeat it.
-        const restored = gameStore.getState();
+        const restored = this.#store.getState();
 
         if (restored.pending) restored.settleSpin();
 
         // Before the slider is listened to, so restoring the handle is not
         // read back as a new bet.
-        const { bet, win, symbols } = gameStore.getState();
+        const { bet, win, symbols } = this.#store.getState();
 
         betPannel.value = bet;
         betSlider.value = bet;
@@ -50,15 +70,15 @@ class GameController {
         // subscribe, so the pannel follows the bet down.
         this.settle();
 
-        sound.play('music');
+        this.#sound.play('music');
     }
 
     get state() {
-        return gameStore.getState().state;
+        return this.#store.getState().state;
     }
 
     get canSpin() {
-        const { state, balance } = gameStore.getState();
+        const { state, balance } = this.#store.getState();
 
         return state === 'idle' && balance >= gmeSettings.minBet;
     }
@@ -66,7 +86,8 @@ class GameController {
     async spin() {
         if (this.state !== 'idle') return;
 
-        const { balance, bet, startSpin, setSpinResult } = gameStore.getState();
+        const { balance, bet, startSpin, setSpinResult } =
+            this.#store.getState();
 
         if (balance < bet) return;
 
@@ -83,7 +104,7 @@ class GameController {
         let outcome: SpinResult;
 
         try {
-            outcome = await API.spin(bet);
+            outcome = await this.#api.spin(bet);
         } catch (error) {
             console.error('Unable to complete spin.', error);
 
@@ -114,7 +135,7 @@ class GameController {
         // On the game's own clock, not the wall's: a backgrounded spin holds
         // with the frames and lands its reels apart, not in a heap on return.
         for (let index = 0; index < gameDefinition.strips.length; index++) {
-            tween.run({
+            this.#tween.run({
                 duration: this.stopDelay(index) - elapsed,
                 onComplete: () => this.#reels?.stop(index, outcome.grid[index]),
             });
@@ -122,7 +143,7 @@ class GameController {
     }
 
     updateBalance(balance: number) {
-        gameStore.getState().setBalance(balance);
+        this.#store.getState().setBalance(balance);
 
         if (this.state === 'idle') this.settle();
     }
@@ -137,13 +158,13 @@ class GameController {
         const { spinButton, betSlider, reels, winPannel, winLayout } = layout;
 
         spinButton.onPress.connect(() => this.spin());
-        betSlider.onUpdate.connect((bet) => gameStore.getState().setBet(bet));
+        betSlider.onUpdate.connect((bet) => this.#store.getState().setBet(bet));
 
         reels.on('stopped', () => this.onReelStopped());
 
         winLayout.on('revealed', (win: number) => (winPannel.value = win));
 
-        this.#unsubscribe = gameStore.subscribe((current, previous) =>
+        this.#unsubscribe = this.#store.subscribe((current, previous) =>
             this.reflect(current, previous),
         );
     }
@@ -163,7 +184,7 @@ class GameController {
         if (win !== previous.win) {
             if (win > 0) {
                 winLayout.show(win, this.countDuration);
-                sound.play('win');
+                this.#sound.play('win');
             } else {
                 winPannel.value = win;
             }
@@ -174,9 +195,9 @@ class GameController {
         if (state !== 'idle') this.lockControls();
 
         if (state === 'spin') {
-            sound.play('reelSpin');
+            this.#sound.play('reelSpin');
         } else if (previous.state === 'spin') {
-            sound.stop('reelSpin');
+            this.#sound.stop('reelSpin');
         }
 
         if (state === 'idle') {
@@ -187,13 +208,13 @@ class GameController {
             // what keeps it beside the reels.
             winPannel.value = win;
 
-            if (layout.unzoom()) sound.play('reelStop');
+            if (layout.unzoom()) this.#sound.play('reelStop');
             this.settle();
         }
     }
 
     private settle() {
-        const { balance, setBalance } = gameStore.getState();
+        const { balance, setBalance } = this.#store.getState();
 
         if (balance > 0 && balance < gmeSettings.minBet) setBalance(0);
 
@@ -211,7 +232,7 @@ class GameController {
         betSlider.enabled = canSpin;
 
         if (canSpin) {
-            betPannel.value = gameStore.getState().bet;
+            betPannel.value = this.#store.getState().bet;
             winLayout.hide();
 
             return;
@@ -229,7 +250,7 @@ class GameController {
 
         if (!betSlider) return;
 
-        const { balance, bet } = gameStore.getState();
+        const { balance, bet } = this.#store.getState();
 
         betSlider.max = Math.max(
             Math.min(gmeSettings.maxBet, balance),
@@ -250,7 +271,7 @@ class GameController {
     private onReelStopped() {
         if (this.state !== 'spin') return;
 
-        sound.play('reelStop');
+        this.#sound.play('reelStop');
 
         this.#landed++;
 
@@ -260,7 +281,7 @@ class GameController {
             // Zoomed in over the gap before the first held-back reel, so the
             // game is full in by the time it lands.
             if (this.#landed === fromReel) {
-                sound.play('anticipation');
+                this.#sound.play('anticipation');
                 this.#layout?.zoom(
                     this.stopDelay(fromReel) - this.stopDelay(fromReel - 1),
                 );
@@ -274,7 +295,7 @@ class GameController {
 
         if (this.#landed < gameDefinition.strips.length) return;
 
-        gameStore.getState().settleSpin();
+        this.#store.getState().settleSpin();
 
         if (this.#win <= 0) return this.setState('idle');
 
@@ -283,7 +304,7 @@ class GameController {
 
         // On the game's clock like the stops, so a backgrounded reveal waits
         // to be watched rather than timing out unseen.
-        tween.run({
+        this.#tween.run({
             duration: this.revealDuration,
             onComplete: () => this.setState('idle'),
         });
@@ -307,8 +328,6 @@ class GameController {
     }
 
     private setState(state: GameState) {
-        gameStore.getState().setState(state);
+        this.#store.getState().setState(state);
     }
 }
-
-export const game = new GameController();
